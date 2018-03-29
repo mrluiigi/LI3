@@ -20,7 +20,7 @@ typedef struct post{
 TAD_community init(){
 	TAD_community t;
 	t = malloc(sizeof(struct TCD_community));
-	t->hash = g_hash_table_new (g_int_hash, g_str_equal);
+	t->hash = g_hash_table_new (g_direct_hash, g_direct_equal);
 	return t;
 }
 
@@ -64,22 +64,39 @@ TAD_community load(TAD_community com, char* dump_path){
 		return com;
 	}
 
-	int r;
 
-	POST p = malloc(sizeof(struct post));
 	ptr = cur->xmlChildrenNode;
 	ptr = ptr->next;
 	while(ptr!=NULL){
+	POST p = malloc(sizeof(struct post));
 		key = (char *) xmlGetProp(ptr, (xmlChar *) "Id");
-		r = atoi(key);
-		p->title = (char *) xmlGetProp(ptr, (xmlChar *) "Title");
-		p->ownerUserId =  (char *) xmlGetProp(ptr, (xmlChar *) "OwnerUserId");
-		p->postTypeId =  (char *) xmlGetProp(ptr, (xmlChar *) "PostTypeID");
-		p->parentId = (char *) xmlGetProp(ptr, (xmlChar *) "ParentId");
-		g_hash_table_insert(com->hash, &r, p);
+		int r = atoi(key);
+		p->postTypeId =  (char *) xmlGetProp(ptr, (xmlChar *) "PostTypeId");
+
+		if (!strcmp(p->postTypeId, "1")){
+			p->title = (char *) xmlGetProp(ptr, (xmlChar *) "Title");
+			p->ownerUserId =  (char *) xmlGetProp(ptr, (xmlChar *) "OwnerUserId");
+
+		}
+		else if(!strcmp(p->postTypeId, "2"))
+			p->parentId = (char *) xmlGetProp(ptr, (xmlChar *) "ParentId");
+		g_hash_table_insert(com->hash, GINT_TO_POINTER(r), p);
+		//xmlFree(key);
 		ptr = ptr->next->next;
+
 	}
-	printf("%d\n", g_hash_table_size(com->hash));
-	
 	return com;
+}
+
+
+//Função de teste
+void myInfo_from_post(TAD_community com, int id){
+	POST p;
+
+
+	p = g_hash_table_lookup(com->hash, GINT_TO_POINTER(id));
+	if(p->title!=NULL)
+		printf("%s\n", p->title);
+	else 
+		printf("erro\n");
 }
