@@ -43,124 +43,145 @@ char* filePath(char *dump_path, char *file){
 	return res;
 }
 
-
-TAD_community load(TAD_community com, char* dump_path){
-	xmlDocPtr doc_posts, doc_users;
-	xmlNodePtr cur_posts, ptr_posts, cur_users, ptr_users;
-
+void loadPosts(TAD_community com, char *dump_path, char *file){
+	xmlDocPtr doc;
+	xmlNodePtr cur, ptr;
 
 	//Concatena o file ao dump_path
 	char file_posts[100];
-	strcpy(file_posts, filePath(dump_path, "Posts.xml"));
+	strcpy(file_posts, filePath(dump_path, file));
 	//-------------------------
-	doc_posts = xmlParseFile(file_posts);
+	doc = xmlParseFile(file_posts);
 
 
 
 	//returns!
-	if(doc_posts == NULL){
+	if(doc == NULL){
 		fprintf(stderr, "Document not parsed successfully.\n");
-		return com;
+		return;
 	}
 
 
-	cur_posts = xmlDocGetRootElement(doc_posts);
+	cur = xmlDocGetRootElement(doc);
 
 	//returns!
-	if(cur_posts == NULL){
+	if(cur == NULL){
 		fprintf(stderr, "empty document\n");
-		xmlFreeDoc(doc_posts);
+		xmlFreeDoc(doc);
 	}
 	
 	char *key_posts;
 
-	ptr_posts = cur_posts->xmlChildrenNode;
-	ptr_posts = ptr_posts->next;
-	while(ptr_posts != NULL){
+	ptr = cur->xmlChildrenNode;
+	ptr = ptr->next;
+	while(ptr != NULL){
 		POST p = malloc(sizeof(struct post));
-		key_posts = (char *) xmlGetProp(ptr_posts, (xmlChar *) "Id");
+		key_posts = (char *) xmlGetProp(ptr, (xmlChar *) "Id");
 		int r_posts = atoi(key_posts);
-		p->postTypeId =  (char *) xmlGetProp(ptr_posts, (xmlChar *) "PostTypeId");
+		p->postTypeId =  (char *) xmlGetProp(ptr, (xmlChar *) "PostTypeId");
 
 		if (!strcmp(p->postTypeId, "1")){
-			p->title = (char *) xmlGetProp(ptr_posts, (xmlChar *) "Title");
-			p->ownerUserId =  (char *) xmlGetProp(ptr_posts, (xmlChar *) "OwnerUserId");
+			p->title = (char *) xmlGetProp(ptr, (xmlChar *) "Title");
+			p->ownerUserId =  (char *) xmlGetProp(ptr, (xmlChar *) "OwnerUserId");
 
 		}
 		else if(!strcmp(p->postTypeId, "2"))
-			p->parentId = (char *) xmlGetProp(ptr_posts, (xmlChar *) "ParentId");
+			p->parentId = (char *) xmlGetProp(ptr, (xmlChar *) "ParentId");
 
 		g_hash_table_insert(com->postshash, GINT_TO_POINTER(r_posts), p);
-		ptr_posts = ptr_posts->next->next;
+		ptr = ptr->next->next;
 
 	}
 
-	xmlFreeDoc(doc_posts);
+	xmlFreeDoc(doc);
 
+
+}
+
+
+void loadUsers(TAD_community com, char *dump_path, char *file){
+	xmlDocPtr doc;
+	xmlNodePtr cur, ptr;
 
 	char file_users[100];
-	strcpy(file_users, filePath(dump_path, "Users.xml"));
+	strcpy(file_users, filePath(dump_path, file));
 
-	doc_users = xmlParseFile(file_users);
+	doc = xmlParseFile(file_users);
 
-	if(doc_users == NULL){
+	if(doc == NULL){
 		fprintf(stderr, "Document not parsed successfully.\n");
-		return com;
+		return;
 	}
 
-	cur_users = xmlDocGetRootElement(doc_users);
+	cur = xmlDocGetRootElement(doc);
 
-	if(cur_users == NULL){
+	if(cur == NULL){
 		fprintf(stderr, "empty document\n");
-		xmlFreeDoc(doc_users);
+		xmlFreeDoc(doc);
 	}
 
 	char *key_users;
 
-	ptr_users = cur_users->xmlChildrenNode;
-	ptr_users = ptr_users->next;
-	while(ptr_users != NULL){
+	ptr = cur->xmlChildrenNode;
+	ptr = ptr->next;
+	while(ptr != NULL){
 		USER_HT u = malloc(sizeof(struct post));
-		key_users = (char *) xmlGetProp(ptr_users, (xmlChar *) "Id");
+		key_users = (char *) xmlGetProp(ptr, (xmlChar *) "Id");
 		int r_users = atoi(key_users);
-		u->name = (char *) xmlGetProp(ptr_users, (xmlChar *) "DisplayName");
-		u->shortBio = (char *) xmlGetProp(ptr_users, (xmlChar *) "AboutMe");
+		u->name = (char *) xmlGetProp(ptr, (xmlChar *) "DisplayName");
+		u->shortBio = (char *) xmlGetProp(ptr, (xmlChar *) "AboutMe");
 		g_hash_table_insert(com->usershash, GINT_TO_POINTER(r_users), u);
-		ptr_users = ptr_users->next->next;
+		ptr = ptr->next->next;
 
 	}
 
-	xmlFreeDoc(doc_users);
+	xmlFreeDoc(doc);
+}
 
+
+TAD_community load(TAD_community com, char* dump_path){
+
+	loadPosts(com, dump_path, "Posts.xml");
+
+	loadUsers(com, dump_path, "Users.xml");
+	
 	return com;
 }
 
 
 //Função de teste
-void myInfo_from_post(TAD_community com, int id){
+STR_pair info_from_post(TAD_community com, long id){
 	POST p, z1;
 	USER_HT q, z2;
+
+	STR_pair pair;
+
 	p = g_hash_table_lookup(com->postshash, GINT_TO_POINTER(id));
+	
+	if(p==NULL){
+		fprintf(stderr, "Id não válido\n");
+		return NULL;
+	} 
+
 	if(!strcmp(p->postTypeId, "1")){
-		printf("%s\n", p->title);
 		char * key;
 		key = (char *) p->ownerUserId;
 		int r = atoi(key);
 		q = g_hash_table_lookup(com->usershash, GINT_TO_POINTER(r));
-		printf("%s\n", q->name);
+		pair = create_str_pair(p->title, q->name);
 	}
 	else if(!strcmp(p->postTypeId, "2")){
 		char *key1;
 		key1 = (char *) p->parentId;
 		int r1 = atoi(key1);
 		z1 = g_hash_table_lookup(com->postshash, GINT_TO_POINTER(r1));
-		printf("%s\n", z1->title);
 
 		char *key2;
 		key2 = (char *) z1->ownerUserId;
 		int r2 = atoi(key2);
 		z2 = g_hash_table_lookup(com->usershash, GINT_TO_POINTER(r2));
-		printf("%s\n", z2->name);		
+		pair = create_str_pair(z1->title, z2->name);	
 
 	}
+	return pair;
 }
