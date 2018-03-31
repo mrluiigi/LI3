@@ -212,16 +212,16 @@ gint compare_user_ll(gconstpointer g1, gconstpointer g2){
 	USER_LL u1 = ((USER_LL) g1);
 	USER_LL u2 = ((USER_LL) g2);
 	if(u1->nr_posts > u2->nr_posts)
-		return 1;
-	if(u1->nr_posts < u2->nr_posts)
 		return (-1);
+	if(u1->nr_posts < u2->nr_posts)
+		return 1;
 	else return 0;
 }
 
 
 //Falta corrigir sort e adicionar na LONG_LIST
 LONG_list top_most_active(TAD_community com, int N){
-	GSList * ll;
+	GSList * ll = NULL;
 	USER_LL cur;
 	LONG_list lista;
 	lista = create_list(N);
