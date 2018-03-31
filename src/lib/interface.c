@@ -211,27 +211,22 @@ void slist_append(gpointer key, gpointer value, gpointer *ll_pt){
 gint compare_user_ll(gconstpointer g1, gconstpointer g2){
 	USER_LL u1 = ((USER_LL) g1);
 	USER_LL u2 = ((USER_LL) g2);
-	if(u1->nr_posts > u2->nr_posts)
-		return (-1);
-	if(u1->nr_posts < u2->nr_posts)
-		return 1;
-	else return 0;
+	return u2->nr_posts - u1->nr_posts;
 }
 
-
-//Falta corrigir sort e adicionar na LONG_LIST
+/**
+* Função que obtem o top N utilizadores com mais posts
+*/
 LONG_list top_most_active(TAD_community com, int N){
 	GSList * ll = NULL;
 	USER_LL cur;
 	LONG_list lista;
 	lista = create_list(N);
 	g_hash_table_foreach(com->usershash, (GHFunc)slist_append, (gpointer)&ll);
-	//ll = g_slist_sort(ll, (GCompareFunc)compare_user_ll);
+	ll = g_slist_sort(ll, (GCompareFunc)compare_user_ll);
 	for(int i = 0; i < N; i++){
 		cur = g_slist_nth_data(ll, i);
-		//set_list(lista, i, )
-		printf("posts %d\n", cur->nr_posts);
-		printf("id %d\n", cur->id);
+		set_list(lista, i, (long) cur->id);
 	}
 	return lista;
 }
