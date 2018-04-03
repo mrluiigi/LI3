@@ -119,9 +119,7 @@ Date xmlCreationDate_to_Date(char* xmlDate) {
 /**
 * Função que converte a CreationDate no XML numa key para ser usada na monthshash
 */
-int date_to_Key(Date d) {
-	int year = get_year(d) - 2000;
-	int month = get_month(d);
+int date_to_Key(int year, int month) {
 	return (year * 100) + month;
 }
 
@@ -236,13 +234,13 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 	com->posts = g_slist_sort (com->posts,compare_date_list);
 	GSList* li = com->posts;
 	for(int i = 0; i < posts_size; i++) {
-		int months_key = date_to_Key( ( (POST) li->data)->creationDate);
+		Date d = ( (POST) li->data)->creationDate;
+		int months_key = date_to_Key(get_year(d), get_month(d)) ;
 		g_hash_table_insert(com->monthsHash, GINT_TO_POINTER(months_key), li);
 		li = g_slist_next(li);
 
 
 	}
-	//g_hash_table_insert(com->monthsHash, GINT_TO_POINTER(months_key), p);
 
 
 }
@@ -320,3 +318,65 @@ LONG_list top_most_active(TAD_community com, int N){
 	}
 	return lista;
 }
+
+int isQuestion(POST p){
+	return (!strcmp(p->postTypeId, "1"));
+}
+
+int isAnswer(POST p){
+	return (!strcmp(p->postTypeId, "2"));
+}
+
+LONG_pair total_posts(TAD_community com, Date begin, Date end){
+	int year, month;
+	long answer = 0, question = 0;
+	year = get_year(end);
+	month = get_month(end);
+	LONG_pair pair;
+	GSList *l = com->posts;
+
+	if(month < 12)
+		month++;
+	else{
+		year++;
+		month = 1;
+	}
+
+
+	if(get_year(((POST) l->data)->creationDate) == get_year(end)){
+		if(get_month(((POST) l->data)->creationDate) > get_month(end)){
+			int key = date_to_Key(year, month);
+			l = g_hash_table_lookup(com->monthsHash, GINT_TO_POINTER(key));
+		}
+		while(l && compare_date(end, ((POST) l->data)->creationDate) == 1){
+			l=l->next;
+		}
+	}
+	else if(get_year(((POST) l->data)->creationDate) > get_year(end)){
+		int key = date_to_Key(year, month);
+		l = g_hash_table_lookup(com->monthsHash, GINT_TO_POINTER(key));
+		while(l && compare_date(end, ((POST) l->data)->creationDate) == 1){ //problema!!!
+			l=l->next;
+		}
+	}
+
+
+	while(l && compare_date(begin, ((POST) l->data)->creationDate) != -1 ){
+		if(isQuestion( (POST) l->data))
+			question++;
+		else if(isAnswer((POST) l->data))
+			answer++;
+
+		l = l->next;
+	}
+	pair = create_long_pair(question, answer);
+	return pair;
+}
+
+
+
+
+
+
+
+
