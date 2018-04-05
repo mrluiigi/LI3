@@ -10,6 +10,7 @@
 struct TCD_community{
 	GHashTable *postshash;
 	GHashTable *usershash;
+	GHashTable *tagshash;
 	GSList *posts;
 	GHashTable *monthsHash;         //guarda o primeiro posts de cada mes
 };
@@ -19,6 +20,7 @@ typedef struct post{
 	char *postTypeId;
 	char *ownerUserId;
 	int parentId;
+	GSList *tags;
 	Date creationDate;
 }*POST;
 
@@ -78,6 +80,7 @@ TAD_community init(){
 	t->postshash = g_hash_table_new (g_direct_hash, g_direct_equal);
 	t->usershash = g_hash_table_new (g_direct_hash, g_direct_equal);
 	t->posts = NULL;
+	t->tagshash = g_hash_table_new (g_str_hash, g_str_equal);
 	t->monthsHash = g_hash_table_new (g_direct_hash, g_direct_equal);
 	return t;
 }
@@ -245,11 +248,49 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 
 }
 
+
+
+void loadTags(TAD_community com, char *dump_path, char *file){
+	xmlDocPtr doc;
+	xmlNodePtr cur, ptr;
+
+	//Concatena o file ao dump_path
+	char file_tags[100];
+	strcpy(file_tags, filePath(dump_path, file));
+	//-------------------------
+	doc = xmlParseFile(file_tags);
+
+	//returns!
+	if(doc == NULL){
+		fprintf(stderr, "Document not parsed successfully.\n");
+		return;
+	}
+
+	cur = xmlDocGetRootElement(doc);
+
+	//returns!
+	if(cur == NULL){
+		fprintf(stderr, "empty document\n");
+		xmlFreeDoc(doc);
+	}
+	
+	ptr = cur->xmlChildrenNode;
+	ptr = ptr->next;
+
+	while(ptr != NULL){
+		g_hash_table_insert(com->tagshash, (char *) xmlGetProp(ptr, (xmlChar *) "TagName"), GINT_TO_POINTER(atoi((char *) xmlGetProp(ptr, (xmlChar *) "Id"))));
+		ptr = ptr->next->next;
+	}
+	xmlFreeDoc(doc);
+}
+
 /**
   Função que faz load dos ficheiros para a estrutura de dados
 */
 TAD_community load(TAD_community com, char* dump_path){
 	
+	loadTags(com, dump_path, "Tags.xml");
+
 	loadUsers(com, dump_path, "Users.xml");
 
 	loadPosts(com, dump_path, "Posts.xml");
