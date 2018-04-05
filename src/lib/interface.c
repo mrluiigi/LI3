@@ -168,6 +168,29 @@ void loadUsers(TAD_community com, char *dump_path, char *file){
 	xmlFreeDoc(doc);
 }
 
+GSList* getTags(GHashTable *h, char* tags){
+	int i = 0, j=0;
+	GSList *l = NULL;
+	char res[100];
+	gpointer valor;
+
+
+	while(tags[i] != '\0') {
+		i++;
+		for (; tags[i] != '>'; i++) {
+			res[j] = tags[i];
+			j++;
+		}
+		res[j] = '\0';
+		valor = g_hash_table_lookup(h, res);
+		l = g_slist_prepend(l, valor);
+		j = 0;
+		i++;
+	}
+	return l;
+}
+
+
 /**
 	Função que faz load ao file Posts.xml
 */
@@ -221,6 +244,7 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 		if (!strcmp(p->postTypeId, "1")){
 			p->title = (char *) xmlGetProp(ptr, (xmlChar *) "Title");
 			p->ownerUserId =  (char *) xmlGetProp(ptr, (xmlChar *) "OwnerUserId");
+			p->tags = getTags(com->tagshash, (char *) xmlGetProp(ptr, (xmlChar *) "Tags"));	
 		}
 		else if(!strcmp(p->postTypeId, "2")){
 			p->parentId = atoi ((char *) xmlGetProp(ptr, (xmlChar *) "ParentId"));
