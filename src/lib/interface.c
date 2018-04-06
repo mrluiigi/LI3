@@ -16,6 +16,7 @@ struct TCD_community{
 };
 
 typedef struct post{
+	int id;
 	char *title;
 	char *postTypeId;
 	char *ownerUserId;
@@ -235,6 +236,7 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 
 		char *userId = (char *) xmlGetProp(ptr, (xmlChar *) "OwnerUserId");
 		//Caso o post possua informação sobre o OwnerUserId
+		p->id = atoi((char *) xmlGetProp(ptr, (xmlChar *) "Id"));
 		if(userId != NULL){
 			int ownerUserId = atoi(userId);
 			USER_HT user = g_hash_table_lookup(com->usershash, GINT_TO_POINTER(ownerUserId));
@@ -438,6 +440,62 @@ LONG_pair total_posts(TAD_community com, Date begin, Date end){
 	return pair;
 }
 
+LONG_list questions_with_tag(TAD_community com, char* tag, Date begin, Date end){
+	gpointer valor = g_hash_table_lookup(com->tagshash, tag);
+
+	int year, month;
+	int size=0;
+	year = get_year(end);
+	month = get_month(end);
+	LONG_list list;
+	GSList *l = com->posts;
+	GSList *temp = NULL;
+	GSList *aux = NULL;
+	POST p = NULL;
+
+	if(month < 12)
+		month++;
+	else{
+		year++;
+		month = 1;
+	}
+
+
+	if(get_year(((POST) l->data)->creationDate) == get_year(end)){
+		if(get_month(((POST) l->data)->creationDate) > get_month(end)){
+			int key = date_to_Key(year, month);
+			l = g_hash_table_lookup(com->monthsHash, GINT_TO_POINTER(key));
+		}
+		while(l && compare_date(end, ((POST) l->data)->creationDate) == 1){
+			l=l->next;
+		}
+	}
+	else if(get_year(((POST) l->data)->creationDate) > get_year(end)){
+		int key = date_to_Key(year, month);
+		l = g_hash_table_lookup(com->monthsHash, GINT_TO_POINTER(key));
+		while(l && compare_date(end, ((POST) l->data)->creationDate) == 1){ 
+			l=l->next;
+		}
+	}
+
+	while(l && compare_date(begin, ((POST) l->data)->creationDate) != -1 ){
+		p = (POST)l->data;
+		if(!strcmp (p->postTypeId, "1")) {
+			if(p->tags && (aux = g_slist_find(p->tags, valor)) != NULL){
+				temp = g_slist_append(temp, GINT_TO_POINTER (p->id));
+				size++;
+			}
+		}
+
+		l = l->next;
+	}
+	list = create_list(size);
+	for(int i=0; i<size; i++){
+		set_list(list, i, GPOINTER_TO_INT(temp->data));
+		temp = temp->next;
+	}
+	return list;
+}
 
 
 
