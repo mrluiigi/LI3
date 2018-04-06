@@ -21,6 +21,8 @@ typedef struct post{
 	char *postTypeId;
 	char *ownerUserId;
 	int parentId;
+	int score;
+	int nanswers;
 	GSList *tags;
 	Date creationDate;
 }*POST;
@@ -158,9 +160,13 @@ void loadUsers(TAD_community com, char *dump_path, char *file){
 		USER_HT u = malloc(sizeof(struct post));
 		key_users = (char *) xmlGetProp(ptr, (xmlChar *) "Id");
 		int r_users = atoi(key_users);
+		
 		u->name = (char *) xmlGetProp(ptr, (xmlChar *) "DisplayName");
+		
 		u->shortBio = (char *) xmlGetProp(ptr, (xmlChar *) "AboutMe");
+		
 		u->nr_posts = 0;
+		
 		g_hash_table_insert(com->usershash, GINT_TO_POINTER(r_users), u);
 		ptr = ptr->next->next;
 
@@ -226,36 +232,42 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 	ptr = ptr->next;
 
 	while(ptr != NULL){
-		POST p = malloc(sizeof(struct post));
-		key_posts = (char *) xmlGetProp(ptr, (xmlChar *) "Id");
-		int r_posts = atoi(key_posts);
-		
-		p->creationDate = xmlCreationDate_to_Date((char*) xmlGetProp(ptr, (xmlChar *) "CreationDate"));
+		char * postTypeId = (char *) xmlGetProp(ptr, (xmlChar *) "PostTypeId");
+		if((strcmp(postTypeId, "1")==0) || (strcmp(postTypeId, "2")==0)){
+			POST p = malloc(sizeof(struct post));
+			key_posts = (char *) xmlGetProp(ptr, (xmlChar *) "Id");
+			int r_posts = atoi(key_posts);
+			
+			p->creationDate = xmlCreationDate_to_Date((char*) xmlGetProp(ptr, (xmlChar *) "CreationDate"));
 
-		p->postTypeId =  (char *) xmlGetProp(ptr, (xmlChar *) "PostTypeId");
+			p->postTypeId =  postTypeId;
 
-		char *userId = (char *) xmlGetProp(ptr, (xmlChar *) "OwnerUserId");
-		//Caso o post possua informação sobre o OwnerUserId
-		p->id = atoi((char *) xmlGetProp(ptr, (xmlChar *) "Id"));
-		if(userId != NULL){
-			int ownerUserId = atoi(userId);
-			USER_HT user = g_hash_table_lookup(com->usershash, GINT_TO_POINTER(ownerUserId));
-			user->nr_posts += 1;
-			g_hash_table_insert(com->usershash, GINT_TO_POINTER(ownerUserId), user);
-		}
-		if (!strcmp(p->postTypeId, "1")){
-			p->title = (char *) xmlGetProp(ptr, (xmlChar *) "Title");
-			p->ownerUserId =  (char *) xmlGetProp(ptr, (xmlChar *) "OwnerUserId");
-			p->tags = getTags(com->tagshash, (char *) xmlGetProp(ptr, (xmlChar *) "Tags"));	
-		}
-		else if(!strcmp(p->postTypeId, "2")){
-			p->parentId = atoi ((char *) xmlGetProp(ptr, (xmlChar *) "ParentId"));
-		}
+			p->score = atoi((char *) xmlGetProp(ptr, (xmlChar *) "Score"));
 
-		com->posts = g_slist_prepend(com->posts, p);
-		posts_size++;
-		
-		g_hash_table_insert(com->postshash, GINT_TO_POINTER(r_posts), p);
+			char *userId = (char *) xmlGetProp(ptr, (xmlChar *) "OwnerUserId");
+			//Caso o post possua informação sobre o OwnerUserId
+			p->id = atoi((char *) xmlGetProp(ptr, (xmlChar *) "Id"));
+			if(userId != NULL){
+				int ownerUserId = atoi(userId);
+				USER_HT user = g_hash_table_lookup(com->usershash, GINT_TO_POINTER(ownerUserId));
+				user->nr_posts += 1;
+				g_hash_table_insert(com->usershash, GINT_TO_POINTER(ownerUserId), user);
+			}
+			if (!strcmp(p->postTypeId, "1")){
+				p->title = (char *) xmlGetProp(ptr, (xmlChar *) "Title");
+				p->ownerUserId =  (char *) xmlGetProp(ptr, (xmlChar *) "OwnerUserId");
+				p->tags = getTags(com->tagshash, (char *) xmlGetProp(ptr, (xmlChar *) "Tags"));	
+				p->nanswers = atoi((char *) xmlGetProp(ptr, (xmlChar *) "AnswerCount"));
+			}
+			else if(!strcmp(p->postTypeId, "2")){
+				p->parentId = atoi ((char *) xmlGetProp(ptr, (xmlChar *) "ParentId"));
+			}
+
+			com->posts = g_slist_prepend(com->posts, p);
+			posts_size++;
+			
+			g_hash_table_insert(com->postshash, GINT_TO_POINTER(r_posts), p);
+		}
 		ptr = ptr->next->next;
 	}
 
