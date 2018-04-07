@@ -41,8 +41,6 @@ typedef struct user_ll{
 /*
 * Retorna 1 se a primeira data for a mais antiga, -1 se for a mais recente e 0 se forem iguais
 */
-
-
 int compare_date (Date d1, Date d2){
 	int ano1 = get_year(d1);
 	int ano2 = get_year(d2);
@@ -66,7 +64,6 @@ int compare_date (Date d1, Date d2){
 /*
 * Compara as datas do primeiro elemnto de duas listas
 */
-
 int compare_date_list (gconstpointer a, gconstpointer b) {
 	POST p1 = (POST) a;
 	POST p2 = (POST) b;
@@ -175,6 +172,9 @@ void loadUsers(TAD_community com, char *dump_path, char *file){
 	xmlFreeDoc(doc);
 }
 
+/**
+* Função que recebe a string das tags e as coloca numa lista ligada
+*/
 GSList* getTags(GHashTable *h, char* tags){
 	int i = 0, j=0;
 	GSList *l = NULL;
@@ -272,22 +272,19 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 	}
 
 	xmlFreeDoc(doc);
-	com->posts = g_slist_sort (com->posts,compare_date_list);
+	com->posts = g_slist_sort (com->posts, compare_date_list);
 	GSList* li = com->posts;
 	for(int i = 0; i < posts_size; i++) {
 		Date d = ( (POST) li->data)->creationDate;
 		int months_key = date_to_Key(get_year(d), get_month(d)) ;
 		g_hash_table_insert(com->monthsHash, GINT_TO_POINTER(months_key), li);
 		li = g_slist_next(li);
-
-
 	}
-
-
 }
 
-
-
+/**
+* Função que faz load ao file Tags.xml
+*/
 void loadTags(TAD_community com, char *dump_path, char *file){
 	xmlDocPtr doc;
 	xmlNodePtr cur, ptr;
@@ -335,7 +332,9 @@ TAD_community load(TAD_community com, char* dump_path){
 
 	return com;
 }
-
+/**
+  QUERY 1
+*/
 STR_pair info_from_post(TAD_community com, long id){
 	POST p, z1;
 	USER_HT q, z2;
@@ -382,7 +381,7 @@ gint compare_user_ll(gconstpointer g1, gconstpointer g2){
 }
 
 /**
-* Função que obtem o top N utilizadores com mais posts
+  QUERY 2
 */
 LONG_list top_most_active(TAD_community com, int N){
 	GSList * ll = NULL;
@@ -405,7 +404,9 @@ int isQuestion(POST p){
 int isAnswer(POST p){
 	return (!strcmp(p->postTypeId, "2"));
 }
-
+/**
+	QUERY 3
+*/
 LONG_pair total_posts(TAD_community com, Date begin, Date end){
 	int year, month;
 	long answer = 0, question = 0;
@@ -451,7 +452,9 @@ LONG_pair total_posts(TAD_community com, Date begin, Date end){
 	pair = create_long_pair(question, answer);
 	return pair;
 }
-
+ /**
+	QUERY 4
+ */
 LONG_list questions_with_tag(TAD_community com, char* tag, Date begin, Date end){
 	gpointer valor = g_hash_table_lookup(com->tagshash, tag);
 
@@ -509,9 +512,74 @@ LONG_list questions_with_tag(TAD_community com, char* tag, Date begin, Date end)
 	return list;
 }
 
+/**
+	Função para comparar os scores de dois POSTS
+	Se a > b retorna -1 e se a < b retorna 1. Desta maneira a lista é ordenada por ordem decrescente
+*/
+int compare_score(gconstpointer a, gconstpointer b){
+	POST p1 = (POST) a;
+	POST p2 = (POST) b;
 
+	if(p1->score > p2->score)
+		return -1;							
+	else if (p1->score < p2->score) 
+		return 1;
+	else 
+		return 0;
+}
 
+/**
+	QUERY 6
+*/
+LONG_list most_voted_answers(TAD_community com, int N, Date begin, Date end){
+	int year = get_year(end);
+	int month = get_month(end);
+	
+	LONG_list list;
+	
+	GSList *l = com->posts;
+	GSList *aux = NULL;
 
+	if(month < 12)
+		month++;
+	else{
+		year++;
+		month = 1;
+	}
 
+	if(get_year(((POST) l->data)->creationDate) == get_year(end)){
+		if(get_month(((POST) l->data)->creationDate) > get_month(end)){
+			int key = date_to_Key(year, month);
+			l = g_hash_table_lookup(com->monthsHash, GINT_TO_POINTER(key));
+		}
+		while(l && compare_date(end, ((POST) l->data)->creationDate) == 1){
+			l=l->next;
+		}
+	}
+	else if(get_year(((POST) l->data)->creationDate) > get_year(end)){
+		int key = date_to_Key(year, month);
+		l = g_hash_table_lookup(com->monthsHash, GINT_TO_POINTER(key));
+		while(l && compare_date(end, ((POST) l->data)->creationDate) == 1){ 
+			l=l->next;
+		}
+	}
 
+	while(l && compare_date(begin, ((POST) l->data)->creationDate) != -1 ){
+		if(strcmp(( (POST) l->data)->postTypeId, "2") == 0){
+			aux = g_slist_prepend(aux, ((POST) l->data) );
+		}
+		l = l->next;
+	}
 
+	//ordena a lista por ordem decrescente de score
+	aux = g_slist_sort(aux, compare_score);
+
+	list = create_list(N);
+
+	//Copia apenas os N primeiros posts de aux
+	for(int i = 0; i < N; i++){
+		set_list(list, i, ((POST) aux->data)->id);
+		aux = aux->next;
+	}
+	return list;
+}
