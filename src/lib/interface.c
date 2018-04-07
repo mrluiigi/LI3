@@ -583,3 +583,68 @@ LONG_list most_voted_answers(TAD_community com, int N, Date begin, Date end){
 	}
 	return list;
 }
+
+
+int compare_nanswers(gconstpointer a, gconstpointer b){
+	POST p1 = (POST) a;
+	POST p2 = (POST) b;
+
+	if(p1->nanswers > p2->nanswers)
+		return -1;							
+	else if (p1->nanswers < p2->nanswers) 
+		return 1;
+	else 
+		return 0;
+}
+
+
+LONG_list most_answered_questions(TAD_community com, int N, Date begin, Date end){
+	int year = get_year(end);
+	int month = get_month(end);
+	
+	LONG_list list;
+	
+	GSList *l = com->posts;
+	GSList *aux = NULL;
+
+	if(month < 12)
+		month++;
+	else{
+		year++;
+		month = 1;
+	}
+
+	if(get_year(((POST) l->data)->creationDate) == get_year(end)){
+		if(get_month(((POST) l->data)->creationDate) > get_month(end)){
+			int key = date_to_Key(year, month);
+			l = g_hash_table_lookup(com->monthsHash, GINT_TO_POINTER(key));
+		}
+		while(l && compare_date(end, ((POST) l->data)->creationDate) == 1){
+			l=l->next;
+		}
+	}
+	else if(get_year(((POST) l->data)->creationDate) > get_year(end)){
+		int key = date_to_Key(year, month);
+		l = g_hash_table_lookup(com->monthsHash, GINT_TO_POINTER(key));
+		while(l && compare_date(end, ((POST) l->data)->creationDate) == 1){ 
+			l=l->next;
+		}
+	}
+
+	while(l && compare_date(begin, ((POST) l->data)->creationDate) != -1 ){
+		if(strcmp(( (POST) l->data)->postTypeId, "1") == 0){
+			aux = g_slist_prepend(aux, ((POST) l->data) );
+		}
+		l = l->next;
+	}
+
+	aux = g_slist_sort(aux, compare_nanswers);
+
+	list = create_list(N);
+
+	for(int i = 0; i < N; i++){
+		set_list(list, i, ((POST) aux->data)->id);
+		aux = aux->next;
+	}
+	return list;
+}
