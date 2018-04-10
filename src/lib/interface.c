@@ -648,3 +648,24 @@ LONG_list most_answered_questions(TAD_community com, int N, Date begin, Date end
 	}
 	return list;
 }
+
+
+
+LONG_list contains_word(TAD_community com, char* word, int N){
+	LONG_list list = create_list(N);
+	int i = 0;
+	GSList *l = com->posts;
+	POST p;
+	while(i < N && l != NULL){
+		p = ((POST) l->data);
+		if(strcmp(p->postTypeId, "1") == 0 && (strstr(p->title, word)) != NULL){
+			set_list(list, i, ((POST) l->data)->id);
+			i++;
+		}
+		l = l->next;
+	}
+	for(;i < N; i++){
+		set_list(list, i, 0);
+	}
+	return list;
+}
