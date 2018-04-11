@@ -31,6 +31,7 @@ typedef struct user_ht{
 	char *name;
 	char *shortBio;
 	unsigned short nr_posts;
+	Date lastAccessDate;
 }*USER_HT;
 
 typedef struct user_ll{
@@ -163,6 +164,8 @@ void loadUsers(TAD_community com, char *dump_path, char *file){
 		u->shortBio = (char *) xmlGetProp(ptr, (xmlChar *) "AboutMe");
 		
 		u->nr_posts = 0;
+
+		u->lastAccessDate = xmlCreationDate_to_Date((char*) xmlGetProp(ptr, (xmlChar *) "LastAccessDate"));
 		
 		g_hash_table_insert(com->usershash, GINT_TO_POINTER(r_users), u);
 		ptr = ptr->next->next;
@@ -668,4 +671,8 @@ LONG_list contains_word(TAD_community com, char* word, int N){
 		set_list(list, i, 0);
 	}
 	return list;
+}
+
+LONG_list both_participated(TAD_community com, long id1, long id2, int N){
+	
 }
