@@ -15,6 +15,29 @@ struct TCD_community{
 	GHashTable *monthsHash;         //guarda o primeiro posts de cada mes
 };
 
+typedef struct question{
+	char *title;
+	int nanswers;
+	GSList *tags;
+}*QUESTION;
+
+typedef struct answer{
+	int parentId;
+	int comments;
+}*ANSWER;
+
+
+typedef struct post {
+	char *postTypeId;
+	QUESTION q; 
+	ANSWER a; 
+	int id;
+	char *ownerUserId;
+	int score;
+	Date creationDate;
+}*POST;
+
+/*
 typedef struct post{
 	int id;
 	char *title;
@@ -25,7 +48,7 @@ typedef struct post{
 	int nanswers;
 	GSList *tags;
 	Date creationDate;
-}*POST;
+}*POST;*/
 
 typedef struct user_ht{
 	char *name;
@@ -71,6 +94,16 @@ int compare_date_list (gconstpointer a, gconstpointer b) {
 
 	return compare_date(p1->creationDate, p2->creationDate);
 }
+
+
+int isQuestion(POST p){
+	return (!strcmp(p->postTypeId, "1"));
+}
+
+int isAnswer(POST p){
+	return (!strcmp(p->postTypeId, "2"));
+}
+
 
 /**
 *	Função que inicializa a estrutura de dados
@@ -252,18 +285,23 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 			p->id = atoi((char *) xmlGetProp(ptr, (xmlChar *) "Id"));
 			if(userId != NULL){
 				int ownerUserId = atoi(userId);
+				p->ownerUserId =  userId;
 				USER_HT user = g_hash_table_lookup(com->usershash, GINT_TO_POINTER(ownerUserId));
 				user->nr_posts += 1;
 				g_hash_table_insert(com->usershash, GINT_TO_POINTER(ownerUserId), user);
 			}
 			if (!strcmp(p->postTypeId, "1")){
-				p->title = (char *) xmlGetProp(ptr, (xmlChar *) "Title");
-				p->ownerUserId =  (char *) xmlGetProp(ptr, (xmlChar *) "OwnerUserId");
-				p->tags = getTags(com->tagshash, (char *) xmlGetProp(ptr, (xmlChar *) "Tags"));	
-				p->nanswers = atoi((char *) xmlGetProp(ptr, (xmlChar *) "AnswerCount"));
+				QUESTION q = malloc(sizeof(struct question));
+				q->title = (char *) xmlGetProp(ptr, (xmlChar *) "Title");
+				q->tags = getTags(com->tagshash, (char *) xmlGetProp(ptr, (xmlChar *) "Tags"));	
+				q->nanswers = atoi((char *) xmlGetProp(ptr, (xmlChar *) "AnswerCount"));
+				p->q = q;
 			}
 			else if(!strcmp(p->postTypeId, "2")){
-				p->parentId = atoi ((char *) xmlGetProp(ptr, (xmlChar *) "ParentId"));
+				ANSWER a = malloc(sizeof(struct answer));
+				a->parentId = atoi ((char *) xmlGetProp(ptr, (xmlChar *) "ParentId"));
+				a->comments = atoi ((char *) xmlGetProp(ptr, (xmlChar *) "CommentCount"));
+				p->a = a;
 			}
 
 			com->posts = g_slist_prepend(com->posts, p);
@@ -339,8 +377,8 @@ TAD_community load(TAD_community com, char* dump_path){
   QUERY 1
 */
 STR_pair info_from_post(TAD_community com, long id){
-	POST p, z1;
-	USER_HT q, z2;
+	POST p;
+	USER_HT u;
 
 	STR_pair pair;
 
@@ -353,16 +391,16 @@ STR_pair info_from_post(TAD_community com, long id){
 	} 
 
 	if(!strcmp(p->postTypeId, "1")){
-		q = g_hash_table_lookup(com->usershash, GINT_TO_POINTER(atoi(p->ownerUserId)));
-		pair = create_str_pair(p->title, q->name);
+		u = g_hash_table_lookup(com->usershash, GINT_TO_POINTER(atoi(p->ownerUserId)));
+		pair = create_str_pair(p->q->title, u->name);
 	}
 	else if(!strcmp(p->postTypeId, "2")){
-		z1 = g_hash_table_lookup(com->postshash, GINT_TO_POINTER(p->parentId));
+		p = g_hash_table_lookup(com->postshash, GINT_TO_POINTER(p->a->parentId));
 
 		int key;
-		key = atoi(z1->ownerUserId);
-		z2 = g_hash_table_lookup(com->usershash, GINT_TO_POINTER(key));
-		pair = create_str_pair(z1->title, z2->name);	
+		key = atoi(p->ownerUserId);
+		u = g_hash_table_lookup(com->usershash, GINT_TO_POINTER(key));
+		pair = create_str_pair(p->q->title, u->name);	
 
 	}
 	return pair;
@@ -400,13 +438,7 @@ LONG_list top_most_active(TAD_community com, int N){
 	return lista;
 }
 
-int isQuestion(POST p){
-	return (!strcmp(p->postTypeId, "1"));
-}
 
-int isAnswer(POST p){
-	return (!strcmp(p->postTypeId, "2"));
-}
 /**
 	QUERY 3
 */
@@ -499,7 +531,7 @@ LONG_list questions_with_tag(TAD_community com, char* tag, Date begin, Date end)
 	while(l && compare_date(begin, ((POST) l->data)->creationDate) != -1 ){
 		p = (POST)l->data;
 		if(!strcmp (p->postTypeId, "1")) {
-			if(p->tags && (aux = g_slist_find(p->tags, valor)) != NULL){
+			if(p->q->tags && (aux = g_slist_find(p->q->tags, valor)) != NULL){
 				temp = g_slist_append(temp, GINT_TO_POINTER (p->id));
 				size++;
 			}
@@ -589,12 +621,12 @@ LONG_list most_voted_answers(TAD_community com, int N, Date begin, Date end){
 
 
 int compare_nanswers(gconstpointer a, gconstpointer b){
-	POST p1 = (POST) a;
-	POST p2 = (POST) b;
+	QUESTION q1 = ((POST) a)->q;
+	QUESTION q2 = ((POST) b)->q;
 
-	if(p1->nanswers > p2->nanswers)
+	if(q1->nanswers > q2->nanswers)
 		return -1;							
-	else if (p1->nanswers < p2->nanswers) 
+	else if (q1->nanswers < q2->nanswers) 
 		return 1;
 	else 
 		return 0;
@@ -661,7 +693,7 @@ LONG_list contains_word(TAD_community com, char* word, int N){
 	POST p;
 	while(i < N && l != NULL){
 		p = ((POST) l->data);
-		if(strcmp(p->postTypeId, "1") == 0 && (strstr(p->title, word)) != NULL){
+		if(strcmp(p->postTypeId, "1") == 0 && (strstr(p->q->title, word)) != NULL){
 			set_list(list, i, ((POST) l->data)->id);
 			i++;
 		}
@@ -672,7 +704,8 @@ LONG_list contains_word(TAD_community com, char* word, int N){
 	}
 	return list;
 }
-
+/*
 LONG_list both_participated(TAD_community com, long id1, long id2, int N){
+
 	
-}
+}*/
