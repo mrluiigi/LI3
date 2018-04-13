@@ -5,6 +5,9 @@
 #include "/usr/include/libxml2/libxml/xmlIO.h"
 #include <string.h>
 #include "date.h"
+#include "mydate.h"
+#include "posts_list.h"
+#include "tags.h"
 
 
 struct TCD_community{
@@ -15,40 +18,6 @@ struct TCD_community{
 	GHashTable *monthsHash;         //guarda o primeiro posts de cada mes
 };
 
-typedef struct question{
-	char *title;
-	int nanswers;
-	GSList *tags;
-}*QUESTION;
-
-typedef struct answer{
-	int parentId;
-	int comments;
-}*ANSWER;
-
-
-typedef struct post {
-	char *postTypeId;
-	QUESTION q; 
-	ANSWER a; 
-	int id;
-	char *ownerUserId;
-	int score;
-	Date creationDate;
-}*POST;
-
-/*
-typedef struct post{
-	int id;
-	char *title;
-	char *postTypeId;
-	char *ownerUserId;
-	int parentId;
-	int score;
-	int nanswers;
-	GSList *tags;
-	Date creationDate;
-}*POST;*/
 
 typedef struct user_ht{
 	char *name;
@@ -62,28 +31,7 @@ typedef struct user_ll{
 	unsigned short nr_posts;
 }*USER_LL;
 
-/*
-* Retorna 1 se a primeira data for a mais antiga, -1 se for a mais recente e 0 se forem iguais
-*/
-int compare_date (Date d1, Date d2){
-	int ano1 = get_year(d1);
-	int ano2 = get_year(d2);
-	int mes1= get_month(d1);
-	int mes2 = get_month(d2);
-	int dia1 = get_day(d1);
-	int dia2 = get_day(d2);
 
-	if(ano1 > ano2) return -1;
-	if(ano1 < ano2) return 1;
-
-	if(mes1 > mes2) return -1;
-	if(mes1 < mes2) return 1;
-
-	if(dia1 > dia2) return -1;
-	if(dia1 < dia2) return 1;
-
-	return 0;
-}
 
 /*
 * Compara as datas do primeiro elemnto de duas listas
@@ -94,16 +42,6 @@ int compare_date_list (gconstpointer a, gconstpointer b) {
 
 	return compare_date(p1->creationDate, p2->creationDate);
 }
-
-
-int isQuestion(POST p){
-	return (!strcmp(p->postTypeId, "1"));
-}
-
-int isAnswer(POST p){
-	return (!strcmp(p->postTypeId, "2"));
-}
-
 
 /**
 *	Função que inicializa a estrutura de dados
@@ -129,35 +67,6 @@ char* filePath(char *dump_path, char *file){
 	strcpy(path, dump_path);
 	char *res = strcat(path, file);
 	return res;
-}
-
-/**
-* Função que converte a CreationDate no XML na struct date
-*/
-Date xmlCreationDate_to_Date(char* xmlDate) {
-	char s_year[2];
-	s_year[0] = xmlDate[2];
-	s_year[1] = xmlDate[3];
-	int year = 2000 + atoi(s_year);
-
-	char s_month[2];
-	s_month[0] = xmlDate[5];
-	s_month[1] = xmlDate[6];
-	int month = atoi(s_month);
-
-	char s_day[2];
-	s_day[0] = xmlDate[8];
-	s_day[1] = xmlDate[9];
-	int day = atoi(s_day);
-
-	Date d = createDate(day, month, year);
-	return d;
-}
-/**
-* Função que converte a CreationDate no XML numa key para ser usada na monthshash
-*/
-int date_to_Key(int year, int month) {
-	return (year * 100) + month;
 }
 
 /**
@@ -208,30 +117,7 @@ void loadUsers(TAD_community com, char *dump_path, char *file){
 	xmlFreeDoc(doc);
 }
 
-/**
-* Função que recebe a string das tags e as coloca numa lista ligada
-*/
-GSList* getTags(GHashTable *h, char* tags){
-	int i = 0, j=0;
-	GSList *l = NULL;
-	char res[100];
-	gpointer valor;
 
-
-	while(tags[i] != '\0') {
-		i++;
-		for (; tags[i] != '>'; i++) {
-			res[j] = tags[i];
-			j++;
-		}
-		res[j] = '\0';
-		valor = g_hash_table_lookup(h, res);
-		l = g_slist_prepend(l, valor);
-		j = 0;
-		i++;
-	}
-	return l;
-}
 
 
 /**
@@ -240,19 +126,16 @@ GSList* getTags(GHashTable *h, char* tags){
 void loadPosts(TAD_community com, char *dump_path, char *file){
 	xmlDocPtr doc;
 	xmlNodePtr cur, ptr;
-
 	//Concatena o file ao dump_path
 	char file_posts[100];
 	strcpy(file_posts, filePath(dump_path, file));
 	//-------------------------
 	doc = xmlParseFile(file_posts);
-
 	//returns!
 	if(doc == NULL){
 		fprintf(stderr, "Document not parsed successfully.\n");
 		return;
 	}
-
 	cur = xmlDocGetRootElement(doc);
 
 	//returns!
@@ -261,7 +144,6 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 		xmlFreeDoc(doc);
 	}
 	
-	char *key_posts;
 	int posts_size = 0;
 
 	ptr = cur->xmlChildrenNode;
@@ -270,19 +152,8 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 	while(ptr != NULL){
 		char * postTypeId = (char *) xmlGetProp(ptr, (xmlChar *) "PostTypeId");
 		if((strcmp(postTypeId, "1")==0) || (strcmp(postTypeId, "2")==0)){
-			POST p = malloc(sizeof(struct post));
-			key_posts = (char *) xmlGetProp(ptr, (xmlChar *) "Id");
-			int r_posts = atoi(key_posts);
-			
-			p->creationDate = xmlCreationDate_to_Date((char*) xmlGetProp(ptr, (xmlChar *) "CreationDate"));
-
-			p->postTypeId =  postTypeId;
-
-			p->score = atoi((char *) xmlGetProp(ptr, (xmlChar *) "Score"));
-
-			char *userId = (char *) xmlGetProp(ptr, (xmlChar *) "OwnerUserId");
-			//Caso o post possua informação sobre o OwnerUserId
-			p->id = atoi((char *) xmlGetProp(ptr, (xmlChar *) "Id"));
+			POST p = create_post(ptr, com->tagshash);
+			char *userId = get_userId(p);
 			if(userId != NULL){
 				int ownerUserId = atoi(userId);
 				p->ownerUserId =  userId;
@@ -290,24 +161,11 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 				user->nr_posts += 1;
 				g_hash_table_insert(com->usershash, GINT_TO_POINTER(ownerUserId), user);
 			}
-			if (!strcmp(p->postTypeId, "1")){
-				QUESTION q = malloc(sizeof(struct question));
-				q->title = (char *) xmlGetProp(ptr, (xmlChar *) "Title");
-				q->tags = getTags(com->tagshash, (char *) xmlGetProp(ptr, (xmlChar *) "Tags"));	
-				q->nanswers = atoi((char *) xmlGetProp(ptr, (xmlChar *) "AnswerCount"));
-				p->q = q;
-			}
-			else if(!strcmp(p->postTypeId, "2")){
-				ANSWER a = malloc(sizeof(struct answer));
-				a->parentId = atoi ((char *) xmlGetProp(ptr, (xmlChar *) "ParentId"));
-				a->comments = atoi ((char *) xmlGetProp(ptr, (xmlChar *) "CommentCount"));
-				p->a = a;
-			}
-
+			
 			com->posts = g_slist_prepend(com->posts, p);
 			posts_size++;
 			
-			g_hash_table_insert(com->postshash, GINT_TO_POINTER(r_posts), p);
+			g_hash_table_insert(com->postshash, get_post_key(p), p);
 		}
 		ptr = ptr->next->next;
 	}
@@ -373,6 +231,9 @@ TAD_community load(TAD_community com, char* dump_path){
 
 	return com;
 }
+
+////////////////////
+
 /**
   QUERY 1
 */
@@ -390,11 +251,11 @@ STR_pair info_from_post(TAD_community com, long id){
 		return NULL;
 	} 
 
-	if(!strcmp(p->postTypeId, "1")){
+	if(isQuestion(p)){
 		u = g_hash_table_lookup(com->usershash, GINT_TO_POINTER(atoi(p->ownerUserId)));
 		pair = create_str_pair(p->q->title, u->name);
 	}
-	else if(!strcmp(p->postTypeId, "2")){
+	else if(isAnswer(p)){
 		p = g_hash_table_lookup(com->postshash, GINT_TO_POINTER(p->a->parentId));
 
 		int key;
@@ -443,38 +304,9 @@ LONG_list top_most_active(TAD_community com, int N){
 	QUERY 3
 */
 LONG_pair total_posts(TAD_community com, Date begin, Date end){
-	int year, month;
 	long answer = 0, question = 0;
-	year = get_year(end);
-	month = get_month(end);
 	LONG_pair pair;
-	GSList *l = com->posts;
-
-	if(month < 12)
-		month++;
-	else{
-		year++;
-		month = 1;
-	}
-
-
-	if(get_year(((POST) l->data)->creationDate) == get_year(end)){
-		if(get_month(((POST) l->data)->creationDate) > get_month(end)){
-			int key = date_to_Key(year, month);
-			l = g_hash_table_lookup(com->monthsHash, GINT_TO_POINTER(key));
-		}
-		while(l && compare_date(end, ((POST) l->data)->creationDate) == 1){
-			l=l->next;
-		}
-	}
-	else if(get_year(((POST) l->data)->creationDate) > get_year(end)){
-		int key = date_to_Key(year, month);
-		l = g_hash_table_lookup(com->monthsHash, GINT_TO_POINTER(key));
-		while(l && compare_date(end, ((POST) l->data)->creationDate) == 1){ //problema!!!
-			l=l->next;
-		}
-	}
-
+	GSList *l = find_by_date(com->posts, com->monthsHash, begin, end);
 
 	while(l && compare_date(begin, ((POST) l->data)->creationDate) != -1 ){
 		if(isQuestion( (POST) l->data))
@@ -493,40 +325,14 @@ LONG_pair total_posts(TAD_community com, Date begin, Date end){
 LONG_list questions_with_tag(TAD_community com, char* tag, Date begin, Date end){
 	gpointer valor = g_hash_table_lookup(com->tagshash, tag);
 
-	int year, month;
 	int size=0;
-	year = get_year(end);
-	month = get_month(end);
-	LONG_list list;
-	GSList *l = com->posts;
+	LONG_list list = NULL;
+	GSList *l = NULL;
 	GSList *temp = NULL;
 	GSList *aux = NULL;
 	POST p = NULL;
 
-	if(month < 12)
-		month++;
-	else{
-		year++;
-		month = 1;
-	}
-
-
-	if(get_year(((POST) l->data)->creationDate) == get_year(end)){
-		if(get_month(((POST) l->data)->creationDate) > get_month(end)){
-			int key = date_to_Key(year, month);
-			l = g_hash_table_lookup(com->monthsHash, GINT_TO_POINTER(key));
-		}
-		while(l && compare_date(end, ((POST) l->data)->creationDate) == 1){
-			l=l->next;
-		}
-	}
-	else if(get_year(((POST) l->data)->creationDate) > get_year(end)){
-		int key = date_to_Key(year, month);
-		l = g_hash_table_lookup(com->monthsHash, GINT_TO_POINTER(key));
-		while(l && compare_date(end, ((POST) l->data)->creationDate) == 1){ 
-			l=l->next;
-		}
-	}
+	l = find_by_date(com->posts, com->monthsHash, begin, end);
 
 	while(l && compare_date(begin, ((POST) l->data)->creationDate) != -1 ){
 		p = (POST)l->data;
@@ -563,41 +369,18 @@ int compare_score(gconstpointer a, gconstpointer b){
 		return 0;
 }
 
+
+
+
 /**
 	QUERY 6
 */
 LONG_list most_voted_answers(TAD_community com, int N, Date begin, Date end){
-	int year = get_year(end);
-	int month = get_month(end);
-	
 	LONG_list list;
 	
-	GSList *l = com->posts;
+	GSList *l;
 	GSList *aux = NULL;
-
-	if(month < 12)
-		month++;
-	else{
-		year++;
-		month = 1;
-	}
-
-	if(get_year(((POST) l->data)->creationDate) == get_year(end)){
-		if(get_month(((POST) l->data)->creationDate) > get_month(end)){
-			int key = date_to_Key(year, month);
-			l = g_hash_table_lookup(com->monthsHash, GINT_TO_POINTER(key));
-		}
-		while(l && compare_date(end, ((POST) l->data)->creationDate) == 1){
-			l=l->next;
-		}
-	}
-	else if(get_year(((POST) l->data)->creationDate) > get_year(end)){
-		int key = date_to_Key(year, month);
-		l = g_hash_table_lookup(com->monthsHash, GINT_TO_POINTER(key));
-		while(l && compare_date(end, ((POST) l->data)->creationDate) == 1){ 
-			l=l->next;
-		}
-	}
+	l = find_by_date(com->posts, com->monthsHash, begin, end);
 
 	while(l && compare_date(begin, ((POST) l->data)->creationDate) != -1 ){
 		if(strcmp(( (POST) l->data)->postTypeId, "2") == 0){
@@ -634,37 +417,13 @@ int compare_nanswers(gconstpointer a, gconstpointer b){
 
 
 LONG_list most_answered_questions(TAD_community com, int N, Date begin, Date end){
-	int year = get_year(end);
-	int month = get_month(end);
-	
+
 	LONG_list list;
 	
-	GSList *l = com->posts;
+	GSList *l;
 	GSList *aux = NULL;
 
-	if(month < 12)
-		month++;
-	else{
-		year++;
-		month = 1;
-	}
-
-	if(get_year(((POST) l->data)->creationDate) == get_year(end)){
-		if(get_month(((POST) l->data)->creationDate) > get_month(end)){
-			int key = date_to_Key(year, month);
-			l = g_hash_table_lookup(com->monthsHash, GINT_TO_POINTER(key));
-		}
-		while(l && compare_date(end, ((POST) l->data)->creationDate) == 1){
-			l=l->next;
-		}
-	}
-	else if(get_year(((POST) l->data)->creationDate) > get_year(end)){
-		int key = date_to_Key(year, month);
-		l = g_hash_table_lookup(com->monthsHash, GINT_TO_POINTER(key));
-		while(l && compare_date(end, ((POST) l->data)->creationDate) == 1){ 
-			l=l->next;
-		}
-	}
+	l = find_by_date(com->posts, com->monthsHash, begin, end);
 
 	while(l && compare_date(begin, ((POST) l->data)->creationDate) != -1 ){
 		if(strcmp(( (POST) l->data)->postTypeId, "1") == 0){
@@ -693,7 +452,7 @@ LONG_list contains_word(TAD_community com, char* word, int N){
 	POST p;
 	while(i < N && l != NULL){
 		p = ((POST) l->data);
-		if(strcmp(p->postTypeId, "1") == 0 && (strstr(p->q->title, word)) != NULL){
+		if(strcmp(p->postTypeId, "1") == 0 && (strstr(get_title(p), word)) != NULL){
 			set_list(list, i, ((POST) l->data)->id);
 			i++;
 		}
