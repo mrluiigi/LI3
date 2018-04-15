@@ -301,7 +301,7 @@ LONG_list top_most_active(TAD_community com, int N){
 LONG_pair total_posts(TAD_community com, Date begin, Date end){
 	long answer = 0, question = 0;
 	LONG_pair pair;
-	GSList *l = find_by_date(com->posts, com->monthsHash, begin, end);
+	GSList *l = find_by_date(com->posts, com->monthsHash, end);
 
 	while(l && compare_date(begin, ((POST) l->data)->creationDate) != -1 ){
 		if(isQuestion( (POST) l->data))
@@ -326,8 +326,7 @@ LONG_list questions_with_tag(TAD_community com, char* tag, Date begin, Date end)
 	GSList *temp = NULL;
 	POST p = NULL;
 
-	l = find_by_date(com->posts, com->monthsHash, begin, end);
-
+	l = find_by_date(com->posts, com->monthsHash, end);
 	while(l && compare_date(begin, ((POST) l->data)->creationDate) != -1 ){
 		p = (POST)l->data;
 		if(isQuestion(p)) {
@@ -345,6 +344,34 @@ LONG_list questions_with_tag(TAD_community com, char* tag, Date begin, Date end)
 		temp = temp->next;
 	}
 	return list;
+}
+
+ /**
+	QUERY 5
+ */
+
+USER get_user_info(TAD_community com, long id) {
+	USER_HT u = g_hash_table_lookup(com->usershash, GINT_TO_POINTER(id));
+	if (!u )printf("User não existe");
+	long post_history[10];
+	Date last_access = u->lastAccessDate;
+    int nr_posts = u->nr_posts;
+    int i = 0;
+    POST p = NULL;
+	GSList* l = find_by_date(com->posts, com->monthsHash, last_access);
+	while(l && i < 10 && i < nr_posts){
+		p = (POST)l->data;
+		if( (get_ownerUserId(p) != NULL) &&atoi(get_ownerUserId(p)) == id) {
+			post_history[i] = get_postId(p);
+			i++;
+		}
+		l = l->next;
+	}
+	for(; i < 10; i++) {
+		post_history[i] = 0;
+	}
+	return create_user(u->shortBio, post_history);
+
 }
 
 /**
@@ -374,7 +401,7 @@ LONG_list most_voted_answers(TAD_community com, int N, Date begin, Date end){
 	
 	GSList *l;
 	GSList *aux = NULL;
-	l = find_by_date(com->posts, com->monthsHash, begin, end);
+	l = find_by_date(com->posts, com->monthsHash, end);
 
 	while(l && compare_date(begin, ((POST) l->data)->creationDate) != -1 ){
 		if(isAnswer((POST) l->data)){
@@ -417,7 +444,7 @@ LONG_list most_answered_questions(TAD_community com, int N, Date begin, Date end
 	GSList *l;
 	GSList *aux = NULL;
 
-	l = find_by_date(com->posts, com->monthsHash, begin, end);
+	l = find_by_date(com->posts, com->monthsHash, end);
 
 	while(l && compare_date(begin, ((POST) l->data)->creationDate) != -1 ){
 		if(isQuestion( (POST) l->data)){

@@ -24,6 +24,10 @@ POST create_post(xmlNodePtr ptr, GHashTable* tags) {
 	return p;
 }
 
+int get_postId(POST p) {
+	return (p->id);
+}
+
 gpointer get_post_key(POST p) {
 	return GINT_TO_POINTER(p->id);
 }
@@ -58,7 +62,7 @@ int contains_tag(POST p, gpointer tag_id) {
 }
 
 
-GSList* find_by_date(GSList* l, GHashTable *monthsHash, Date begin, Date end) {
+GSList* find_by_date(GSList* l, GHashTable *monthsHash, Date end) {
 	int year, month;
 	year = get_year(end);
 	month = get_month(end);

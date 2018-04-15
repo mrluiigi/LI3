@@ -35,6 +35,8 @@ typedef struct post {
 
 POST create_post(xmlNodePtr ptr, GHashTable* tags);
 
+int get_postId(POST p);
+
 gpointer get_post_key(POST p);
 
 gpointer get_owner_key(POST p);
@@ -45,9 +47,9 @@ char * get_ownerUserId(POST p);
 
 GSList * get_tags(POST p);
 
-int contains_tag(POST p, gpointer tag);
+int contains_tag(POST p, gpointer tag_id);
 
-GSList* find_by_date(GSList* posts_list, GHashTable *monthsHash, Date begin, Date end);
+GSList* find_by_date(GSList* posts_list, GHashTable *monthsHash, Date date);
 
 int isQuestion(POST p);
 
