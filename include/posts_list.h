@@ -24,20 +24,28 @@ typedef struct answer{
 
 
 typedef struct post {
-	char *postTypeId;
+	char postTypeId;
 	QUESTION q; 
 	ANSWER a; 
 	int id;
-	char *ownerUserId;
+	char * ownerUserId;
 	int score;
 	Date creationDate;
 }*POST;
 
 POST create_post(xmlNodePtr ptr, GHashTable* tags);
 
-char * get_userId (POST p);
-
 gpointer get_post_key(POST p);
+
+gpointer get_owner_key(POST p);
+
+gpointer get_parent_key(POST p);
+
+char * get_ownerUserId(POST p);
+
+GSList * get_tags(POST p);
+
+int contains_tag(POST p, gpointer tag);
 
 GSList* find_by_date(GSList* posts_list, GHashTable *monthsHash, Date begin, Date end);
 

@@ -3,19 +3,19 @@
  
 POST create_post(xmlNodePtr ptr, GHashTable* tags) {
 	POST p = malloc(sizeof(struct post));
-	p->postTypeId = (char *) xmlGetProp(ptr, (xmlChar *) "PostTypeId");
+	p->postTypeId = ((char *) xmlGetProp(ptr, (xmlChar *) "PostTypeId"))[0];
 	p->id = atoi((char *) xmlGetProp(ptr, (xmlChar *) "Id"));
 	p->ownerUserId = (char *) xmlGetProp(ptr, (xmlChar *) "OwnerUserId");
 	p->score = atoi((char *) xmlGetProp(ptr, (xmlChar *) "Score"));
 	p->creationDate = xmlCreationDate_to_Date((char*) xmlGetProp(ptr, (xmlChar *) "CreationDate"));
-	if (!strcmp(p->postTypeId, "1")) {
+	if (p->postTypeId == '1') {
 		QUESTION q = malloc(sizeof(struct question));
 		q->title = (char *) xmlGetProp(ptr, (xmlChar *) "Title");
 		q->nanswers = atoi((char *) xmlGetProp(ptr, (xmlChar *) "AnswerCount"));
 		q->tags = getTags(tags, (char *) xmlGetProp(ptr, (xmlChar *) "Tags"));
 		p->q = q;
 	}
-	else if (!strcmp(p->postTypeId, "2")) {
+	else if (p->postTypeId == '2') {
 		ANSWER a = malloc(sizeof(struct answer));
 		a->parentId = atoi ((char *) xmlGetProp(ptr, (xmlChar *) "ParentId"));
 		a->comments = atoi ((char *) xmlGetProp(ptr, (xmlChar *) "CommentCount"));
@@ -24,17 +24,37 @@ POST create_post(xmlNodePtr ptr, GHashTable* tags) {
 	return p;
 }
 
-
-char * get_userId (POST p) {
-	return p->ownerUserId;
-}
-
 gpointer get_post_key(POST p) {
 	return GINT_TO_POINTER(p->id);
 }
 
+gpointer get_owner_key(POST p) {
+	return GINT_TO_POINTER(atoi(p->ownerUserId));
+}
+
+gpointer get_parent_key(POST p) {
+	return GINT_TO_POINTER(p->a->parentId);
+}
+
 char * get_title(POST p) {  
 	return p->q->title;
+}
+
+char * get_ownerUserId(POST p) {  
+	return p->ownerUserId;
+}
+
+GSList * get_tags(POST p) {
+	return p->q->tags;
+}
+
+int contains_tag(POST p, gpointer tag_id) {
+	if (p->q->tags == NULL) 
+		return 0;
+	else if (g_slist_find(p->q->tags, tag_id) != NULL) 
+		return 1;
+	else 
+		return 0;
 }
 
 
@@ -69,9 +89,9 @@ GSList* find_by_date(GSList* l, GHashTable *monthsHash, Date begin, Date end) {
 
 
 int isQuestion(POST p){
-	return (!strcmp(p->postTypeId, "1"));
+	return (p->postTypeId == '1');
 }
 
 int isAnswer(POST p){
-	return (!strcmp(p->postTypeId, "2"));
+	return (p->postTypeId == '2');
 }
