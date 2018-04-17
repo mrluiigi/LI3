@@ -24,14 +24,13 @@ typedef struct user_ht{
 	char *shortBio;
 	unsigned short nr_posts;
 	Date lastAccessDate;
+	int reputation;
 }*USER_HT;
 
 typedef struct user_ll{
 	int id;
 	unsigned short nr_posts;
 }*USER_LL;
-
-
 
 /*
 * Compara as datas do primeiro elemnto de duas listas
@@ -102,12 +101,10 @@ void loadUsers(TAD_community com, char *dump_path, char *file){
 		int r_users = atoi(key_users);
 		
 		u->name = (char *) xmlGetProp(ptr, (xmlChar *) "DisplayName");
-		
 		u->shortBio = (char *) xmlGetProp(ptr, (xmlChar *) "AboutMe");
-		
 		u->nr_posts = 0;
-
 		u->lastAccessDate = xmlCreationDate_to_Date((char*) xmlGetProp(ptr, (xmlChar *) "LastAccessDate"));
+		u->reputation = atoi((char*) xmlGetProp(ptr, (xmlChar *) "Reputation"));
 		
 		g_hash_table_insert(com->usershash, GINT_TO_POINTER(r_users), u);
 		ptr = ptr->next->next;
@@ -116,9 +113,6 @@ void loadUsers(TAD_community com, char *dump_path, char *file){
 
 	xmlFreeDoc(doc);
 }
-
-
-
 
 /**
 	Função que faz load ao file Posts.xml
@@ -216,6 +210,50 @@ void loadTags(TAD_community com, char *dump_path, char *file){
 	xmlFreeDoc(doc);
 }
 
+void loadVotes(TAD_community com, char *dump_path, char *file){
+	xmlDocPtr doc;
+	xmlNodePtr cur, ptr;
+
+	char file_tags[100];
+	strcpy(file_tags, filePath(dump_path, file));
+	//-------------------------
+	doc = xmlParseFile(file_tags);
+
+
+	if(doc == NULL){
+		fprintf(stderr, "Document not parsed successfully.\n");
+		return;
+	}
+
+	cur = xmlDocGetRootElement(doc);
+
+	if(cur == NULL){
+		fprintf(stderr, "empty document\n");
+		xmlFreeDoc(doc);
+	}
+	
+	ptr = cur->xmlChildrenNode;
+	ptr = ptr->next;
+	
+	while(ptr != NULL){
+		char* voteTypeId = (char *) xmlGetProp(ptr, (xmlChar *) "VoteTypeId");
+		if((strcmp(voteTypeId, "2") == 0) || (strcmp(voteTypeId, "3") == 0)){
+			char* postId = (char *) xmlGetProp(ptr, (xmlChar *) "PostId");
+			POST p = g_hash_table_lookup(com->postshash, GINT_TO_POINTER(atoi(postId)));
+			if(p != NULL && isAnswer(p)){
+				if(strcmp(voteTypeId, "2") == 0){
+					addUpVote(p);				
+				}
+				else{
+					addDownVote(p);
+				}
+			}
+		}
+		ptr = ptr->next->next;
+	}
+	xmlFreeDoc(doc);
+}
+
 /**
   Função que faz load dos ficheiros para a estrutura de dados
 */
@@ -226,6 +264,8 @@ TAD_community load(TAD_community com, char* dump_path){
 	loadUsers(com, dump_path, "Users.xml");
 
 	loadPosts(com, dump_path, "Posts.xml");
+
+	loadVotes(com, dump_path, "Votes.xml");
 
 	return com;
 }
@@ -262,7 +302,6 @@ STR_pair info_from_post(TAD_community com, long id){
 	return pair;
 }
 
-
 void slist_append(gpointer key, gpointer value, gpointer *ll_pt){
 	USER_HT uht = value;
 	USER_LL user = malloc(sizeof(struct user_ll));
@@ -294,7 +333,6 @@ LONG_list top_most_active(TAD_community com, int N){
 	return lista;
 }
 
-
 /**
 	QUERY 3
 */
@@ -314,6 +352,7 @@ LONG_pair total_posts(TAD_community com, Date begin, Date end){
 	pair = create_long_pair(question, answer);
 	return pair;
 }
+
  /**
 	QUERY 4
  */
@@ -349,7 +388,6 @@ LONG_list questions_with_tag(TAD_community com, char* tag, Date begin, Date end)
  /**
 	QUERY 5
  */
-
 USER get_user_info(TAD_community com, long id) {
 	USER_HT u = g_hash_table_lookup(com->usershash, GINT_TO_POINTER(id));
 	if (!u )printf("User não existe");
@@ -381,17 +419,16 @@ USER get_user_info(TAD_community com, long id) {
 int compare_score(gconstpointer a, gconstpointer b){
 	POST p1 = (POST) a;
 	POST p2 = (POST) b;
+	int s1 = get_score(p1);
+	int s2 = get_score(p2);
 
-	if(p1->score > p2->score)
+	if(s1 > s2)
 		return -1;							
-	else if (p1->score < p2->score) 
+	else if (s1 < s2) 
 		return 1;
 	else 
 		return 0;
 }
-
-
-
 
 /**
 	QUERY 6
@@ -436,7 +473,9 @@ int compare_nanswers(gconstpointer a, gconstpointer b){
 		return 0;
 }
 
-
+/**
+	QUERY 7
+*/
 LONG_list most_answered_questions(TAD_community com, int N, Date begin, Date end){
 
 	LONG_list list;
@@ -464,8 +503,9 @@ LONG_list most_answered_questions(TAD_community com, int N, Date begin, Date end
 	return list;
 }
 
-
-
+/**
+	QUERY 8
+*/
 LONG_list contains_word(TAD_community com, char* word, int N){
 	LONG_list list = create_list(N);
 	int i = 0;
@@ -484,8 +524,47 @@ LONG_list contains_word(TAD_community com, char* word, int N){
 	}
 	return list;
 }
-/*
-LONG_list both_participated(TAD_community com, long id1, long id2, int N){
 
-	
-}*/
+/**
+	QUERY 10
+*/
+long better_answer(TAD_community com, long id){
+	GSList *l;
+	int n =0;
+	POST p = g_hash_table_lookup(com->postshash, GINT_TO_POINTER(id));
+	int nanswers = get_nanswers(p);
+	int best, temp; 
+	long answer;
+
+	l = find_by_date(com->posts, com->monthsHash, get_lastActivityDate(p));
+
+	while(l != NULL && n < 1 && (compare_date_list(p, (POST) l->data) != -1)){
+		if(isAnswer((POST) l->data) && get_parent((POST) l->data) == id){
+			nanswers++;
+			gpointer owner_key = get_owner_key(p);
+			USER_HT user = g_hash_table_lookup(com->usershash, owner_key);
+			best = get_score((POST) l->data)*0.45 + (user->reputation)*0.25 + 
+				  (get_upvotes((POST) l->data) + get_downvotes((POST) l->data))*0.2 + get_comments((POST) l->data)*0.1;
+			printf("%d\n", best);
+			answer = get_postId((POST) l->data);
+		}
+		l = l->next;
+	} 
+
+	while(l != NULL && n < nanswers && (compare_date_list(p, (POST) l->data) != -1)){
+		if(isAnswer((POST) l->data) && get_parent((POST) l->data) == id){
+			nanswers++;
+			gpointer owner_key = get_owner_key(p);
+			USER_HT user = g_hash_table_lookup(com->usershash, owner_key);
+			temp = get_score((POST) l->data)*0.45 + (user->reputation)*0.25 + 
+				  (get_upvotes((POST) l->data) + get_downvotes((POST) l->data))*0.2 + get_comments((POST) l->data)*0.1;
+			printf("%d\n", temp);
+			if(temp > best){
+				best = temp;
+				answer = get_postId((POST) l->data);
+			}
+		}
+		l = l->next;
+	}
+	return answer;
+}
