@@ -23,7 +23,7 @@ typedef struct user_ht{
 	char *name;
 	char *shortBio;
 	unsigned short nr_posts;
-	Date lastAccessDate;
+	GSList *lastPost;
 	int reputation;
 }*USER_HT;
 
@@ -103,7 +103,7 @@ void loadUsers(TAD_community com, char *dump_path, char *file){
 		u->name = (char *) xmlGetProp(ptr, (xmlChar *) "DisplayName");
 		u->shortBio = (char *) xmlGetProp(ptr, (xmlChar *) "AboutMe");
 		u->nr_posts = 0;
-		u->lastAccessDate = xmlCreationDate_to_Date((char*) xmlGetProp(ptr, (xmlChar *) "LastAccessDate"));
+		u->lastPost = NULL;
 		u->reputation = atoi((char*) xmlGetProp(ptr, (xmlChar *) "Reputation"));
 		
 		g_hash_table_insert(com->usershash, GINT_TO_POINTER(r_users), u);
@@ -113,6 +113,14 @@ void loadUsers(TAD_community com, char *dump_path, char *file){
 
 	xmlFreeDoc(doc);
 }
+
+
+void set_userht_lastPost(USER_HT user, GSList* l){
+	if(user->lastPost == NULL){
+		user->lastPost = l;
+	}
+}
+
 
 /**
 	Função que faz load ao file Posts.xml
@@ -162,8 +170,14 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 		ptr = ptr->next->next;
 	}
 
+	GSList* l;
+
 	xmlFreeDoc(doc);
 	com->posts = g_slist_sort (com->posts, compare_date_list);
+	for(l = com->posts; l; l = l->next){
+		USER_HT u = g_hash_table_lookup(com->usershash, get_owner_key((POST) l->data));
+		set_userht_lastPost(u, l);
+	}
 	GSList* li = com->posts;
 	for(int i = 0; i < posts_size; i++) {
 		Date d = ( (POST) li->data)->creationDate;
@@ -388,15 +402,15 @@ LONG_list questions_with_tag(TAD_community com, char* tag, Date begin, Date end)
  /**
 	QUERY 5
  */
+
 USER get_user_info(TAD_community com, long id) {
 	USER_HT u = g_hash_table_lookup(com->usershash, GINT_TO_POINTER(id));
 	if (!u )printf("User não existe");
 	long post_history[10];
-	Date last_access = u->lastAccessDate;
     int nr_posts = u->nr_posts;
     int i = 0;
     POST p = NULL;
-	GSList* l = find_by_date(com->posts, com->monthsHash, last_access);
+	GSList* l = u->lastPost;
 	while(l && i < 10 && i < nr_posts){
 		p = (POST)l->data;
 		if( (get_ownerUserId(p) != NULL) &&atoi(get_ownerUserId(p)) == id) {
@@ -411,6 +425,7 @@ USER get_user_info(TAD_community com, long id) {
 	return create_user(u->shortBio, post_history);
 
 }
+
 
 /**
 	Função para comparar os scores de dois POSTS
@@ -524,6 +539,21 @@ LONG_list contains_word(TAD_community com, char* word, int N){
 	}
 	return list;
 }
+
+/**
+	QUERY 9
+*/
+LONG_list both_participated(TAD_community com, long id1, long id2, int N){
+
+}
+
+
+
+
+
+
+
+
 
 /**
 	QUERY 10
