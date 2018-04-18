@@ -540,12 +540,37 @@ LONG_list contains_word(TAD_community com, char* word, int N){
 	return list;
 }
 
+
+GSList* find_most_recent_post(GHashTable* users, long id1, long id2){
+	USER_HT u1 = g_hash_table_lookup(users, GINT_TO_POINTER (id1));
+	USER_HT u2 = g_hash_table_lookup(users, GINT_TO_POINTER (id2));
+	GSList* l1 = u1->lastPost;
+	GSList* l2 = u2->lastPost;
+	int b = compare_date_list (l1->data, l2->data);
+	if(b == -1){
+		return l1;
+	}
+	else if(b == 0){
+		GSList* aux = l1;
+		int f = 0;
+		while(aux && compare_date_list (aux->data, l2->data) == 0 && f != 0){
+			if(aux == l2){
+				f = 1;
+			}
+		}
+		if(f == 1) return l1;
+		else return l2;
+	}
+	else return l2;
+}
+
+
 /**
 	QUERY 9
 */
-LONG_list both_participated(TAD_community com, long id1, long id2, int N){
+/*LONG_list both_participated(TAD_community com, long id1, long id2, int N){
 
-}
+}*/
 
 
 
