@@ -175,8 +175,13 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 	xmlFreeDoc(doc);
 	com->posts = g_slist_sort (com->posts, compare_date_list);
 	for(l = com->posts; l; l = l->next){
-		USER_HT u = g_hash_table_lookup(com->usershash, get_owner_key((POST) l->data));
-		set_userht_lastPost(u, l);
+		printf("%d\n", get_postId((POST) l->data));
+		gpointer k = get_owner_key((POST) l->data);
+		if (k) {
+			USER_HT u = g_hash_table_lookup(com->usershash, k);
+			if(u)
+				set_userht_lastPost(u, l);
+		}
 	}
 	GSList* li = com->posts;
 	for(int i = 0; i < posts_size; i++) {

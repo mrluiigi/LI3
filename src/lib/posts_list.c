@@ -39,10 +39,12 @@ gpointer get_post_key(POST p) {
 }
 
 gpointer get_owner_key(POST p) {
+	if(!p || !p->ownerUserId) return NULL;
 	return GINT_TO_POINTER(atoi(p->ownerUserId));
 }
 
 gpointer get_parent_key(POST p) {
+	if(!p || !p->a || !p->a->parentId) return NULL;
 	return GINT_TO_POINTER(p->a->parentId);
 }
 
