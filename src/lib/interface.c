@@ -105,6 +105,7 @@ void loadUsers(TAD_community com, char *dump_path, char *file){
 		u->nr_posts = 0;
 		u->lastPost = NULL;
 		u->reputation = atoi((char*) xmlGetProp(ptr, (xmlChar *) "Reputation"));
+		u->lastPost = NULL;
 		
 		g_hash_table_insert(com->usershash, GINT_TO_POINTER(r_users), u);
 		ptr = ptr->next->next;
@@ -175,7 +176,6 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 	xmlFreeDoc(doc);
 	com->posts = g_slist_sort (com->posts, compare_date_list);
 	for(l = com->posts; l; l = l->next){
-		printf("%d\n", get_postId((POST) l->data));
 		gpointer k = get_owner_key((POST) l->data);
 		if (k) {
 			USER_HT u = g_hash_table_lookup(com->usershash, k);
@@ -549,8 +549,10 @@ LONG_list contains_word(TAD_community com, char* word, int N){
 GSList* find_most_recent_post(GHashTable* users, long id1, long id2){
 	USER_HT u1 = g_hash_table_lookup(users, GINT_TO_POINTER (id1));
 	USER_HT u2 = g_hash_table_lookup(users, GINT_TO_POINTER (id2));
+	if (!u1 || !u2) return NULL;
 	GSList* l1 = u1->lastPost;
 	GSList* l2 = u2->lastPost;
+	if(!l1 || !l2) return NULL;
 	int b = compare_date_list (l1->data, l2->data);
 	if(b == -1){
 		return l1;
@@ -569,13 +571,137 @@ GSList* find_most_recent_post(GHashTable* users, long id1, long id2){
 	else return l2;
 }
 
+int  get_user_nr_posts(USER_HT user) {
+	if (!user) return 0;
+	return user->nr_posts;
+}
 
 /**
 	QUERY 9
 */
-/*LONG_list both_participated(TAD_community com, long id1, long id2, int N){
+LONG_list both_participated(TAD_community com, long id1, long id2, int N){
+	USER_HT user1 = g_hash_table_lookup(com->usershash, GINT_TO_POINTER(id1));
+	USER_HT user2 = g_hash_table_lookup(com->usershash, GINT_TO_POINTER(id2));
+	if (!user1 || !user2) return NULL;	
+	int nposts1 = get_user_nr_posts(user1);
+	int nposts2 = get_user_nr_posts(user2);
+	int npostst = nposts1 + nposts2;
+	int queue1[nposts1];
+	int queue2[nposts2];
+	int queuef[npostst];
+	for (int i = 0; i < nposts1; i++) {
+		queue1[i] = 0;
+	}
+	for (int i = 0; i < nposts2; i++) {
+		queue2[i] = 0;
+	}
+	for (int i = 0; i < npostst; i++) {
+		queuef[i] = 0;
+	}
+	int posts_i1_found = 0;
+	int posts_i2_found = 0;
 
-}*/
+	int queue1_size = 0;
+	int queue2_size = 0;
+	int queuef_size = 0;
+	int res_size = 0;
+	int f = 0;
+	int i = 0;
+
+	LONG_list res = create_list(N);
+	
+	GSList* l = find_most_recent_post(com->usershash, id1, id2);
+	if (!l) return NULL;
+
+	while(l && res_size < N && (posts_i1_found < nposts1 || posts_i2_found < nposts2)) {
+		POST p = (POST) l->data;
+		if(get_ownerUserId(p) != NULL){
+			if(isAnswer(p)) {
+				if(atoi(get_ownerUserId(p)) == id1) {
+					if(get_parent_owner(com->postshash, p) != NULL) {
+						if(atoi(get_parent_owner(com->postshash, p)) == id2) {
+							queuef[queuef_size] =  get_parent(p);
+							queuef_size++;
+						}
+						else {
+							i = 0;
+							f = 0;
+							while (i < queue2_size && f == 0) {
+								if (queue2[i] == get_postId(p)) {
+									f = 1;
+								}
+								i++;
+							}
+							if (f == 1) {
+								queuef[queuef_size] =  get_parent(p);
+								queuef_size++;
+							}
+							else {
+								queue1[queue1_size] =  get_parent(p);
+								queue1_size++;
+							}
+						}
+					}
+					posts_i1_found++;
+				}
+				else if(atoi(get_ownerUserId(p)) == id2) {
+					if(get_parent_owner(com->postshash, p) != NULL) {
+						if(atoi(get_parent_owner( com->postshash, p)) == id1) {
+							queuef[queuef_size] =  get_parent(p);
+							queuef_size++;
+						}
+						else {
+							i = 0;
+							f = 0;
+							while (i < queue1_size && f == 0) {
+								if (queue1[i] == get_postId(p)) {
+									f = 1;
+								}
+								i++;
+							}
+							if (f == 1) {
+								queuef[queuef_size] =  get_parent(p);
+								queuef_size++;
+							}
+							else {
+								queue2[queue2_size] = get_parent(p);
+								queue2_size++;
+							}
+						}
+					}
+					posts_i2_found++;
+				}
+			}
+		else if (isQuestion(p)) {
+				if(atoi(get_ownerUserId(p)) == id1) {
+					posts_i1_found++;
+				}
+				if(atoi(get_ownerUserId(p)) == id2)
+					posts_i2_found++;
+				i = 0;
+				f = 0;
+				while (i < queuef_size && f == 0) {
+					if (queuef[i] == get_postId(p)) {
+						f = 1;
+					}
+					i++;
+				}
+				if (f == 1) {
+					set_list(res, res_size ,get_postId(p));
+					res_size++;
+
+				}
+				f = 0;
+			}
+		}
+		l = l->next;
+	}
+	for (; res_size < N; res_size++ ) {
+		set_list(res, res_size ,0);
+	}
+	return res;
+
+}
 
 
 

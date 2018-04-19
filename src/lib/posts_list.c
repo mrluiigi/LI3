@@ -52,6 +52,14 @@ int get_parent(POST p) {
 	return p->a->parentId;
 }
 
+char * get_parent_owner( GHashTable* posts, POST p) {
+	gpointer parent_key = get_parent_key(p);
+	if (!parent_key) return 0;
+	POST parent = g_hash_table_lookup(posts, get_parent_key(p));
+	if (!parent) return 0;
+	return parent->ownerUserId;
+}
+
 char * get_title(POST p) {  
 	return p->q->title;
 }

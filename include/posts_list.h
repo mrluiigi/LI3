@@ -48,6 +48,8 @@ int get_comments(POST p);
 
 int get_parent(POST p);
 
+char * get_parent_owner( GHashTable* posts, POST p);
+
 char * get_ownerUserId(POST p);
 
 GSList * get_tags(POST p);
