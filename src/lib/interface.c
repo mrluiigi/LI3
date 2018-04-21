@@ -8,9 +8,12 @@
 #include "mydate.h"
 #include "posts_list.h"
 #include "tags.h"
+#include "users.h"
+//#include "myuser.h"
 
 
 struct TCD_community{
+	USERS users;
 	GHashTable *postshash;
 	GHashTable *usershash;
 	GHashTable *tagshash;
@@ -18,19 +21,6 @@ struct TCD_community{
 	GHashTable *monthsHash;         //guarda o primeiro posts de cada mes
 };
 
-
-typedef struct user_ht{
-	char *name;
-	char *shortBio;
-	unsigned short nr_posts;
-	GSList *lastPost;
-	int reputation;
-}*USER_HT;
-
-typedef struct user_ll{
-	int id;
-	unsigned short nr_posts;
-}*USER_LL;
 
 /*
 * Compara as datas do primeiro elemnto de duas listas
@@ -48,6 +38,7 @@ int compare_date_list (gconstpointer a, gconstpointer b) {
 TAD_community init(){
 	TAD_community t;
 	t = malloc(sizeof(struct TCD_community));
+	t->users = init_users();
 	t->postshash = g_hash_table_new (g_direct_hash, g_direct_equal);
 	t->usershash = g_hash_table_new (g_direct_hash, g_direct_equal);
 	t->posts = NULL;
@@ -91,26 +82,17 @@ void loadUsers(TAD_community com, char *dump_path, char *file){
 		fprintf(stderr, "empty document\n");
 		xmlFreeDoc(doc);
 	}
-	char *key_users;
 
 	ptr = cur->xmlChildrenNode;
 	ptr = ptr->next;
 	while(ptr != NULL){
-		USER_HT u = malloc(sizeof(struct post));
-		key_users = (char *) xmlGetProp(ptr, (xmlChar *) "Id");
-		int r_users = atoi(key_users);
-		
-		u->name = (char *) xmlGetProp(ptr, (xmlChar *) "DisplayName");
-		u->shortBio = (char *) xmlGetProp(ptr, (xmlChar *) "AboutMe");
-		u->nr_posts = 0;
-		u->lastPost = NULL;
-		u->reputation = atoi((char*) xmlGetProp(ptr, (xmlChar *) "Reputation"));
-		u->lastPost = NULL;
-		
-		g_hash_table_insert(com->usershash, GINT_TO_POINTER(r_users), u);
+		USER_HT u = create_myuser(ptr);
+		g_hash_table_insert(com->usershash, GINT_TO_POINTER(u->id), u);
+ 		add_myuser(com->users, ptr);
 		ptr = ptr->next->next;
 
 	}
+	sort_users_by_reputation(com->users);
 
 	xmlFreeDoc(doc);
 }
