@@ -642,14 +642,6 @@ LONG_list both_participated(TAD_community com, long id1, long id2, int N){
 
 }
 
-
-
-
-
-
-
-
-
 /**
 	QUERY 10
 */
@@ -692,4 +684,71 @@ long better_answer(TAD_community com, long id){
 		l = l->next;
 	}
 	return answer;
+}
+
+typedef struct auxTag{
+	int id;
+	int num;
+}*AUXTAG;
+
+GSList* addTags(GSList* res, GSList* tags){
+	int found = 0;
+	while(tags != NULL){
+		while(res && found==0){
+			if( (( (AUXTAG) res->data)->id) == GPOINTER_TO_INT( (gpointer) tags->data) ){
+				( (AUXTAG) res->data)->num += 1;
+				found = 1;
+			}
+			res=res->next;
+		}
+		if(found==0){
+			AUXTAG a = (AUXTAG) malloc(sizeof(struct auxTag));
+			a->id = GPOINTER_TO_INT( (gpointer) tags->data);
+			a->num = 1;
+			res = g_slist_append(res, a);
+		}
+		tags = tags->next;
+	}
+	return res;
+}
+int compare_numTag(gconstpointer a, gconstpointer b){
+	AUXTAG a1 = (AUXTAG) a;
+	AUXTAG a2 = (AUXTAG) b;
+
+	if(a1->num > a2->num)
+		return -1;							
+	else if (a1->num < a2->num) 
+		return 1;
+	else 
+		return 0;
+}
+
+LONG_list most_used_best_rep(TAD_community com, int N, Date begin, Date end){
+	LONG_list list = get_N_users_with_most_reputation(com->users, N);
+	
+	GSList *l = find_by_date(com->posts, com->monthsHash, end);
+	GSList *aux = NULL;
+	GSList *tags = NULL;
+
+	while(l && (compare_date(begin, get_creationDate((POST) l->data)) != -1)){
+		int i = 0;
+		char *ownerUserId = get_ownerUserId((POST) l->data);
+
+		if(ownerUserId != NULL){
+			for(i = 0; i < N && atoi(ownerUserId) != get_list(list, i); i++);
+			
+			if(atoi(ownerUserId) == get_list(list, i)){
+				tags = get_tags((POST) l->data);
+				aux = addTags(aux, tags);
+			}
+		}
+		l = l->next;
+	}
+	LONG_list res = create_list(N);
+	aux = g_slist_sort(aux, compare_numTag);
+	int j = 0;
+	while(aux && j < N){
+		set_list(res, j, ((AUXTAG) aux->data)->id);
+	}
+	return res;
 }
