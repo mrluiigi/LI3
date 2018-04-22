@@ -79,4 +79,8 @@ int get_score(POST p);
 Date get_creationDate(POST p);
 
 Date get_lastActivityDate(POST p);
+
+POST find_post(GHashTable* h, int id);
+
+GSList * find_post_in_list(GHashTable* h, int id);
 //#endif

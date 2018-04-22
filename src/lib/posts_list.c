@@ -55,7 +55,7 @@ int get_parent(POST p) {
 char * get_parent_owner( GHashTable* posts, POST p) {
 	gpointer parent_key = get_parent_key(p);
 	if (!parent_key) return 0;
-	POST parent = g_hash_table_lookup(posts, get_parent_key(p));
+	POST parent = find_post(posts, get_parent(p));
 	if (!parent) return 0;
 	return parent->ownerUserId;
 }
@@ -150,4 +150,18 @@ Date get_creationDate(POST p){
 
 Date get_lastActivityDate(POST p){
 	return p->q->lastActivityDate;
+}
+
+
+
+POST find_post(GHashTable* h, int id) {
+	GSList* l = g_hash_table_lookup(h, GINT_TO_POINTER(id));
+	if(l) return ((POST)l->data);
+	else return NULL;
+}
+
+GSList* find_post_in_list(GHashTable* h, int id) {
+	GSList* l = g_hash_table_lookup(h, GINT_TO_POINTER(id));
+	if(l) return l;
+	else return NULL;
 }

@@ -29,4 +29,4 @@ void increment_user_nr_posts(USERS users, gpointer id_key);
 
 LONG_list get_N_users_with_most_nr_posts(USERS users, int N);
 
-void find_and_set_user_lastPost(USERS users, gpointer key, GSList * lastpost);
+void find_and_set_user_lastPost(USERS users, gpointer key, int lastPostId);

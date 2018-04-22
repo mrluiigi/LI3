@@ -82,11 +82,11 @@ LONG_list get_N_users_with_most_nr_posts(USERS users, int N) {
 	return res;
 }
 
-void find_and_set_user_lastPost(USERS users, gpointer key, GSList * lastpost) {
+void find_and_set_user_lastPost(USERS users, gpointer key, int lastPostId) {
 	if (key) {
 		USER_HT u = g_hash_table_lookup(users->hash, key);
 		if(u)
-			set_user_lastPost(u, lastpost);
+			set_user_lastPost(u, lastPostId);
 
 	}
 }

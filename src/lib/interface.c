@@ -134,8 +134,6 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 			
 			com->posts = g_slist_prepend(com->posts, p);
 			posts_size++;
-			
-			g_hash_table_insert(com->postshash, get_post_key(p), p);
 		}
 		ptr = ptr->next->next;
 	}
@@ -147,8 +145,10 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 	xmlFreeDoc(doc);
 	com->posts = g_slist_sort (com->posts, compare_date_list);
 	for(l = com->posts; l; l = l->next){
-		gpointer k = get_owner_key((POST) l->data);
-		find_and_set_user_lastPost(com->users,k, l);
+		POST pf = (POST) l->data;
+		gpointer k = get_owner_key(pf);
+		find_and_set_user_lastPost(com->users,k, pf->id);
+		g_hash_table_insert(com->postshash, get_post_key(pf), l);
 	}
 	GSList* li = com->posts;
 	for(int i = 0; i < posts_size; i++) {
@@ -225,7 +225,7 @@ void loadVotes(TAD_community com, char *dump_path, char *file){
 		char* voteTypeId = (char *) xmlGetProp(ptr, (xmlChar *) "VoteTypeId");
 		if((strcmp(voteTypeId, "2") == 0) || (strcmp(voteTypeId, "3") == 0)){
 			char* postId = (char *) xmlGetProp(ptr, (xmlChar *) "PostId");
-			POST p = g_hash_table_lookup(com->postshash, GINT_TO_POINTER(atoi(postId)));
+			POST p = find_post(com->postshash, atoi(postId));
 			if(p != NULL && isAnswer(p)){
 				if(strcmp(voteTypeId, "2") == 0){
 					addUpVote(p);				
@@ -267,7 +267,7 @@ STR_pair info_from_post(TAD_community com, long id){
 
 	STR_pair pair;
 
-	p = g_hash_table_lookup(com->postshash, GINT_TO_POINTER(id));
+	p = find_post(com->postshash, id);
 	
 	//Caso nenhum post tenha o id procurado
 	if(p==NULL){
@@ -279,7 +279,7 @@ STR_pair info_from_post(TAD_community com, long id){
 		pair = create_str_pair(get_title(p), u->name);
 	}
 	else if(isAnswer(p)){
-		p = g_hash_table_lookup(com->postshash, get_parent_key(p));
+		p = find_post(com->postshash, get_parent(p));
 
 		u = find_user(com->users, atoi(get_ownerUserId(p)));
 		pair = create_str_pair(get_title(p), u->name);	
@@ -358,10 +358,11 @@ USER get_user_info(TAD_community com, long id) {
     int nr_posts = get_user_nr_posts(u);
     int i = 0;
     POST p = NULL;
-	GSList* l = get_user_lastPost(u);
+    int lp = get_user_lastPost(u);
+	GSList* l = g_hash_table_lookup(com->postshash, GINT_TO_POINTER(lp));
 	while(l && i < 10 && i < nr_posts){
 		p = (POST)l->data;
-		if( (get_ownerUserId(p) != NULL) &&atoi(get_ownerUserId(p)) == id) {
+		if( (get_ownerUserId(p) != NULL) && atoi(get_ownerUserId(p)) == id) {
 			post_history[i] = get_postId(p);
 			i++;
 		}
@@ -489,10 +490,7 @@ LONG_list contains_word(TAD_community com, char* word, int N){
 }
 
 
-GSList* find_most_recent_post(USER_HT u1, USER_HT u2){
-	if (!u1 || !u2) return NULL;
-	GSList* l1 = u1->lastPost;
-	GSList* l2 = u2->lastPost;
+GSList* find_most_recent_post(GSList* l1, GSList* l2){
 	if(!l1 || !l2) return NULL;
 	int b = compare_date_list (l1->data, l2->data);
 	if(b == -1){
@@ -547,8 +545,11 @@ LONG_list both_participated(TAD_community com, long id1, long id2, int N){
 	int i = 0;
 
 	LONG_list res = create_list(N);
+
+	GSList* l1 = find_post_in_list(com->postshash, user1->lastPost);
+	GSList* l2 = find_post_in_list(com->postshash, user2->lastPost);
 	
-	GSList* l = find_most_recent_post(user1, user2);
+	GSList* l = find_most_recent_post(l1, l2);
 	if (!l)
 		return NULL;
 
@@ -648,7 +649,7 @@ LONG_list both_participated(TAD_community com, long id1, long id2, int N){
 long better_answer(TAD_community com, long id){
 	GSList *l;
 	int n =0;
-	POST p = g_hash_table_lookup(com->postshash, GINT_TO_POINTER(id));
+	POST p = find_post(com->postshash, id);
 	int nanswers = get_nanswers(p);
 	int best, temp; 
 	long answer;
