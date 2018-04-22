@@ -691,26 +691,27 @@ typedef struct auxTag{
 	int num;
 }*AUXTAG;
 
-GSList* addTags(GSList* res, GSList* tags){
-	int found = 0;
-	while(tags != NULL){
-		while(res && found==0){
-			if( (( (AUXTAG) res->data)->id) == GPOINTER_TO_INT( (gpointer) tags->data) ){
-				( (AUXTAG) res->data)->num += 1;
-				found = 1;
-			}
-			res=res->next;
+GSList* addTags(GHashTable* h, GSList* res, GSList* tags){
+	AUXTAG aux;
+	while(tags) {
+		aux = g_hash_table_lookup(h, GINT_TO_POINTER(tags->data));
+		if(aux) {
+			aux->num += 1;
 		}
-		if(found==0){
+		else {
 			AUXTAG a = (AUXTAG) malloc(sizeof(struct auxTag));
 			a->id = GPOINTER_TO_INT( (gpointer) tags->data);
 			a->num = 1;
 			res = g_slist_append(res, a);
+			g_hash_table_insert(h,GINT_TO_POINTER(a->id), a);
 		}
-		tags = tags->next;
+		
+	
+	tags = tags->next;
 	}
 	return res;
 }
+
 int compare_numTag(gconstpointer a, gconstpointer b){
 	AUXTAG a1 = (AUXTAG) a;
 	AUXTAG a2 = (AUXTAG) b;
@@ -725,7 +726,7 @@ int compare_numTag(gconstpointer a, gconstpointer b){
 
 LONG_list most_used_best_rep(TAD_community com, int N, Date begin, Date end){
 	LONG_list list = get_N_users_with_most_reputation(com->users, N);
-	
+	GHashTable* h = g_hash_table_new (g_direct_hash, g_direct_equal);
 	GSList *l = find_by_date(com->posts, com->monthsHash, end);
 	GSList *aux = NULL;
 	GSList *tags = NULL;
@@ -734,21 +735,30 @@ LONG_list most_used_best_rep(TAD_community com, int N, Date begin, Date end){
 		int i = 0;
 		char *ownerUserId = get_ownerUserId((POST) l->data);
 
-		if(ownerUserId != NULL){
+		if(isQuestion((POST) l->data) && ownerUserId != NULL){
 			for(i = 0; i < N && atoi(ownerUserId) != get_list(list, i); i++);
 			
 			if(atoi(ownerUserId) == get_list(list, i)){
 				tags = get_tags((POST) l->data);
-				aux = addTags(aux, tags);
+				aux = addTags(h,aux, tags);
 			}
 		}
 		l = l->next;
 	}
 	LONG_list res = create_list(N);
 	aux = g_slist_sort(aux, compare_numTag);
+	/*for(GSList* aa = aux; aa; aa = aa->next){
+		printf("%d\n", ((AUXTAG)aa->data)->id);
+	}*/
 	int j = 0;
+	GSList* tofree = aux;
 	while(aux && j < N){
 		set_list(res, j, ((AUXTAG) aux->data)->id);
+		free(aux->data);
+		j++;
+		aux = aux->next;
 	}
+	g_hash_table_destroy (h);
+	g_slist_free (tofree);
 	return res;
 }
