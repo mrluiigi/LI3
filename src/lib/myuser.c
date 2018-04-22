@@ -11,3 +11,20 @@ USER_HT create_myuser(xmlNodePtr ptr) {
 	u->lastPost = NULL;
 	return u;
 }
+
+void set_user_lastPost(USER_HT user, GSList* l){
+	if(user->lastPost == NULL){
+		user->lastPost = l;
+	}
+}
+
+
+int get_user_nr_posts(USER_HT user) {
+	if (!user) return 0;
+	return user->nr_posts;
+}
+
+GSList* get_user_lastPost(USER_HT user) {
+	if (!user) return NULL;
+	return user->lastPost;
+}

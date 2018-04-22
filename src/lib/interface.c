@@ -15,7 +15,6 @@
 struct TCD_community{
 	USERS users;
 	GHashTable *postshash;
-	GHashTable *usershash;
 	GHashTable *tagshash;
 	GSList *posts;
 	GHashTable *monthsHash;         //guarda o primeiro posts de cada mes
@@ -40,7 +39,6 @@ TAD_community init(){
 	t = malloc(sizeof(struct TCD_community));
 	t->users = init_users();
 	t->postshash = g_hash_table_new (g_direct_hash, g_direct_equal);
-	t->usershash = g_hash_table_new (g_direct_hash, g_direct_equal);
 	t->posts = NULL;
 	t->tagshash = g_hash_table_new (g_str_hash, g_str_equal);
 	t->monthsHash = g_hash_table_new (g_direct_hash, g_direct_equal);
@@ -86,8 +84,6 @@ void loadUsers(TAD_community com, char *dump_path, char *file){
 	ptr = cur->xmlChildrenNode;
 	ptr = ptr->next;
 	while(ptr != NULL){
-		USER_HT u = create_myuser(ptr);
-		g_hash_table_insert(com->usershash, GINT_TO_POINTER(u->id), u);
  		add_myuser(com->users, ptr);
 		ptr = ptr->next->next;
 
@@ -97,12 +93,6 @@ void loadUsers(TAD_community com, char *dump_path, char *file){
 	xmlFreeDoc(doc);
 }
 
-
-void set_userht_lastPost(USER_HT user, GSList* l){
-	if(user->lastPost == NULL){
-		user->lastPost = l;
-	}
-}
 
 
 /**
@@ -139,10 +129,7 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 		if((strcmp(postTypeId, "1")==0) || (strcmp(postTypeId, "2")==0)){
 			POST p = create_post(ptr, com->tagshash);
 			if(get_ownerUserId(p) != NULL){
-				gpointer owner_key = get_owner_key(p);
-				USER_HT user = g_hash_table_lookup(com->usershash, owner_key);
-				user->nr_posts += 1;
-				g_hash_table_insert(com->usershash, owner_key, user);
+				increment_user_nr_posts(com->users, get_owner_key(p));
 			}
 			
 			com->posts = g_slist_prepend(com->posts, p);
@@ -153,17 +140,15 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 		ptr = ptr->next->next;
 	}
 
+	sort_users_by_nr_posts(com->users);
+
 	GSList* l;
 
 	xmlFreeDoc(doc);
 	com->posts = g_slist_sort (com->posts, compare_date_list);
 	for(l = com->posts; l; l = l->next){
 		gpointer k = get_owner_key((POST) l->data);
-		if (k) {
-			USER_HT u = g_hash_table_lookup(com->usershash, k);
-			if(u)
-				set_userht_lastPost(u, l);
-		}
+		find_and_set_user_lastPost(com->users,k, l);
 	}
 	GSList* li = com->posts;
 	for(int i = 0; i < posts_size; i++) {
@@ -290,48 +275,24 @@ STR_pair info_from_post(TAD_community com, long id){
 		return NULL;
 	} 
 	if(isQuestion(p)){
-		u = g_hash_table_lookup(com->usershash, get_owner_key(p));
+		u = find_user(com->users, atoi(get_ownerUserId(p)));
 		pair = create_str_pair(get_title(p), u->name);
 	}
 	else if(isAnswer(p)){
 		p = g_hash_table_lookup(com->postshash, get_parent_key(p));
 
-		u = g_hash_table_lookup(com->usershash, get_owner_key(p));
+		u = find_user(com->users, atoi(get_ownerUserId(p)));
 		pair = create_str_pair(get_title(p), u->name);	
 
 	}
 	return pair;
 }
 
-void slist_append(gpointer key, gpointer value, gpointer *ll_pt){
-	USER_HT uht = value;
-	USER_LL user = malloc(sizeof(struct user_ll));
-	user->id = GPOINTER_TO_INT(key);
-	user->nr_posts = uht->nr_posts;
-	*ll_pt = g_slist_prepend(*ll_pt, user);
-}
-
-gint compare_user_ll(gconstpointer g1, gconstpointer g2){
-	USER_LL u1 = ((USER_LL) g1);
-	USER_LL u2 = ((USER_LL) g2);
-	return u2->nr_posts - u1->nr_posts;
-}
-
 /**
   QUERY 2
 */
 LONG_list top_most_active(TAD_community com, int N){
-	GSList * ll = NULL;
-	USER_LL cur;
-	LONG_list lista;
-	lista = create_list(N);
-	g_hash_table_foreach(com->usershash, (GHFunc)slist_append, (gpointer)&ll);
-	ll = g_slist_sort(ll, (GCompareFunc)compare_user_ll);
-	for(int i = 0; i < N; i++){
-		cur = g_slist_nth_data(ll, i);
-		set_list(lista, i, (long) cur->id);
-	}
-	return lista;
+	return get_N_users_with_most_nr_posts(com->users, N);
 }
 
 /**
@@ -391,13 +352,13 @@ LONG_list questions_with_tag(TAD_community com, char* tag, Date begin, Date end)
  */
 
 USER get_user_info(TAD_community com, long id) {
-	USER_HT u = g_hash_table_lookup(com->usershash, GINT_TO_POINTER(id));
+	USER_HT u = find_user(com->users, id);
 	if (!u )printf("User não existe");
 	long post_history[10];
-    int nr_posts = u->nr_posts;
+    int nr_posts = get_user_nr_posts(u);
     int i = 0;
     POST p = NULL;
-	GSList* l = u->lastPost;
+	GSList* l = get_user_lastPost(u);
 	while(l && i < 10 && i < nr_posts){
 		p = (POST)l->data;
 		if( (get_ownerUserId(p) != NULL) &&atoi(get_ownerUserId(p)) == id) {
@@ -528,9 +489,7 @@ LONG_list contains_word(TAD_community com, char* word, int N){
 }
 
 
-GSList* find_most_recent_post(GHashTable* users, long id1, long id2){
-	USER_HT u1 = g_hash_table_lookup(users, GINT_TO_POINTER (id1));
-	USER_HT u2 = g_hash_table_lookup(users, GINT_TO_POINTER (id2));
+GSList* find_most_recent_post(USER_HT u1, USER_HT u2){
 	if (!u1 || !u2) return NULL;
 	GSList* l1 = u1->lastPost;
 	GSList* l2 = u2->lastPost;
@@ -553,17 +512,14 @@ GSList* find_most_recent_post(GHashTable* users, long id1, long id2){
 	else return l2;
 }
 
-int  get_user_nr_posts(USER_HT user) {
-	if (!user) return 0;
-	return user->nr_posts;
-}
 
 /**
 	QUERY 9
 */
+
 LONG_list both_participated(TAD_community com, long id1, long id2, int N){
-	USER_HT user1 = g_hash_table_lookup(com->usershash, GINT_TO_POINTER(id1));
-	USER_HT user2 = g_hash_table_lookup(com->usershash, GINT_TO_POINTER(id2));
+	USER_HT user1 = find_user(com->users, id1);
+	USER_HT user2 = find_user(com->users, id2);
 	if (!user1 || !user2) return NULL;	
 	int nposts1 = get_user_nr_posts(user1);
 	int nposts2 = get_user_nr_posts(user2);
@@ -592,8 +548,9 @@ LONG_list both_participated(TAD_community com, long id1, long id2, int N){
 
 	LONG_list res = create_list(N);
 	
-	GSList* l = find_most_recent_post(com->usershash, id1, id2);
-	if (!l) return NULL;
+	GSList* l = find_most_recent_post(user1, user2);
+	if (!l)
+		return NULL;
 
 	while(l && res_size < N && (posts_i1_found < nposts1 || posts_i2_found < nposts2)) {
 		POST p = (POST) l->data;
@@ -710,7 +667,7 @@ long better_answer(TAD_community com, long id){
 		if(isAnswer((POST) l->data) && get_parent((POST) l->data) == id){
 			nanswers++;
 			gpointer owner_key = get_owner_key(p);
-			USER_HT user = g_hash_table_lookup(com->usershash, owner_key);
+			USER_HT user = g_hash_table_lookup(com->users->hash, owner_key);
 			best = get_score((POST) l->data)*0.45 + (user->reputation)*0.25 + 
 				  (get_upvotes((POST) l->data) + get_downvotes((POST) l->data))*0.2 + get_comments((POST) l->data)*0.1;
 			printf("%d\n", best);
@@ -723,7 +680,7 @@ long better_answer(TAD_community com, long id){
 		if(isAnswer((POST) l->data) && get_parent((POST) l->data) == id){
 			nanswers++;
 			gpointer owner_key = get_owner_key(p);
-			USER_HT user = g_hash_table_lookup(com->usershash, owner_key);
+			USER_HT user = g_hash_table_lookup(com->users->hash, owner_key);
 			temp = get_score((POST) l->data)*0.45 + (user->reputation)*0.25 + 
 				  (get_upvotes((POST) l->data) + get_downvotes((POST) l->data))*0.2 + get_comments((POST) l->data)*0.1;
 			printf("%d\n", temp);

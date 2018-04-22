@@ -16,14 +16,13 @@ typedef struct user_ht{
 	int reputation;
 }*USER_HT;
 
-typedef struct user_ll{
-	int id;
-	unsigned short nr_posts;
-}*USER_LL;
-
-
 
 USER_HT create_myuser(xmlNodePtr ptr);
 
+void set_user_lastPost(USER_HT user, GSList* l);
+
+int  get_user_nr_posts(USER_HT user);
+
+GSList* get_user_lastPost(USER_HT user);
 
 //#endif
