@@ -28,7 +28,7 @@ int compare_users_by_reputation (gconstpointer a, gconstpointer b) {
 	USER_HT u1 = (USER_HT) a;
 	USER_HT u2 = (USER_HT) b;
 	if(get_user_reputation(u1) > get_user_reputation(u2)) return -1;
-	else if(get_user_reputation(u1) == get_user_reputation(u1)) return 0;
+	else if(get_user_reputation(u1) == get_user_reputation(u2)) return 0;
 	else return 1;
 }
 

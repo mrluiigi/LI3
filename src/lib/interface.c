@@ -28,7 +28,7 @@ int compare_date_list (gconstpointer a, gconstpointer b) {
 	POST p1 = (POST) a;
 	POST p2 = (POST) b;
 
-	return compare_date(p1->creationDate, p2->creationDate);
+	return compare_date(get_creationDate(p1), get_creationDate(p2));
 }
 
 /**
@@ -147,12 +147,12 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 	for(l = com->posts; l; l = l->next){
 		POST pf = (POST) l->data;
 		gpointer k = get_owner_key(pf);
-		find_and_set_user_lastPost(k, pf->id);
+		find_and_set_user_lastPost(k, get_postId(pf));
 		g_hash_table_insert(com->postshash, get_post_key(pf), l);
 	}
 	GSList* li = com->posts;
 	for(int i = 0; i < posts_size; i++) {
-		Date d = ( (POST) li->data)->creationDate;
+		Date d = get_creationDate((POST) li->data);
 		int months_key = date_to_Key(get_year(d), get_month(d)) ;
 		g_hash_table_insert(com->monthsHash, GINT_TO_POINTER(months_key), li);
 		li = g_slist_next(li);
@@ -303,7 +303,7 @@ LONG_pair total_posts(TAD_community com, Date begin, Date end){
 	LONG_pair pair;
 	GSList *l = find_by_date(com->posts, com->monthsHash, end);
 
-	while(l && compare_date(begin, ((POST) l->data)->creationDate) != -1 ){
+	while(l && compare_date(begin, get_creationDate((POST) l->data)) != -1 ){
 		if(isQuestion( (POST) l->data))
 			question++;
 		else if(isAnswer((POST) l->data))
@@ -328,7 +328,7 @@ LONG_list questions_with_tag(TAD_community com, char* tag, Date begin, Date end)
 	POST p = NULL;
 
 	l = find_by_date(com->posts, com->monthsHash, end);
-	while(l && compare_date(begin, ((POST) l->data)->creationDate) != -1 ){
+	while(l && compare_date(begin, get_creationDate((POST) l->data)) != -1 ){
 		p = (POST)l->data;
 		if(isQuestion(p)) {
 			if(contains_tag(p, tag_id)){
@@ -404,7 +404,7 @@ LONG_list most_voted_answers(TAD_community com, int N, Date begin, Date end){
 	GSList *aux = NULL;
 	l = find_by_date(com->posts, com->monthsHash, end);
 
-	while(l && compare_date(begin, ((POST) l->data)->creationDate) != -1 ){
+	while(l && compare_date(begin, get_creationDate((POST) l->data)) != -1 ){
 		if(isAnswer((POST) l->data)){
 			aux = g_slist_prepend(aux, ((POST) l->data) );
 		}
@@ -418,24 +418,12 @@ LONG_list most_voted_answers(TAD_community com, int N, Date begin, Date end){
 
 	//Copia apenas os N primeiros posts de aux
 	for(int i = 0; i < N; i++){
-		set_list(list, i, ((POST) aux->data)->id);
+		set_list(list, i, get_postId((POST) aux->data));
 		aux = aux->next;
 	}
 	return list;
 }
 
-
-int compare_nanswers(gconstpointer a, gconstpointer b){
-	QUESTION q1 = ((POST) a)->q;
-	QUESTION q2 = ((POST) b)->q;
-
-	if(q1->nanswers > q2->nanswers)
-		return -1;							
-	else if (q1->nanswers < q2->nanswers) 
-		return 1;
-	else 
-		return 0;
-}
 
 /**
 	QUERY 7
@@ -449,7 +437,7 @@ LONG_list most_answered_questions(TAD_community com, int N, Date begin, Date end
 
 	l = find_by_date(com->posts, com->monthsHash, end);
 
-	while(l && compare_date(begin, ((POST) l->data)->creationDate) != -1 ){
+	while(l && compare_date(begin, get_creationDate((POST) l->data)) != -1 ){
 		if(isQuestion( (POST) l->data)){
 			aux = g_slist_prepend(aux, ((POST) l->data) );
 		}
@@ -461,7 +449,7 @@ LONG_list most_answered_questions(TAD_community com, int N, Date begin, Date end
 	list = create_list(N);
 
 	for(int i = 0; i < N; i++){
-		set_list(list, i, ((POST) aux->data)->id);
+		set_list(list, i, get_postId((POST) aux->data));
 		aux = aux->next;
 	}
 	return list;
@@ -478,7 +466,7 @@ LONG_list contains_word(TAD_community com, char* word, int N){
 	while(i < N && l != NULL){
 		p = ((POST) l->data);
 		if(isQuestion(p) && (strstr(get_title(p), word)) != NULL){
-			set_list(list, i, ((POST) l->data)->id);
+			set_list(list, i, get_postId((POST) l->data));
 			i++;
 		}
 		l = l->next;
