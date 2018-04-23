@@ -6,27 +6,25 @@
 
 
 
-typedef struct users{
-	GHashTable* hash;
-	GSList* users_by_nr_posts;
-	GSList* users_by_reputation;
-}*USERS;
+typedef struct users * USERS;
 
 
- USERS init_users();
+void init_users();
 
-USER_HT  find_user(USERS users, int id);
+USER_HT  find_user(int id);
 
-void add_myuser(USERS users, xmlNodePtr ptr);
+void add_myuser(xmlNodePtr ptr);
 
-void sort_users_by_reputation(USERS users);
+void sort_users_by_reputation();
 
-void sort_users_by_nr_posts(USERS users);
+void sort_users_by_nr_posts();
 
-LONG_list get_N_users_with_most_reputation(USERS users, int N);
+LONG_list get_N_users_with_most_reputation(int N);
 
-void increment_user_nr_posts(USERS users, gpointer id_key);
+void find_and_increment_user_nr_posts(gpointer id_key);
 
-LONG_list get_N_users_with_most_nr_posts(USERS users, int N);
+LONG_list get_N_users_with_most_nr_posts(int N);
 
-void find_and_set_user_lastPost(USERS users, gpointer key, int lastPostId);
+void find_and_set_user_lastPost(gpointer key, int lastPostId);
+
+void free_users();
