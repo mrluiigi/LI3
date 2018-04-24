@@ -13,7 +13,7 @@ void init_users();
 
 USER_HT  find_user(int id);
 
-void add_myuser(xmlNodePtr ptr);
+void add_myuser(int id, char * name, char * shortBio, int nr_posts, int lastPost, int reputation);
 
 void sort_users_by_reputation();
 

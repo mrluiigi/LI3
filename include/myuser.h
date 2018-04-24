@@ -9,7 +9,7 @@
 typedef struct user_ht * USER_HT;
 
 
-USER_HT create_myuser(xmlNodePtr ptr);
+USER_HT create_myuser(int id, char * name, char * shortBio, int nr_posts, int lastPost, int reputation);
 
 int get_user_id(USER_HT user);
 

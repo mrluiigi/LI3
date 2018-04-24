@@ -41,8 +41,8 @@ int compare_users_by_nr_posts (gconstpointer a, gconstpointer b) {
 }
 
 
-void add_myuser(xmlNodePtr ptr) {
-	USER_HT u = create_myuser(ptr);
+void add_myuser(int id, char * name, char * shortBio, int nr_posts, int lastPost, int reputation) {
+	USER_HT u = create_myuser(id, name, shortBio, nr_posts, lastPost, reputation);
 	g_hash_table_insert(users->hash, GINT_TO_POINTER(get_user_id(u)), u);
 	users->users_by_reputation = g_slist_prepend (users->users_by_reputation, u);
 	users->users_by_nr_posts = g_slist_prepend(users->users_by_nr_posts, u);

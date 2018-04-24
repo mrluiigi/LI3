@@ -70,8 +70,15 @@ void loadUsers(TAD_community com, char *dump_path, char *file){
 
 	ptr = cur->xmlChildrenNode;
 	ptr = ptr->next;
+
 	while(ptr != NULL){
- 		add_myuser(ptr);
+		int id = atoi((char *) xmlGetProp(ptr, (xmlChar *) "Id"));
+		char * name = (char *) xmlGetProp(ptr, (xmlChar *) "DisplayName");
+		char * shortBio = (char *) xmlGetProp(ptr, (xmlChar *) "AboutMe");
+		int nr_posts = 0;
+		int lastPost = 0;
+		int reputation = atoi((char*) xmlGetProp(ptr, (xmlChar *) "Reputation"));
+ 		add_myuser(id, name, shortBio, nr_posts, lastPost, reputation);
 		ptr = ptr->next->next;
 
 	}
@@ -113,7 +120,6 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 			char * ownerUserId = (char *) xmlGetProp(ptr, (xmlChar *) "OwnerUserId");
 			Date creationDate = xmlCreationDate_to_Date((char*) xmlGetProp(ptr, (xmlChar *) "CreationDate"));
 			if (postTypeId == '1') {
-			printf("luis é nabo\n");
 				char * title = (char *) xmlGetProp(ptr, (xmlChar *) "Title");
 				int nanswers = atoi((char *) xmlGetProp(ptr, (xmlChar *) "AnswerCount"));
 				GSList * tags = getTags(com->tagshash, (char *) xmlGetProp(ptr, (xmlChar *) "Tags"));
@@ -121,7 +127,6 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 				add_question_to_posts(title, nanswers, tags, lastActivityDate, postTypeId, id, ownerUserId, creationDate);
 			}
 			else if (postTypeId == '2') {
-				printf("adsadsadsa\n");
 				int parentId = atoi ((char *) xmlGetProp(ptr, (xmlChar *) "ParentId"));
 				int comments = atoi ((char *) xmlGetProp(ptr, (xmlChar *) "CommentCount"));
 				int upVotes = 0;
