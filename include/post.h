@@ -9,7 +9,9 @@
 
 typedef struct post * POST;
 
-POST create_post(xmlNodePtr ptr, GHashTable* tags);
+POST create_question(char * title, int nanswers, GSList * tags, Date lastActivityDate, char postTypeId, int id, char * ownerUserId, Date creationDate);
+
+POST create_answer(int parentId, int comments, int upVotes, int downVotes, char postTypeId, int id, char * ownerUserId, Date creationDate);
 
 int get_postId(POST p);
 

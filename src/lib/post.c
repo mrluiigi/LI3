@@ -23,28 +23,31 @@ struct post {
 	Date creationDate;
 };
 
-POST create_post(xmlNodePtr ptr, GHashTable* tags) {
+POST create_question(char * title, int nanswers, GSList * tags, Date lastActivityDate, char postTypeId, int id, char * ownerUserId, Date creationDate){
 	POST p = malloc(sizeof(struct post));
-	p->postTypeId = ((char *) xmlGetProp(ptr, (xmlChar *) "PostTypeId"))[0];
-	p->id = atoi((char *) xmlGetProp(ptr, (xmlChar *) "Id"));
-	p->ownerUserId = (char *) xmlGetProp(ptr, (xmlChar *) "OwnerUserId");
-	p->creationDate = xmlCreationDate_to_Date((char*) xmlGetProp(ptr, (xmlChar *) "CreationDate"));
-	if (p->postTypeId == '1') {
-		QUESTION q = malloc(sizeof(struct question));
-		q->title = (char *) xmlGetProp(ptr, (xmlChar *) "Title");
-		q->nanswers = atoi((char *) xmlGetProp(ptr, (xmlChar *) "AnswerCount"));
-		q->tags = getTags(tags, (char *) xmlGetProp(ptr, (xmlChar *) "Tags"));
-		q->lastActivityDate = xmlCreationDate_to_Date((char*) xmlGetProp(ptr, (xmlChar *) "LastActivityDate"));
-		p->q = q;
-	}
-	else if (p->postTypeId == '2') {
-		ANSWER a = malloc(sizeof(struct answer));
-		a->parentId = atoi ((char *) xmlGetProp(ptr, (xmlChar *) "ParentId"));
-		a->comments = atoi ((char *) xmlGetProp(ptr, (xmlChar *) "CommentCount"));
-		a->upVotes = 0;
-		a->downVotes = 0;
-		p->a = a;
-	}
+	p->q = malloc(sizeof(struct question));
+	p->q->title = title;
+	p->q->nanswers = nanswers;
+	p->q->tags = tags;
+	p->q->lastActivityDate = lastActivityDate;
+	p->postTypeId = postTypeId;
+	p->id = id;
+	p->ownerUserId = ownerUserId;
+	p->creationDate = creationDate;
+	return p;
+}
+
+POST create_answer(int parentId, int comments, int upVotes, int downVotes, char postTypeId, int id, char * ownerUserId, Date creationDate){
+	POST p = malloc(sizeof(struct post));
+	p->a = malloc(sizeof(struct answer));
+	p->a->parentId = parentId;
+	p->a->comments = comments;
+	p->a->upVotes = upVotes;
+	p->a->downVotes = downVotes;
+	p->postTypeId = postTypeId;
+	p->id = id;
+	p->ownerUserId = ownerUserId;
+	p->creationDate = creationDate;
 	return p;
 }
 

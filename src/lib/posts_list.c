@@ -19,8 +19,13 @@ void init_posts() {
 	posts->months_hash = g_hash_table_new (g_direct_hash, g_direct_equal);
 }
 
-void add_to_posts(xmlNodePtr ptr, GHashTable* tagshash) {
-	POST p = create_post(ptr, tagshash);
+void add_question_to_posts(char * title, int nanswers, GSList * tags, Date lastActivityDate, char postTypeId, int id, char * ownerUserId, Date creationDate) {
+	POST p = create_question(title, nanswers, tags, lastActivityDate, postTypeId, id, ownerUserId, creationDate);
+	posts->list = g_slist_prepend(posts->list, p);
+}
+
+void add_answer_to_posts(int parentId, int comments, int upVotes, int downVotes, char postTypeId, int id, char * ownerUserId, Date creationDate) {
+	POST p = create_answer(parentId, comments, upVotes, downVotes, postTypeId, id, ownerUserId, creationDate);
 	posts->list = g_slist_prepend(posts->list, p);
 }
 
@@ -29,7 +34,7 @@ void finalize() {
 	for(GSList* l = posts->list; l; l = l->next){
 		POST p = (POST) l->data;
 		gpointer k = get_owner_key(p);
-		find_and_set_user_lastPost(k, get_postId(p));
+		//find_and_set_user_lastPost(k, get_postId(p));
 		g_hash_table_insert(posts->hash, get_post_key(p), l);
 		
 		Date d = get_creationDate(p);

@@ -88,19 +88,16 @@ void loadUsers(TAD_community com, char *dump_path, char *file){
 void loadPosts(TAD_community com, char *dump_path, char *file){
 	xmlDocPtr doc;
 	xmlNodePtr cur, ptr;
-	//Concatena o file ao dump_path
 	char file_posts[100];
 	strcpy(file_posts, filePath(dump_path, file));
 	//-------------------------
 	doc = xmlParseFile(file_posts);
-	//returns!
 	if(doc == NULL){
 		fprintf(stderr, "Document not parsed successfully.\n");
 		return;
 	}
 	cur = xmlDocGetRootElement(doc);
 
-	//returns!
 	if(cur == NULL){
 		fprintf(stderr, "empty document\n");
 		xmlFreeDoc(doc);
@@ -110,33 +107,32 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 	ptr = ptr->next;
 
 	while(ptr != NULL){
-		char * postTypeId = (char *) xmlGetProp(ptr, (xmlChar *) "PostTypeId");
-		if((strcmp(postTypeId, "1")==0) || (strcmp(postTypeId, "2")==0)){
-			add_to_posts(ptr, com->tagshash);
-			
-		//	com->posts = g_slist_prepend(com->posts, p);
-		//	posts_size++;
+		char postTypeId = xmlGetProp(ptr, (xmlChar *) "PostTypeId")[0];
+		if(postTypeId == '1' || postTypeId == '2'){
+			int id = atoi((char *) xmlGetProp(ptr, (xmlChar *) "Id"));
+			char * ownerUserId = (char *) xmlGetProp(ptr, (xmlChar *) "OwnerUserId");
+			Date creationDate = xmlCreationDate_to_Date((char*) xmlGetProp(ptr, (xmlChar *) "CreationDate"));
+			if (postTypeId == '1') {
+			printf("luis é nabo\n");
+				char * title = (char *) xmlGetProp(ptr, (xmlChar *) "Title");
+				int nanswers = atoi((char *) xmlGetProp(ptr, (xmlChar *) "AnswerCount"));
+				GSList * tags = getTags(com->tagshash, (char *) xmlGetProp(ptr, (xmlChar *) "Tags"));
+				Date lastActivityDate = xmlCreationDate_to_Date((char*) xmlGetProp(ptr, (xmlChar *) "LastActivityDate"));
+				add_question_to_posts(title, nanswers, tags, lastActivityDate, postTypeId, id, ownerUserId, creationDate);
+			}
+			else if (postTypeId == '2') {
+				printf("adsadsadsa\n");
+				int parentId = atoi ((char *) xmlGetProp(ptr, (xmlChar *) "ParentId"));
+				int comments = atoi ((char *) xmlGetProp(ptr, (xmlChar *) "CommentCount"));
+				int upVotes = 0;
+				int downVotes = 0;
+				add_answer_to_posts(parentId, comments, upVotes, downVotes, postTypeId, id, ownerUserId, creationDate);
+			}
 		}
 		ptr = ptr->next->next;
 	}
 
-	//GSList* l;
-
 	xmlFreeDoc(doc);
-	/*com->posts = g_slist_sort (com->posts, compare_date_list);
-	for(l = com->posts; l; l = l->next){
-		POST pf = (POST) l->data;
-		gpointer k = get_owner_key(pf);
-		find_and_set_user_lastPost(k, get_postId(pf));
-		g_hash_table_insert(com->postshash, get_post_key(pf), l);
-	}
-	GSList* li = com->posts;
-	for(int i = 0; i < posts_size; i++) {
-		Date d = get_creationDate((POST) li->data);
-		int months_key = date_to_Key(get_year(d), get_month(d)) ;
-		g_hash_table_insert(com->monthsHash, GINT_TO_POINTER(months_key), li);
-		li = g_slist_next(li);
-	}*/
 	finalize();
 }
 
