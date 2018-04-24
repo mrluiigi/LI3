@@ -28,7 +28,7 @@ TAD_community init(){
 	t = malloc(sizeof(struct TCD_community));
 	init_users();
 	init_posts();
-	t->tagshash = g_hash_table_new (g_str_hash, g_str_equal);
+	init_tags();
 	return t;
 }
 
@@ -122,7 +122,7 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 			if (postTypeId == '1') {
 				char * title = (char *) xmlGetProp(ptr, (xmlChar *) "Title");
 				int nanswers = atoi((char *) xmlGetProp(ptr, (xmlChar *) "AnswerCount"));
-				GSList * tags = getTags(com->tagshash, (char *) xmlGetProp(ptr, (xmlChar *) "Tags"));
+				GSList * tags = getTags((char *) xmlGetProp(ptr, (xmlChar *) "Tags"));
 				Date lastActivityDate = xmlCreationDate_to_Date((char*) xmlGetProp(ptr, (xmlChar *) "LastActivityDate"));
 				add_question_to_posts(title, nanswers, tags, lastActivityDate, postTypeId, id, ownerUserId, creationDate);
 			}
@@ -172,7 +172,9 @@ void loadTags(TAD_community com, char *dump_path, char *file){
 	ptr = ptr->next;
 
 	while(ptr != NULL){
-		g_hash_table_insert(com->tagshash, (char *) xmlGetProp(ptr, (xmlChar *) "TagName"), GINT_TO_POINTER(atoi((char *) xmlGetProp(ptr, (xmlChar *) "Id"))));
+		char * tag_name =  (char *) xmlGetProp(ptr, (xmlChar *) "TagName");
+		int tag_id = (atoi((char *) xmlGetProp(ptr, (xmlChar *) "Id")));
+		insert_tag(tag_name, tag_id);
 		ptr = ptr->next->next;
 	}
 	xmlFreeDoc(doc);
@@ -316,7 +318,7 @@ LONG_pair total_posts(TAD_community com, Date begin, Date end){
 	QUERY 4
  */
 LONG_list questions_with_tag(TAD_community com, char* tag, Date begin, Date end){
-	gpointer tag_id = g_hash_table_lookup(com->tagshash, tag);
+	gpointer tag_id = convert_tag_name_to_id(tag);
 
 	int size=0;
 	LONG_list list = NULL;
