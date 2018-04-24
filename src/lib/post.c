@@ -26,13 +26,13 @@ struct post {
 POST create_question(char * title, int nanswers, GSList * tags, Date lastActivityDate, char postTypeId, int id, char * ownerUserId, Date creationDate){
 	POST p = malloc(sizeof(struct post));
 	p->q = malloc(sizeof(struct question));
-	p->q->title = title;
+	p->q->title = mystrdup(title);
 	p->q->nanswers = nanswers;
 	p->q->tags = tags;
 	p->q->lastActivityDate = lastActivityDate;
 	p->postTypeId = postTypeId;
 	p->id = id;
-	p->ownerUserId = ownerUserId;
+	p->ownerUserId = mystrdup(ownerUserId);
 	p->creationDate = creationDate;
 	return p;
 }
@@ -46,7 +46,7 @@ POST create_answer(int parentId, int comments, int upVotes, int downVotes, char 
 	p->a->downVotes = downVotes;
 	p->postTypeId = postTypeId;
 	p->id = id;
-	p->ownerUserId = ownerUserId;
+	p->ownerUserId = mystrdup(ownerUserId);
 	p->creationDate = creationDate;
 	return p;
 }
@@ -78,11 +78,11 @@ int get_parent(POST p) {
 }
 
 char * get_title(POST p) {  
-	return p->q->title;
+	return mystrdup(p->q->title);
 }
 
 char * get_ownerUserId(POST p) {  
-	return p->ownerUserId;
+	return mystrdup(p->ownerUserId);
 }
 
 int get_nanswers(POST p){

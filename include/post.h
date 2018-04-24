@@ -3,6 +3,7 @@
 #include "date.h"
 #include "mydate.h"
 #include "tags.h"
+#include "common.h"
 #include "/usr/include/libxml2/libxml/parser.h"
 #include "/usr/include/libxml2/libxml/xmlIO.h"
 
@@ -32,7 +33,6 @@ GSList * get_tags(POST p);
 int get_nanswers(POST p);
 
 int contains_tag(POST p, gpointer tag_id);
-
 
 int isQuestion(POST p);
 

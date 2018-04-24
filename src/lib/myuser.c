@@ -14,8 +14,8 @@ struct user_ht{
 USER_HT create_myuser(int id, char * name, char * shortBio, int nr_posts, int lastPost, int reputation) {
 	USER_HT u = malloc(sizeof(struct user_ht));
 	u->id = id;
-	u->name = name;
-	u->shortBio = shortBio;
+	u->name = mystrdup(name);
+	u->shortBio = mystrdup(shortBio);
 	u->nr_posts = nr_posts;
 	u->lastPost = lastPost;
 	u->reputation = reputation;
@@ -33,12 +33,12 @@ int get_user_id(USER_HT user) {
 
 char * get_user_name(USER_HT user) {
 	if (!user) return NULL;
-	return user->name;
+	return mystrdup(user->name);
 }
 
 char * get_user_shortBio(USER_HT user) {
 	if (!user) return NULL;
-	return user->shortBio;
+	return mystrdup(user->shortBio);
 }
 
 
