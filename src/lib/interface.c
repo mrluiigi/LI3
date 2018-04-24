@@ -14,22 +14,11 @@
 
 struct TCD_community{
 	//USERS users;
-	GHashTable *postshash;
+	//GHashTable *postshash;
 	GHashTable *tagshash;
-	GSList *posts;
-	GHashTable *monthsHash;         //guarda o primeiro posts de cada mes
+	//GSList *posts;
+	//GHashTable *monthsHash;         //guarda o primeiro posts de cada mes
 };
-
-
-/*
-* Compara as datas do primeiro elemnto de duas listas
-*/
-int compare_date_list (gconstpointer a, gconstpointer b) {
-	POST p1 = (POST) a;
-	POST p2 = (POST) b;
-
-	return compare_date(get_creationDate(p1), get_creationDate(p2));
-}
 
 /**
 *	Função que inicializa a estrutura de dados
@@ -38,10 +27,8 @@ TAD_community init(){
 	TAD_community t;
 	t = malloc(sizeof(struct TCD_community));
 	init_users();
-	t->postshash = g_hash_table_new (g_direct_hash, g_direct_equal);
-	t->posts = NULL;
+	init_posts();
 	t->tagshash = g_hash_table_new (g_str_hash, g_str_equal);
-	t->monthsHash = g_hash_table_new (g_direct_hash, g_direct_equal);
 	return t;
 }
 
@@ -118,8 +105,6 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 		fprintf(stderr, "empty document\n");
 		xmlFreeDoc(doc);
 	}
-	
-	int posts_size = 0;
 
 	ptr = cur->xmlChildrenNode;
 	ptr = ptr->next;
@@ -127,23 +112,18 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 	while(ptr != NULL){
 		char * postTypeId = (char *) xmlGetProp(ptr, (xmlChar *) "PostTypeId");
 		if((strcmp(postTypeId, "1")==0) || (strcmp(postTypeId, "2")==0)){
-			POST p = create_post(ptr, com->tagshash);
-			if(get_ownerUserId(p) != NULL){
-				find_and_increment_user_nr_posts(get_owner_key(p));
-			}
+			add_to_posts(ptr, com->tagshash);
 			
-			com->posts = g_slist_prepend(com->posts, p);
-			posts_size++;
+		//	com->posts = g_slist_prepend(com->posts, p);
+		//	posts_size++;
 		}
 		ptr = ptr->next->next;
 	}
 
-	sort_users_by_nr_posts();
-
-	GSList* l;
+	//GSList* l;
 
 	xmlFreeDoc(doc);
-	com->posts = g_slist_sort (com->posts, compare_date_list);
+	/*com->posts = g_slist_sort (com->posts, compare_date_list);
 	for(l = com->posts; l; l = l->next){
 		POST pf = (POST) l->data;
 		gpointer k = get_owner_key(pf);
@@ -156,7 +136,8 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 		int months_key = date_to_Key(get_year(d), get_month(d)) ;
 		g_hash_table_insert(com->monthsHash, GINT_TO_POINTER(months_key), li);
 		li = g_slist_next(li);
-	}
+	}*/
+	finalize();
 }
 
 /**
@@ -225,7 +206,7 @@ void loadVotes(TAD_community com, char *dump_path, char *file){
 		char* voteTypeId = (char *) xmlGetProp(ptr, (xmlChar *) "VoteTypeId");
 		if((strcmp(voteTypeId, "2") == 0) || (strcmp(voteTypeId, "3") == 0)){
 			char* postId = (char *) xmlGetProp(ptr, (xmlChar *) "PostId");
-			POST p = find_post(com->postshash, atoi(postId));
+			POST p = find_post(atoi(postId));
 			if(p != NULL && isAnswer(p)){
 				if(strcmp(voteTypeId, "2") == 0){
 					addUpVote(p);				
@@ -240,18 +221,33 @@ void loadVotes(TAD_community com, char *dump_path, char *file){
 	xmlFreeDoc(doc);
 }
 
+
+void set_users_nr_posts_and_last_post() {
+	PostsList l = get_posts_list();
+	for(; l; l = get_next(l)) {
+		POST p = get_post(l);
+		gpointer k = get_owner_key(p);
+		find_and_set_user_lastPost(k, get_postId(p));
+		if(get_ownerUserId(p) != NULL){
+			//printf("%d\n", get_user_nr_posts(find_user(atoi(get_ownerUserId(p)))));
+			find_and_increment_user_nr_posts(get_owner_key(p));
+			//printf("%d\n", get_user_nr_posts(find_user(atoi(get_ownerUserId(p)))));
+			//printf("\n");
+		}	
+	}
+	sort_users_by_nr_posts();
+}
+
+
 /**
   Função que faz load dos ficheiros para a estrutura de dados
 */
 TAD_community load(TAD_community com, char* dump_path){
-	
 	loadTags(com, dump_path, "Tags.xml");
-
 	loadUsers(com, dump_path, "Users.xml");
-
 	loadPosts(com, dump_path, "Posts.xml");
-
 	loadVotes(com, dump_path, "Votes.xml");
+	set_users_nr_posts_and_last_post();
 
 	return com;
 }
@@ -267,7 +263,7 @@ STR_pair info_from_post(TAD_community com, long id){
 
 	STR_pair pair;
 
-	p = find_post(com->postshash, id);
+	p = find_post(id);
 	
 	//Caso nenhum post tenha o id procurado
 	if(p==NULL){
@@ -279,7 +275,7 @@ STR_pair info_from_post(TAD_community com, long id){
 		pair = create_str_pair(get_title(p), get_user_name(u));
 	}
 	else if(isAnswer(p)){
-		p = find_post(com->postshash, get_parent(p));
+		p = find_post(get_parent(p));
 
 		u = find_user(atoi(get_ownerUserId(p)));
 		pair = create_str_pair(get_title(p), get_user_name(u));	
@@ -292,7 +288,7 @@ STR_pair info_from_post(TAD_community com, long id){
   QUERY 2
 */
 LONG_list top_most_active(TAD_community com, int N){
-	return get_N_users_with_most_nr_posts( N);
+	return get_N_users_with_most_nr_posts(N);
 }
 
 /**
@@ -301,15 +297,15 @@ LONG_list top_most_active(TAD_community com, int N){
 LONG_pair total_posts(TAD_community com, Date begin, Date end){
 	long answer = 0, question = 0;
 	LONG_pair pair;
-	GSList *l = find_by_date(com->posts, com->monthsHash, end);
+	PostsList l = find_by_date(end);
 
-	while(l && compare_date(begin, get_creationDate((POST) l->data)) != -1 ){
-		if(isQuestion( (POST) l->data))
+	while(l && compare_date(begin, get_creationDate(get_post(l))) != -1 ){
+		if(isQuestion(get_post(l)))
 			question++;
-		else if(isAnswer((POST) l->data))
+		else if(isAnswer(get_post(l)))
 			answer++;
 
-		l = l->next;
+		l = get_next(l);
 	}
 	pair = create_long_pair(question, answer);
 	return pair;
@@ -323,13 +319,13 @@ LONG_list questions_with_tag(TAD_community com, char* tag, Date begin, Date end)
 
 	int size=0;
 	LONG_list list = NULL;
-	GSList *l = NULL;
-	GSList *temp = NULL;
+	PostsList l = NULL;
+	GSList *temp = NULL; //???
 	POST p = NULL;
 
-	l = find_by_date(com->posts, com->monthsHash, end);
+	l = find_by_date(end);
 	while(l && compare_date(begin, get_creationDate((POST) l->data)) != -1 ){
-		p = (POST)l->data;
+		p = get_post(l);
 		if(isQuestion(p)) {
 			if(contains_tag(p, tag_id)){
 				temp = g_slist_append(temp, get_post_key(p));
@@ -337,7 +333,7 @@ LONG_list questions_with_tag(TAD_community com, char* tag, Date begin, Date end)
 			}
 		}
 
-		l = l->next;
+		l = get_next(l);
 	}
 	list = create_list(size);
 	for(int i=0; i<size; i++){
@@ -359,14 +355,14 @@ USER get_user_info(TAD_community com, long id) {
     int i = 0;
     POST p = NULL;
     int lp = get_user_lastPost(u);
-	GSList* l = g_hash_table_lookup(com->postshash, GINT_TO_POINTER(lp));
+	PostsList l = find_post_in_list(lp);
 	while(l && i < 10 && i < nr_posts){
-		p = (POST)l->data;
+		p = get_post(l);
 		if( (get_ownerUserId(p) != NULL) && atoi(get_ownerUserId(p)) == id) {
 			post_history[i] = get_postId(p);
 			i++;
 		}
-		l = l->next;
+		l = get_next(l);
 	}
 	for(; i < 10; i++) {
 		post_history[i] = 0;
@@ -400,15 +396,15 @@ int compare_score(gconstpointer a, gconstpointer b){
 LONG_list most_voted_answers(TAD_community com, int N, Date begin, Date end){
 	LONG_list list;
 	
-	GSList *l;
+	PostsList l;
 	GSList *aux = NULL;
-	l = find_by_date(com->posts, com->monthsHash, end);
+	l = find_by_date(end);
 
-	while(l && compare_date(begin, get_creationDate((POST) l->data)) != -1 ){
-		if(isAnswer((POST) l->data)){
-			aux = g_slist_prepend(aux, ((POST) l->data) );
+	while(l && compare_date(begin, get_creationDate(get_post(l))) != -1 ){
+		if(isAnswer(get_post(l))){
+			aux = g_slist_prepend(aux, (get_post(l)));
 		}
-		l = l->next;
+		l = get_next(l);
 	}
 
 	//ordena a lista por ordem decrescente de score
@@ -432,16 +428,16 @@ LONG_list most_answered_questions(TAD_community com, int N, Date begin, Date end
 
 	LONG_list list;
 	
-	GSList *l;
+	PostsList l;
 	GSList *aux = NULL;
 
-	l = find_by_date(com->posts, com->monthsHash, end);
+	l = find_by_date(end);
 
-	while(l && compare_date(begin, get_creationDate((POST) l->data)) != -1 ){
-		if(isQuestion( (POST) l->data)){
-			aux = g_slist_prepend(aux, ((POST) l->data) );
+	while(l && compare_date(begin, get_creationDate(get_post(l))) != -1 ){
+		if(isQuestion(get_post(l))){
+			aux = g_slist_prepend(aux, (get_post(l)));
 		}
-		l = l->next;
+		l = get_next(l);
 	}
 
 	aux = g_slist_sort(aux, compare_nanswers);
@@ -461,15 +457,15 @@ LONG_list most_answered_questions(TAD_community com, int N, Date begin, Date end
 LONG_list contains_word(TAD_community com, char* word, int N){
 	LONG_list list = create_list(N);
 	int i = 0;
-	GSList *l = com->posts;
+	PostsList l = get_posts_list();
 	POST p;
 	while(i < N && l != NULL){
-		p = ((POST) l->data);
+		p = get_post(l);
 		if(isQuestion(p) && (strstr(get_title(p), word)) != NULL){
-			set_list(list, i, get_postId((POST) l->data));
+			set_list(list, i, get_postId(p));
 			i++;
 		}
-		l = l->next;
+		l = get_next(l);
 	}
 	for(;i < N; i++){
 		set_list(list, i, 0);
@@ -478,25 +474,6 @@ LONG_list contains_word(TAD_community com, char* word, int N){
 }
 
 
-GSList* find_most_recent_post(GSList* l1, GSList* l2){
-	if(!l1 || !l2) return NULL;
-	int b = compare_date_list (l1->data, l2->data);
-	if(b == -1){
-		return l1;
-	}
-	else if(b == 0){
-		GSList* aux = l1;
-		int f = 0;
-		while(aux && compare_date_list (aux->data, l2->data) == 0 && f != 0){
-			if(aux == l2){
-				f = 1;
-			}
-		}
-		if(f == 1) return l1;
-		else return l2;
-	}
-	else return l2;
-}
 
 
 /**
@@ -534,20 +511,20 @@ LONG_list both_participated(TAD_community com, long id1, long id2, int N){
 
 	LONG_list res = create_list(N);
 
-	GSList* l1 = find_post_in_list(com->postshash, get_user_lastPost(user1));
-	GSList* l2 = find_post_in_list(com->postshash, get_user_lastPost(user2));
+	GSList* l1 = find_post_in_list(get_user_lastPost(user1));
+	GSList* l2 = find_post_in_list(get_user_lastPost(user2));
 	
-	GSList* l = find_most_recent_post(l1, l2);
+	PostsList l = find_most_recent_post(l1, l2);
 	if (!l)
 		return NULL;
 
 	while(l && res_size < N && (posts_i1_found < nposts1 || posts_i2_found < nposts2)) {
-		POST p = (POST) l->data;
+		POST p = get_post(l);
 		if(get_ownerUserId(p) != NULL){
 			if(isAnswer(p)) {
 				if(atoi(get_ownerUserId(p)) == id1) {
-					if(get_parent_owner(com->postshash, p) != NULL) {
-						if(atoi(get_parent_owner(com->postshash, p)) == id2) {
+					if(get_parent_owner(p) != NULL) {
+						if(atoi(get_parent_owner(p)) == id2) {
 							queuef[queuef_size] =  get_parent(p);
 							queuef_size++;
 						}
@@ -573,8 +550,8 @@ LONG_list both_participated(TAD_community com, long id1, long id2, int N){
 					posts_i1_found++;
 				}
 				else if(atoi(get_ownerUserId(p)) == id2) {
-					if(get_parent_owner(com->postshash, p) != NULL) {
-						if(atoi(get_parent_owner( com->postshash, p)) == id1) {
+					if(get_parent_owner(p) != NULL) {
+						if(atoi(get_parent_owner( p)) == id1) {
 							queuef[queuef_size] =  get_parent(p);
 							queuef_size++;
 						}
@@ -622,7 +599,7 @@ LONG_list both_participated(TAD_community com, long id1, long id2, int N){
 				f = 0;
 			}
 		}
-		l = l->next;
+		l = get_next(l);
 	}
 	for (; res_size < N; res_size++ ) {
 		set_list(res, res_size ,0);
@@ -635,42 +612,44 @@ LONG_list both_participated(TAD_community com, long id1, long id2, int N){
 	QUERY 10
 */
 long better_answer(TAD_community com, long id){
-	GSList *l;
+	PostsList l;
 	int n =0;
-	POST p = find_post(com->postshash, id);
+	POST p = find_post(id);
 	int nanswers = get_nanswers(p);
 	int best, temp; 
 	long answer;
 
-	l = find_by_date(com->posts, com->monthsHash, get_lastActivityDate(p));
+	l = find_by_date(get_lastActivityDate(p));
 
-	while(l != NULL && n < 1 && (compare_date_list(p, (POST) l->data) != -1)){
-		if(isAnswer((POST) l->data) && get_parent((POST) l->data) == id){
+	while(l != NULL && n < 1 && (compare_date_list(p, get_post(l)) != -1)){
+		POST ans = get_post(l);
+		if(isAnswer(ans) && get_parent(ans) == id){
 			nanswers++;
 			//gpointer owner_key = get_owner_key(p);
 			USER_HT user = find_user(atoi(get_ownerUserId(p)));
-			best = get_score((POST) l->data)*0.45 + (get_user_reputation(user))*0.25 + 
-				  (get_upvotes((POST) l->data) + get_downvotes((POST) l->data))*0.2 + get_comments((POST) l->data)*0.1;
-			printf("%d\n", best);
-			answer = get_postId((POST) l->data);
+			best = get_score(ans)*0.45 + (get_user_reputation(user))*0.25 + 
+				  (get_upvotes(ans) + get_downvotes(ans))*0.2 + get_comments(ans)*0.1;
+		//	printf("%d\n", best);
+			answer = get_postId(ans);
 		}
-		l = l->next;
+		l = get_next(l);
 	} 
 
-	while(l != NULL && n < nanswers && (compare_date_list(p, (POST) l->data) != -1)){
-		if(isAnswer((POST) l->data) && get_parent((POST) l->data) == id){
+	while(l != NULL && n < nanswers && (compare_date_list(p, get_post(l)) != -1)){
+		POST ans = get_post(l);
+		if(isAnswer(ans) && get_parent(ans) == id){
 			nanswers++;
 			//gpointer owner_key = get_owner_key(p);
 			USER_HT user = find_user(atoi(get_ownerUserId(p)));
-			temp = get_score((POST) l->data)*0.45 + (get_user_reputation(user))*0.25 + 
-				  (get_upvotes((POST) l->data) + get_downvotes((POST) l->data))*0.2 + get_comments((POST) l->data)*0.1;
-			printf("%d\n", temp);
+			temp = get_score(ans)*0.45 + (get_user_reputation(user))*0.25 + 
+				  (get_upvotes(ans) + get_downvotes(ans))*0.2 + get_comments(ans)*0.1;
+			//printf("%d\n", temp);
 			if(temp > best){
 				best = temp;
-				answer = get_postId((POST) l->data);
+				answer = get_postId(ans);
 			}
 		}
-		l = l->next;
+		l = get_next(l);
 	}
 	return answer;
 }
@@ -716,23 +695,24 @@ int compare_numTag(gconstpointer a, gconstpointer b){
 LONG_list most_used_best_rep(TAD_community com, int N, Date begin, Date end){
 	LONG_list list = get_N_users_with_most_reputation(N);
 	GHashTable* h = g_hash_table_new (g_direct_hash, g_direct_equal);
-	GSList *l = find_by_date(com->posts, com->monthsHash, end);
+	PostsList l = find_by_date(end);
 	GSList *aux = NULL;
 	GSList *tags = NULL;
 
-	while(l && (compare_date(begin, get_creationDate((POST) l->data)) != -1)){
+	while(l && (compare_date(begin, get_creationDate(get_post(l))) != -1)){
+		POST p = get_post(l);
 		int i = 0;
-		char *ownerUserId = get_ownerUserId((POST) l->data);
+		char *ownerUserId = get_ownerUserId(p);
 
-		if(isQuestion((POST) l->data) && ownerUserId != NULL){
+		if(isQuestion(p) && ownerUserId != NULL){
 			for(i = 0; i < N && atoi(ownerUserId) != get_list(list, i); i++);
 			
 			if(atoi(ownerUserId) == get_list(list, i)){
-				tags = get_tags((POST) l->data);
+				tags = get_tags(p);
 				aux = addTags(h,aux, tags);
 			}
 		}
-		l = l->next;
+		l = get_next(l);
 	}
 	LONG_list res = create_list(N);
 	aux = g_slist_sort(aux, compare_numTag);
