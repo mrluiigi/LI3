@@ -129,5 +129,6 @@ void free_users() {
 		g_hash_table_destroy (users->hash);
 		g_slist_free (users->users_by_reputation);
 		g_slist_free (users->users_by_nr_posts);
+		free(users);
 	}
 }

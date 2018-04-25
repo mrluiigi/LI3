@@ -43,15 +43,16 @@ struct post {
  */
 POST create_question(char * title, int nanswers, GSList * tags, Date lastActivityDate, char postTypeId, int id, char * ownerUserId, Date creationDate){
 	POST p = malloc(sizeof(struct post));
+	p->a = NULL;
 	p->q = malloc(sizeof(struct question));
 	p->q->title = mystrdup(title);
 	p->q->nanswers = nanswers;
-	p->q->tags = tags;
-	p->q->lastActivityDate = lastActivityDate;
+	p->q->tags = g_slist_copy(tags);
+	p->q->lastActivityDate = createDate(get_day(lastActivityDate),get_month(lastActivityDate),get_year(lastActivityDate));
 	p->postTypeId = postTypeId;
 	p->id = id;
 	p->ownerUserId = mystrdup(ownerUserId);
-	p->creationDate = creationDate;
+	p->creationDate = createDate(get_day(creationDate),get_month(creationDate),get_year(creationDate));
 	return p;
 }
 /**
@@ -59,6 +60,7 @@ POST create_question(char * title, int nanswers, GSList * tags, Date lastActivit
  */
 POST create_answer(int parentId, int comments, int score, char postTypeId, int id, char * ownerUserId, Date creationDate){
 	POST p = malloc(sizeof(struct post));
+	p->q = NULL;
 	p->a = malloc(sizeof(struct answer));
 	p->a->parentId = parentId;
 	p->a->comments = comments;
@@ -66,7 +68,7 @@ POST create_answer(int parentId, int comments, int score, char postTypeId, int i
 	p->postTypeId = postTypeId;
 	p->id = id;
 	p->ownerUserId = mystrdup(ownerUserId);
-	p->creationDate = creationDate;
+	p->creationDate = createDate(get_day(creationDate),get_month(creationDate),get_year(creationDate));
 	return p;
 }
 /**
@@ -129,7 +131,7 @@ int get_nanswers(POST p){
  * Devolve as tags de uma pergunta
  */
 GSList * get_tags(POST p) {
-	return p->q->tags;
+	return g_slist_copy (p->q->tags);
 }
 /**
  * Verifica se um certo post contém uma dada tag
@@ -165,11 +167,34 @@ int get_score(POST p){
  * Devolve o creationDate de um post
  */
 Date get_creationDate(POST p){
-	return p->creationDate;
+	Date cd = p->creationDate;
+	return createDate(get_day(cd),get_month(cd),get_year(cd));
 }
 /**
  * Devolve o lastActivityDate de uma pergunta
  */
 Date get_lastActivityDate(POST p){
-	return p->q->lastActivityDate;
+	Date lad = p->q->lastActivityDate;
+	return createDate(get_day(lad),get_month(lad),get_year(lad));
+
+}
+
+/**
+ * Liberta a memória alocada para um post
+ */
+void free_post(POST p) {
+	if (p) {
+		if (isQuestion(p)) {
+			free(p->q->title);
+			g_slist_free(p->q->tags);
+			free_date(p->q->lastActivityDate);
+			free(p->q);
+		}
+		else {
+			free(p->a);
+		}
+		free(p->ownerUserId);
+		free_date(p->creationDate);
+		free(p);
+	}
 }

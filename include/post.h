@@ -102,4 +102,10 @@ Date get_creationDate(POST p);
  * Devolve o lastActivityDate de uma pergunta
  */
 Date get_lastActivityDate(POST p);
+
+/**
+ * Liberta a memória alocada para um post
+ */
+void free_post(POST p);
+
 #endif

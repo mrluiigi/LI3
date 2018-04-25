@@ -44,4 +44,6 @@ POST get_post(PostsList pl);
 PostsList find_most_recent_post(PostsList l1, PostsList l2);
 
 //int compare_score(gconstpointer a, gconstpointer b);
+
+void free_posts();
 #endif

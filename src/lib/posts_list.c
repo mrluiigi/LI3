@@ -166,3 +166,16 @@ PostsList find_most_recent_post(PostsList l1, PostsList l2){
 	}
 	else return l2;
 }
+
+void free_posts_list(gpointer data) {
+	free_post((POST) data);
+} 
+
+void free_posts() {
+	if (posts) {
+		g_slist_free_full (posts->list,free_posts_list);
+		g_hash_table_destroy (posts->hash);
+		g_hash_table_destroy (posts->months_hash);
+		free(posts);
+	}
+}

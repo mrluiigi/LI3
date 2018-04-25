@@ -667,5 +667,6 @@ LONG_list most_used_best_rep(TAD_community com, int N, Date begin, Date end){
 
 TAD_community clean(TAD_community com) {
 	free_users();
+	free_posts();
 	return com;
 }
