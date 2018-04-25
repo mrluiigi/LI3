@@ -21,7 +21,7 @@ struct TCD_community{
 };
 
 /**
- *	Estrutura auxiliar para query 11
+ * Estrutura auxiliar para query 11 que guarda o id de uma tag e o número de vezes que ela foi utilizada
  */
 typedef struct auxTag{
 	int id;
@@ -256,7 +256,7 @@ TAD_community load(TAD_community com, char* dump_path){
 }
 /**
  * QUERY 1
- * Dado um id de um post retorna o título do post e o nome do autor
+ * Dado um ID de um post retorna o título do post e o nome do autor
  */
 STR_pair info_from_post(TAD_community com, long id){
 	POST p;
@@ -341,7 +341,7 @@ LONG_list questions_with_tag(TAD_community com, char* tag, Date begin, Date end)
 }
 /**
  * QUERY 5
- * Devolve a informação do perfil e os ids dos últimos 10 posts de um certo utilizador
+ * Devolve a informação do perfil e os IDs dos últimos 10 posts de um certo utilizador
  */
 USER get_user_info(TAD_community com, long id) {
 	USER_HT u = find_user( id);
