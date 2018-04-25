@@ -21,7 +21,7 @@ POST create_question(char * title, int nanswers, GSList * tags, Date lastActivit
 /**
  * Cria uma resposta com base nos parâmetros recebidos
  */
-POST create_answer(int parentId, int comments, int upVotes, int downVotes, char postTypeId, int id, char * ownerUserId, Date creationDate);
+POST create_answer(int parentId, int comments, int score, char postTypeId, int id, char * ownerUserId, Date creationDate);
 /**
  * Devolve o ID de um post
  */

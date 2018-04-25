@@ -133,9 +133,8 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 			else if (postTypeId == '2') {
 				int parentId = atoi ((char *) xmlGetProp(ptr, (xmlChar *) "ParentId"));
 				int comments = atoi ((char *) xmlGetProp(ptr, (xmlChar *) "CommentCount"));
-				int upVotes = 0;
-				int downVotes = 0;
-				add_answer_to_posts(parentId, comments, upVotes, downVotes, postTypeId, id, ownerUserId, creationDate);
+				int score = atoi((char *) xmlGetProp(ptr, (xmlChar *) "Score"));
+				add_answer_to_posts(parentId, comments, score, postTypeId, id, ownerUserId, creationDate);
 			}
 		}
 		ptr = ptr->next->next;
@@ -181,53 +180,6 @@ void loadTags(TAD_community com, char *dump_path, char *file){
 	xmlFreeDoc(doc);
 }
 /**
-* Função que faz load ao file Votes.xml
-*/
-void loadVotes(TAD_community com, char *dump_path, char *file){
-	xmlDocPtr doc;
-	xmlNodePtr cur, ptr;
-
-	char file_tags[100];
-	strcpy(file_tags, filePath(dump_path, file));
-
-	doc = xmlParseFile(file_tags);
-
-
-	if(doc == NULL){
-		fprintf(stderr, "Document not parsed successfully.\n");
-		return;
-	}
-
-	cur = xmlDocGetRootElement(doc);
-
-	if(cur == NULL){
-		fprintf(stderr, "empty document\n");
-		xmlFreeDoc(doc);
-		return;
-	}
-	
-	ptr = cur->xmlChildrenNode;
-	ptr = ptr->next;
-	
-	while(ptr != NULL){
-		char* voteTypeId = (char *) xmlGetProp(ptr, (xmlChar *) "VoteTypeId");
-		if((strcmp(voteTypeId, "2") == 0) || (strcmp(voteTypeId, "3") == 0)){
-			char* postId = (char *) xmlGetProp(ptr, (xmlChar *) "PostId");
-			POST p = find_post(atoi(postId));
-			if(p != NULL && isAnswer(p)){
-				if(strcmp(voteTypeId, "2") == 0){
-					addUpVote(p);				
-				}
-				else{
-					addDownVote(p);
-				}
-			}
-		}
-		ptr = ptr->next->next;
-	}
-	xmlFreeDoc(doc);
-}
-/**
  *	Função que para cada user define o número de posts que este tem e qual o último post feito
  */
 void set_users_nr_posts_and_last_post() {
@@ -249,7 +201,6 @@ TAD_community load(TAD_community com, char* dump_path){
 	loadTags(com, dump_path, "Tags.xml");
 	loadUsers(com, dump_path, "Users.xml");
 	loadPosts(com, dump_path, "Posts.xml");
-	loadVotes(com, dump_path, "Votes.xml");
 	set_users_nr_posts_and_last_post();
 
 	return com;
@@ -600,7 +551,7 @@ long better_answer(TAD_community com, long id){
 			n++;
 			USER_HT user = find_user(atoi(get_ownerUserId(ans)));
 			best = get_score(ans)*0.45 + (get_user_reputation(user))*0.25 + 
-				  (get_upvotes(ans) + get_downvotes(ans))*0.2 + get_comments(ans)*0.1;
+				  get_score(ans)*0.2 + get_comments(ans)*0.1;
 			answer = get_postId(ans);
 		}
 		l = get_next(l);
@@ -613,7 +564,7 @@ long better_answer(TAD_community com, long id){
 			//gpointer owner_key = get_owner_key(p);
 			USER_HT user = find_user(atoi(get_ownerUserId(ans)));
 			temp = get_score(ans)*0.45 + (get_user_reputation(user))*0.25 + 
-				  (get_upvotes(ans) + get_downvotes(ans))*0.2 + get_comments(ans)*0.1;
+				  get_score(ans)*0.2 + get_comments(ans)*0.1;
 			//printf("%d\n", temp);
 			if(temp > best){
 				best = temp;
@@ -633,6 +584,7 @@ GSList* addTags(GHashTable* h, GSList* res, GSList* tags){
 		aux = g_hash_table_lookup(h, GINT_TO_POINTER(tags->data));
 		if(aux) {
 			aux->num += 1;
+			printf("aaa\n");
 		}
 		else {
 			AUXTAG a = (AUXTAG) malloc(sizeof(struct auxTag));
@@ -658,8 +610,11 @@ int compare_numTag(gconstpointer a, gconstpointer b){
 		return -1;							
 	else if (a1->num < a2->num) 
 		return 1;
-	else 
-		return 0;
+	else if (a1->id < a2->id) 
+		return -1;
+	else if (a1->id > a2->id) 
+		return 1;
+	else return 0;
 }
 /**
  * QUERY 11

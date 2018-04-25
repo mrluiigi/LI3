@@ -20,10 +20,8 @@ typedef struct answer{
 	int parentId;
 	/** Número de comentários de uma resposta */
 	int comments;
-	/** Número de UpVotes */
-	int upVotes;
-	/** Número de DownVotes */
-	int downVotes;
+	/** Score de uma resposta */
+	int score;
 }*ANSWER;
 /**
  * Estrutura que guarda informação sobre um post
@@ -59,13 +57,12 @@ POST create_question(char * title, int nanswers, GSList * tags, Date lastActivit
 /**
  * Cria uma resposta com base nos parâmetros recebidos
  */
-POST create_answer(int parentId, int comments, int upVotes, int downVotes, char postTypeId, int id, char * ownerUserId, Date creationDate){
+POST create_answer(int parentId, int comments, int score, char postTypeId, int id, char * ownerUserId, Date creationDate){
 	POST p = malloc(sizeof(struct post));
 	p->a = malloc(sizeof(struct answer));
 	p->a->parentId = parentId;
 	p->a->comments = comments;
-	p->a->upVotes = upVotes;
-	p->a->downVotes = downVotes;
+	p->a->score = score;
 	p->postTypeId = postTypeId;
 	p->id = id;
 	p->ownerUserId = mystrdup(ownerUserId);
@@ -157,35 +154,12 @@ int isQuestion(POST p){
 int isAnswer(POST p){
 	return (p->postTypeId == '2');
 }
-/**
- * Incrementa o número de upVotes de uma resposta
- */
-void addUpVote(POST p){
-	p->a->upVotes += 1;
-}
-/**
- * Incrementa o número de downVotes de uma resposta
- */
-void addDownVote(POST p){
-	p->a->downVotes += 1;
-}
-/**
- * Devolve o número de upVotes de uma resposta
- */
-int get_upvotes(POST p){
-	return p->a->upVotes;
-}
-/**
- * Devolve o número de downVotes de uma resposta
- */
-int get_downvotes(POST p){
-	return p->a->downVotes;
-}
+
 /**
  * Devolve o score de uma resposta
  */
 int get_score(POST p){
-	return p->a->upVotes - p->a->downVotes;
+	return p->a->score;
 }
 /**
  * Devolve o creationDate de um post

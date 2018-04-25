@@ -23,8 +23,8 @@ void add_question_to_posts(char * title, int nanswers, GSList * tags, Date lastA
 	posts->list = g_slist_prepend(posts->list, p);
 }
 
-void add_answer_to_posts(int parentId, int comments, int upVotes, int downVotes, char postTypeId, int id, char * ownerUserId, Date creationDate) {
-	POST p = create_answer(parentId, comments, upVotes, downVotes, postTypeId, id, ownerUserId, creationDate);
+void add_answer_to_posts(int parentId, int comments, int score, char postTypeId, int id, char * ownerUserId, Date creationDate) {
+	POST p = create_answer(parentId, comments, score, postTypeId, id, ownerUserId, creationDate);
 	posts->list = g_slist_prepend(posts->list, p);
 }
 
