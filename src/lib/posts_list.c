@@ -6,7 +6,6 @@ static TAD_posts posts;
 
 struct TCD_posts {
 	GHashTable *hash;
-	//????GHashTable *tagshash;
 	GSList *list;
 	GHashTable *months_hash; 
 };
@@ -33,8 +32,6 @@ void finalize() {
 	posts->list = g_slist_sort (posts->list, compare_date_list);
 	for(GSList* l = posts->list; l; l = l->next){
 		POST p = (POST) l->data;
-		gpointer k = get_owner_key(p);
-		//find_and_set_user_lastPost(k, get_postId(p));
 		g_hash_table_insert(posts->hash, get_post_key(p), l);
 		
 		Date d = get_creationDate(p);

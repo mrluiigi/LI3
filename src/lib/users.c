@@ -75,8 +75,6 @@ LONG_list get_N_users_with_most_reputation(int N) {
 void find_and_increment_user_nr_posts(gpointer id_key) {
 	USER_HT user = g_hash_table_lookup(users->hash, id_key);
 	increment_user_nr_posts(user);
-	//g_hash_table_insert(users->hash, id_key, user);
-
 }
 
 LONG_list get_N_users_with_most_nr_posts(int N) {
