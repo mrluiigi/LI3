@@ -1,3 +1,6 @@
+#ifndef _USERS_H_
+#define _USERS_H_
+
 #include <glib.h>
 #include "/usr/include/libxml2/libxml/parser.h"
 #include "/usr/include/libxml2/libxml/xmlIO.h"
@@ -48,3 +51,4 @@ LONG_list get_N_users_with_most_nr_posts(int N);
 void find_and_set_user_lastPost(gpointer key, int lastPostId);
 
 void free_users();
+#endif

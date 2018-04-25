@@ -1,11 +1,10 @@
+#ifndef _MYUSER_H_
+#define _MYUSER_H_
+
 #include <glib.h>
 #include "common.h"
 #include "/usr/include/libxml2/libxml/parser.h"
 #include "/usr/include/libxml2/libxml/xmlIO.h"
-
-
-//#ifndef HEADER_FILE
-//#define HEADER_FILE
 
 /**
  * Estrutura que guarda informação sobre um user
@@ -51,4 +50,4 @@ void increment_user_nr_posts(USER_HT user);
 
 void free_myuser(USER_HT u);
 
-//#endif
+#endif

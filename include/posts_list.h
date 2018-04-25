@@ -1,3 +1,6 @@
+#ifndef _POSTS_LIST_H_
+#define _POSTS_LIST_H_
+
 #include <glib.h>
 #include <string.h>
 #include "date.h"
@@ -7,9 +10,6 @@
 #include "/usr/include/libxml2/libxml/parser.h"
 #include "/usr/include/libxml2/libxml/xmlIO.h"
 
-
-//#ifndef HEADER_FILE
-//#define HEADER_FILE
 
 typedef struct TCD_posts * TAD_posts;
 
@@ -44,5 +44,4 @@ POST get_post(PostsList pl);
 PostsList find_most_recent_post(PostsList l1, PostsList l2);
 
 //int compare_score(gconstpointer a, gconstpointer b);
-
-//#endif
+#endif

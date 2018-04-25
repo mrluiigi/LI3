@@ -1,3 +1,6 @@
+#ifndef _POST_H_
+#define _POST_H_
+
 #include <glib.h>
 #include <string.h>
 #include "date.h"
@@ -99,3 +102,4 @@ Date get_creationDate(POST p);
  * Devolve o lastActivityDate de uma pergunta
  */
 Date get_lastActivityDate(POST p);
+#endif
