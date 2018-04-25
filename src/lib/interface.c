@@ -222,7 +222,7 @@ STR_pair info_from_post(TAD_community com, long id){
 	//Caso nenhum post tenha o id procurado
 	if(p==NULL){
 		fprintf(stderr, "Id não válido\n");
-		return NULL;
+		return create_str_pair("", "");
 	} 
 	if(isQuestion(p)){
 		u = find_user( atoi(get_ownerUserId(p)));
@@ -267,7 +267,7 @@ LONG_pair total_posts(TAD_community com, Date begin, Date end){
  */
 LONG_list questions_with_tag(TAD_community com, char* tag, Date begin, Date end){
 	gpointer tag_id = convert_tag_name_to_id(tag);
-
+	if (!tag_id) return NULL;
 	int size=0;
 	LONG_list list = NULL;
 	PostsList l = NULL;
@@ -300,7 +300,10 @@ LONG_list questions_with_tag(TAD_community com, char* tag, Date begin, Date end)
  */
 USER get_user_info(TAD_community com, long id) {
 	USER_HT u = find_user( id);
-	if (!u )printf("User não existe");
+	if (!u ) {
+		printf("User não existe");
+		return NULL;
+	}
 	long post_history[10];
     int nr_posts = get_user_nr_posts(u);
     int i = 0;
@@ -318,8 +321,9 @@ USER get_user_info(TAD_community com, long id) {
 	for(; i < 10; i++) {
 		post_history[i] = 0;
 	}
+	if (!get_user_shortBio(u)) 
+		return create_user("", post_history);
 	return create_user(get_user_shortBio(u), post_history);
-
 }
 /**
  * Função para comparar os scores de dois POSTS
@@ -346,6 +350,7 @@ LONG_list most_voted_answers(TAD_community com, int N, Date begin, Date end){
 	LONG_list list;
 	PostsList l;
 	GSList *aux = NULL;
+	int i = 0;
 	l = find_by_date(end);
 
 	while(l && compare_date(begin, get_creationDate(get_post(l))) != -1 ){
@@ -361,9 +366,12 @@ LONG_list most_voted_answers(TAD_community com, int N, Date begin, Date end){
 	list = create_list(N);
 
 	//Copia apenas os N primeiros posts de aux
-	for(int i = 0; i < N; i++){
+	for(i = 0; i < N && aux; i++){
 		set_list(list, i, get_postId((POST) aux->data));
 		aux = aux->next;
+	}
+	for(; i < N; i++){
+		set_list(list, i, 0);
 	}
 	g_slist_free(aux);
 	return list;
@@ -376,6 +384,7 @@ LONG_list most_answered_questions(TAD_community com, int N, Date begin, Date end
 	LONG_list list;
 	PostsList l;
 	GSList *aux = NULL;
+	int i = 0;
 
 	l = find_by_date(end);
 
@@ -390,9 +399,12 @@ LONG_list most_answered_questions(TAD_community com, int N, Date begin, Date end
 
 	list = create_list(N);
 
-	for(int i = 0; i < N; i++){
+	for(i = 0; i < N && aux; i++){
 		set_list(list, i, get_postId((POST) aux->data));
 		aux = aux->next;
+	}
+	for(; i < N; i++){
+		set_list(list, i, 0);
 	}
 	g_slist_free(aux);
 	return list;
@@ -554,7 +566,9 @@ long better_answer(TAD_community com, long id){
 	PostsList l;
 	int n =0;
 	POST p = find_post(id);
+	if(!p) return 0;
 	int nanswers = get_nanswers(p);
+	if (nanswers == 0) return 0;
 	int best, temp; 
 	long answer;
 
@@ -575,10 +589,8 @@ long better_answer(TAD_community com, long id){
 		POST ans = get_post(l);
 		if(isAnswer(ans) && get_parent(ans) == id){
 			n++;
-			//gpointer owner_key = get_owner_key(p);
 			USER_HT user = find_user(atoi(get_ownerUserId(ans)));
 			temp = calculates_score(ans, user);
-			//printf("%d\n", temp);
 			if(temp > best){
 				best = temp;
 				answer = get_postId(ans);
@@ -667,6 +679,10 @@ LONG_list most_used_best_rep(TAD_community com, int N, Date begin, Date end){
 		free(aux->data);
 		j++;
 		aux = aux->next;
+	}
+	while(j < N){
+		set_list(res, j, 0);
+		j++;
 	}
 	g_hash_table_destroy (h);
 	g_slist_free (tofree);

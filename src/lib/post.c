@@ -75,12 +75,14 @@ POST create_answer(int parentId, int comments, int score, char postTypeId, int i
  * Devolve o ID de um post
  */
 int get_postId(POST p) {
+	if(!p) return 0;
 	return (p->id);
 }
 /**
  * Devolve um ID de um post como um pointer
  */
 gpointer get_post_key(POST p) {
+	if(!p) return NULL;
 	return GINT_TO_POINTER(p->id);
 }
 /**
@@ -94,6 +96,7 @@ gpointer get_owner_key(POST p) {
  * Devolve o ownerUserId
  */
 char * get_ownerUserId(POST p) {  
+	if(!p || !p->ownerUserId) return NULL;
 	return mystrdup(p->ownerUserId);
 }
 /**
@@ -107,37 +110,42 @@ gpointer get_parent_key(POST p) {
  * Devolve o parentId de uma resposta
  */
 int get_parent(POST p) {
+	if(!p || ! p->a) return 0;
 	return p->a->parentId;
 }
 /**
  * Devolve o número de comentários que uma resposta teve
  */
 int get_comments(POST p){
+	if(!p || ! p->a) return 0;
 	return p->a->comments;
 }
 /**
  * Devolve o título de uma pergunta
  */
 char * get_title(POST p) {  
+	if(!p || !p->q || !p->q->title) return NULL;
 	return mystrdup(p->q->title);
 }
 /**
  * Devolve o número de respostas que uma pergunta tem
  */
 int get_nanswers(POST p){
+	if(!p || !p->q) return 0;
 	return p->q->nanswers;
 }
 /**
  * Devolve as tags de uma pergunta
  */
 GSList * get_tags(POST p) {
+	if(!p || !p->q || !p->q->tags) return NULL;
 	return g_slist_copy (p->q->tags);
 }
 /**
  * Verifica se um certo post contém uma dada tag
  */
 int contains_tag(POST p, gpointer tag_id) {
-	if (p->q->tags == NULL) 
+	if (!p ||!p->q || p->q->tags == NULL) 
 		return 0;
 	else if (g_slist_find(p->q->tags, tag_id) != NULL) 
 		return 1;
@@ -148,12 +156,14 @@ int contains_tag(POST p, gpointer tag_id) {
  * Verifica se um post é uma pergunta
  */
 int isQuestion(POST p){
+	if (!p) return 0;
 	return (p->postTypeId == '1');
 }
 /**
  * Verifica se um post é uma resposta
  */
 int isAnswer(POST p){
+	if (!p) return 0;
 	return (p->postTypeId == '2');
 }
 
@@ -161,6 +171,7 @@ int isAnswer(POST p){
  * Devolve o score de uma resposta
  */
 int get_score(POST p){
+	if (!p || !p->a) return 0;
 	return p->a->score;
 }
 /**

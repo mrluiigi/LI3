@@ -58,7 +58,7 @@ char * get_user_shortBio(USER_HT user) {
  * Define o lastPost de um utilizador
  */
 void set_user_lastPost(USER_HT user, int postId){
-	if(user->lastPost == 0) user->lastPost = postId;
+	if(user && user->lastPost == 0) user->lastPost = postId;
 }
 /**
  * Devolve o número de posts de um utilizador
@@ -90,8 +90,8 @@ void increment_user_nr_posts(USER_HT user) {
 
 void free_myuser(USER_HT u) {
 	if(u){
-		//free(u->name);
-		//free(u->shortBio);
+		free(u->name);
+		free(u->shortBio);
 		free(u);
 	}
 }
