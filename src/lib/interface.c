@@ -531,6 +531,15 @@ LONG_list both_participated(TAD_community com, long id1, long id2, int N){
 
 	return res;
 }
+
+/**
+ *	Função auxiliar para a query 10
+ */
+int calculates_score(POST ans, USER_HT user){
+	return get_score(ans)*0.45 + (get_user_reputation(user))*0.25 + get_score(ans)*0.2 + get_comments(ans)*0.1;
+}
+
+
 /**
  * QUERY 10
  * Obtém a melhor resposta dado o ID de uma pergunta
@@ -550,8 +559,7 @@ long better_answer(TAD_community com, long id){
 		if(isAnswer(ans) && get_parent(ans) == id){
 			n++;
 			USER_HT user = find_user(atoi(get_ownerUserId(ans)));
-			best = get_score(ans)*0.45 + (get_user_reputation(user))*0.25 + 
-				  get_score(ans)*0.2 + get_comments(ans)*0.1;
+			best = calculates_score(ans, user);
 			answer = get_postId(ans);
 		}
 		l = get_next(l);
@@ -563,8 +571,7 @@ long better_answer(TAD_community com, long id){
 			n++;
 			//gpointer owner_key = get_owner_key(p);
 			USER_HT user = find_user(atoi(get_ownerUserId(ans)));
-			temp = get_score(ans)*0.45 + (get_user_reputation(user))*0.25 + 
-				  get_score(ans)*0.2 + get_comments(ans)*0.1;
+			temp = calculates_score(ans, user);
 			//printf("%d\n", temp);
 			if(temp > best){
 				best = temp;
