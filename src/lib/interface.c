@@ -597,8 +597,8 @@ long better_answer(TAD_community com, long id){
 	while(l != NULL && n < 1 && (compare_date_list(p, get_post(l)) != -1)){
 		POST ans = get_post(l);
 		if(isAnswer(ans) && get_parent(ans) == id){
-			nanswers++;
-			USER_HT user = find_user(atoi(get_ownerUserId(p)));
+			n++;
+			USER_HT user = find_user(atoi(get_ownerUserId(ans)));
 			best = get_score(ans)*0.45 + (get_user_reputation(user))*0.25 + 
 				  (get_upvotes(ans) + get_downvotes(ans))*0.2 + get_comments(ans)*0.1;
 			answer = get_postId(ans);
@@ -609,9 +609,9 @@ long better_answer(TAD_community com, long id){
 	while(l != NULL && n < nanswers && (compare_date_list(p, get_post(l)) != -1)){
 		POST ans = get_post(l);
 		if(isAnswer(ans) && get_parent(ans) == id){
-			nanswers++;
+			n++;
 			//gpointer owner_key = get_owner_key(p);
-			USER_HT user = find_user(atoi(get_ownerUserId(p)));
+			USER_HT user = find_user(atoi(get_ownerUserId(ans)));
 			temp = get_score(ans)*0.45 + (get_user_reputation(user))*0.25 + 
 				  (get_upvotes(ans) + get_downvotes(ans))*0.2 + get_comments(ans)*0.1;
 			//printf("%d\n", temp);
