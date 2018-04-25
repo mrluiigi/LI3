@@ -45,3 +45,7 @@ GSList* getTags(char* tags){
 	}
 	return l;
 }
+
+void free_tags() {
+	g_hash_table_destroy (tagshash);
+}

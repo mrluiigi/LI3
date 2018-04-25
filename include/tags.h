@@ -10,7 +10,7 @@
  */
 void init_tags();
 /**
- * Insere uma tag na HashTable
+ * Insere uma tag
  */
 void insert_tag(char * tag_name, int tag_id);
 /**
@@ -22,4 +22,8 @@ gpointer convert_tag_name_to_id(char * tag_name);
 */
 GSList* getTags(char* tags);
 //GHashTable* loadTags(GHashTable* tagshash, char *dump_path, char *file);
+/**
+ * Liberta a memória alocada para as tags
+ */
+void free_tags();
 #endif

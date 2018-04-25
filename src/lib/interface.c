@@ -129,6 +129,8 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 				GSList * tags = getTags((char *) xmlGetProp(ptr, (xmlChar *) "Tags"));
 				Date lastActivityDate = xmlCreationDate_to_Date((char*) xmlGetProp(ptr, (xmlChar *) "LastActivityDate"));
 				add_question_to_posts(title, nanswers, tags, lastActivityDate, postTypeId, id, ownerUserId, creationDate);
+				free_date(lastActivityDate);
+				g_slist_free(tags);
 			}
 			else if (postTypeId == '2') {
 				int parentId = atoi ((char *) xmlGetProp(ptr, (xmlChar *) "ParentId"));
@@ -136,6 +138,7 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 				int score = atoi((char *) xmlGetProp(ptr, (xmlChar *) "Score"));
 				add_answer_to_posts(parentId, comments, score, postTypeId, id, ownerUserId, creationDate);
 			}
+			free_date(creationDate);
 		}
 		ptr = ptr->next->next;
 	}
@@ -288,6 +291,7 @@ LONG_list questions_with_tag(TAD_community com, char* tag, Date begin, Date end)
 		set_list(list, i, GPOINTER_TO_INT(temp->data));
 		temp = temp->next;
 	}
+	g_slist_free(temp);
 	return list;
 }
 /**
@@ -361,6 +365,7 @@ LONG_list most_voted_answers(TAD_community com, int N, Date begin, Date end){
 		set_list(list, i, get_postId((POST) aux->data));
 		aux = aux->next;
 	}
+	g_slist_free(aux);
 	return list;
 }
 /**
@@ -389,6 +394,7 @@ LONG_list most_answered_questions(TAD_community com, int N, Date begin, Date end
 		set_list(list, i, get_postId((POST) aux->data));
 		aux = aux->next;
 	}
+	g_slist_free(aux);
 	return list;
 }
 /**
@@ -494,8 +500,8 @@ LONG_list both_participated(TAD_community com, long id1, long id2, int N){
 
 	LONG_list res = create_list(N);
 
-	GSList* l1 = find_post_in_list(get_user_lastPost(user1));
-	GSList* l2 = find_post_in_list(get_user_lastPost(user2));
+	PostsList l1 = find_post_in_list(get_user_lastPost(user1));
+	PostsList l2 = find_post_in_list(get_user_lastPost(user2));
 	
 	PostsList l = find_most_recent_post(l1, l2);
 	if (!l)
@@ -645,6 +651,8 @@ LONG_list most_used_best_rep(TAD_community com, int N, Date begin, Date end){
 			if(atoi(ownerUserId) == get_list(list, i)){
 				tags = get_tags(p);
 				aux = addTags(h,aux, tags);
+				g_slist_free(tags);
+				tags = NULL;
 			}
 		}
 		l = get_next(l);
@@ -668,5 +676,6 @@ LONG_list most_used_best_rep(TAD_community com, int N, Date begin, Date end){
 TAD_community clean(TAD_community com) {
 	free_users();
 	free_posts();
+	free_tags();
 	return com;
 }
