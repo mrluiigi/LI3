@@ -86,6 +86,8 @@ void loadUsers(TAD_community com, char *dump_path, char *file){
 		int lastPost = 0;
 		int reputation = atoi((char*) xmlGetProp(ptr, (xmlChar *) "Reputation"));
  		add_myuser(id, name, shortBio, nr_posts, lastPost, reputation);
+ 		xmlFree(name);
+ 		xmlFree(shortBio);
 		ptr = ptr->next->next;
 
 	}
@@ -125,10 +127,13 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 			Date creationDate = xmlCreationDate_to_Date((char*) xmlGetProp(ptr, (xmlChar *) "CreationDate"));
 			if (postTypeId == '1') {
 				char * title = (char *) xmlGetProp(ptr, (xmlChar *) "Title");
-				int nanswers = atoi((char *) xmlGetProp(ptr, (xmlChar *) "AnswerCount"));
+				char * nanswers = (char *) xmlGetProp(ptr, (xmlChar *) "AnswerCount");
 				GSList * tags = getTags((char *) xmlGetProp(ptr, (xmlChar *) "Tags"));
 				Date lastActivityDate = xmlCreationDate_to_Date((char*) xmlGetProp(ptr, (xmlChar *) "LastActivityDate"));
-				add_question_to_posts(title, nanswers, tags, lastActivityDate, postTypeId, id, ownerUserId, creationDate);
+				add_question_to_posts(title, atoi(nanswers), tags, lastActivityDate, postTypeId, id, ownerUserId, creationDate);
+				xmlFree(title);
+				xmlFree(nanswers);
+				xmlFree(ownerUserId);
 				free_date(lastActivityDate);
 				g_slist_free(tags);
 			}
@@ -137,6 +142,7 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 				int comments = atoi ((char *) xmlGetProp(ptr, (xmlChar *) "CommentCount"));
 				int score = atoi((char *) xmlGetProp(ptr, (xmlChar *) "Score"));
 				add_answer_to_posts(parentId, comments, score, postTypeId, id, ownerUserId, creationDate);
+				xmlFree(ownerUserId);
 			}
 			free_date(creationDate);
 		}
@@ -178,6 +184,7 @@ void loadTags(TAD_community com, char *dump_path, char *file){
 		char * tag_name =  (char *) xmlGetProp(ptr, (xmlChar *) "TagName");
 		int tag_id = (atoi((char *) xmlGetProp(ptr, (xmlChar *) "Id")));
 		insert_tag(tag_name, tag_id);
+		xmlFree(tag_name);
 		ptr = ptr->next->next;
 	}
 	xmlFreeDoc(doc);
@@ -609,7 +616,6 @@ GSList* addTags(GHashTable* h, GSList* res, GSList* tags){
 		aux = g_hash_table_lookup(h, GINT_TO_POINTER(tags->data));
 		if(aux) {
 			aux->num += 1;
-			printf("aaa\n");
 		}
 		else {
 			AUXTAG a = (AUXTAG) malloc(sizeof(struct auxTag));

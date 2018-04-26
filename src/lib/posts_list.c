@@ -2,27 +2,33 @@
 
 static TAD_posts posts;
 
-//static hash = posts->hash;
-
+/**
+ * Estrutura que guarda informação sobre um post
+ */
 struct TCD_posts {
 	GHashTable *hash;
 	GSList *list;
 	GHashTable *months_hash; 
 };
-
-
+/**
+ * Inicializa a estrutura dos posts
+ */
 void init_posts() {
 	posts = malloc(sizeof(struct TCD_posts));
 	posts->hash = g_hash_table_new (g_direct_hash, g_direct_equal);
 	posts->list = NULL;
 	posts->months_hash = g_hash_table_new (g_direct_hash, g_direct_equal);
 }
-
+/**
+ * Adiciona uma pergunta aos posts
+ */
 void add_question_to_posts(char * title, int nanswers, GSList * tags, Date lastActivityDate, char postTypeId, int id, char * ownerUserId, Date creationDate) {
 	POST p = create_question(title, nanswers, tags, lastActivityDate, postTypeId, id, ownerUserId, creationDate);
 	posts->list = g_slist_prepend(posts->list, p);
 }
-
+/**
+ * Adiciona uma resposta aos posts
+ */
 void add_answer_to_posts(int parentId, int comments, int score, char postTypeId, int id, char * ownerUserId, Date creationDate) {
 	POST p = create_answer(parentId, comments, score, postTypeId, id, ownerUserId, creationDate);
 	posts->list = g_slist_prepend(posts->list, p);

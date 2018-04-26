@@ -6,13 +6,14 @@ static GHashTable * tagshash;
  * Inicializa a HashTable da tags
  */
 void init_tags(){
-	tagshash = g_hash_table_new (g_str_hash, g_str_equal);
+	tagshash = g_hash_table_new_full (g_str_hash, g_str_equal, free, NULL);
 }
 /**
  * Insere uma tag na HashTable
  */
 void insert_tag(char * tag_name, int tag_id){
-	g_hash_table_insert(tagshash, tag_name, GINT_TO_POINTER(tag_id));
+	char * name = mystrdup(tag_name);
+	g_hash_table_insert(tagshash, name, GINT_TO_POINTER(tag_id));
 }
 /**
  * Devolve o ID de uma tag

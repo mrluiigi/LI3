@@ -189,7 +189,6 @@ Date get_lastActivityDate(POST p){
 	return createDate(get_day(lad),get_month(lad),get_year(lad));
 
 }
-
 /**
  * Liberta a memória alocada para um post
  */

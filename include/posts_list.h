@@ -10,15 +10,23 @@
 #include "/usr/include/libxml2/libxml/parser.h"
 #include "/usr/include/libxml2/libxml/xmlIO.h"
 
-
+/**
+ * Estrutura que guarda informação sobre um post
+ */
 typedef struct TCD_posts * TAD_posts;
 
 typedef GSList * PostsList;
-
+/**
+ * Inicializa a estrutura dos posts
+ */
 void init_posts();
-
+/**
+ * Adiciona uma pergunta aos posts
+ */
 void add_question_to_posts(char * title, int nanswers, GSList * tags, Date lastActivityDate, char postTypeId, int id, char * ownerUserId, Date creationDate);
-
+/**
+ * Adiciona uma resposta aos posts
+ */
 void add_answer_to_posts(int parentId, int comments, int score, char postTypeId, int id, char * ownerUserId, Date creationDate);
 
 void finalize();

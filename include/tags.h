@@ -4,6 +4,7 @@
 #include <glib.h>
 #include <string.h>
 #include "mydate.h"
+#include "common.h"
 
 /**
  * Inicializa a HashTable da tags
