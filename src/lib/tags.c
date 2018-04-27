@@ -47,6 +47,9 @@ GSList* getTags(char* tags){
 	return l;
 }
 
+/**
+* Liberta a memória alocada para a struct tags
+*/
 void free_tags() {
 	g_hash_table_destroy (tagshash);
 }

@@ -10,6 +10,7 @@ struct TCD_posts {
 	GSList *list;
 	GHashTable *months_hash; 
 };
+
 /**
  * Inicializa a estrutura dos posts
  */
@@ -19,6 +20,7 @@ void init_posts() {
 	posts->list = NULL;
 	posts->months_hash = g_hash_table_new (g_direct_hash, g_direct_equal);
 }
+
 /**
  * Adiciona uma pergunta aos posts
  */
@@ -26,6 +28,7 @@ void add_question_to_posts(char * title, int nanswers, GSList * tags, Date lastA
 	POST p = create_question(title, nanswers, tags, lastActivityDate, postTypeId, id, ownerUserId, creationDate);
 	posts->list = g_slist_prepend(posts->list, p);
 }
+
 /**
  * Adiciona uma resposta aos posts
  */
@@ -34,6 +37,9 @@ void add_answer_to_posts(int parentId, int comments, int score, char postTypeId,
 	posts->list = g_slist_prepend(posts->list, p);
 }
 
+/**
+ * 
+ */
 void finalize() {
 	posts->list = g_slist_sort (posts->list, compare_date_list);
 	for(GSList* l = posts->list; l; l = l->next){
@@ -46,6 +52,9 @@ void finalize() {
 	}
 }
 
+/**
+ * Devolve o ID do utilizador que publicou o post ao qual a resposta atual respondeu
+ */
 char * get_parent_owner(POST p) {
 	gpointer parent_key = get_parent_key(p);
 	if (!parent_key) return 0;
@@ -54,6 +63,10 @@ char * get_parent_owner(POST p) {
 	return get_ownerUserId(parent);
 }
 
+/**
+ * Função que procura numa lista de datas uma data específica
+ * A função devolve essa mesma lista a partir da data que lhe foi passada
+ */
 GSList* find_by_date(Date end) {
 	GSList* l = posts->list;
 	int year, month;
@@ -84,19 +97,29 @@ GSList* find_by_date(Date end) {
 	return l;
 }
 
-
+/**
+ * Função que procura numa lista de posts aquele que corresponde ao ID que lhe é passado como argumento
+ * Devolve o post com o ID correspondente
+ */
 POST find_post(int id) {
 	GSList* l = g_hash_table_lookup(posts->hash, GINT_TO_POINTER(id));
 	if(l) return ((POST)l->data);
 	else return NULL;
 }
 
-GSList* find_post_in_list(int id) {
-	GSList* l = g_hash_table_lookup(posts->hash, GINT_TO_POINTER(id));
+/**
+ * Função que procura numa lista de posts aquele que corresponde ao ID que lhe é passado como argumento
+ * Devolve todos os posts a seguir ao post encontrado
+ */
+PostsList find_post_in_list(int id) {
+	PostsList l = g_hash_table_lookup(posts->hash, GINT_TO_POINTER(id));
 	if(l) return l;
 	else return NULL;
 }
 
+/**
+ * Retorna -1 se o primeiro post tiver mais respostas, 1 se tiver menos respostas 0 se tiverem o mesmo número de respostas
+ */
 int compare_nanswers(gconstpointer a, gconstpointer b){
 	POST p1 = ((POST) a);
 	POST p2 = ((POST) b);
@@ -110,7 +133,7 @@ int compare_nanswers(gconstpointer a, gconstpointer b){
 }
 
 
-/*
+/**
 * Compara as datas do primeiro elemnto de duas listas
 */
 int compare_date_list (gconstpointer a, gconstpointer b) {
@@ -119,15 +142,22 @@ int compare_date_list (gconstpointer a, gconstpointer b) {
 
 	return compare_date(get_creationDate(p1), get_creationDate(p2));
 }
-//temporaria
+
+/**
+* Devolve a lista com os posts
+*/
 PostsList get_posts_list() {
 	return posts->list;
 }
-
+/**
+* Avança para o post seguinte
+*/
 PostsList get_next(PostsList pl) {
 	return pl->next;
 }
-
+/**
+* Devolve a data de um certo post
+*/
 POST get_post(PostsList pl) {
 	return (POST)pl->data;
 }
@@ -152,7 +182,9 @@ int compare_score(gconstpointer a, gconstpointer b){
 		return 0;
 }*/
 
-//????????????
+/**
+* Dadas duas listas com posts a função retorna a lista com o post mais recente
+*/
 PostsList find_most_recent_post(PostsList l1, PostsList l2){
 	if(!l1 || !l2) return NULL;
 	int b = compare_date_list (l1->data, l2->data);
@@ -173,10 +205,16 @@ PostsList find_most_recent_post(PostsList l1, PostsList l2){
 	else return l2;
 }
 
+/**
+* Liberta a memória alocada para a struct posts_list
+*/
 void free_posts_list(gpointer data) {
 	free_post((POST) data);
 } 
 
+/**
+* Liberta a memória alocada para a struct posts
+*/
 void free_posts() {
 	if (posts) {
 		g_slist_free_full (posts->list,free_posts_list);

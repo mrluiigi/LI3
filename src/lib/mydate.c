@@ -1,8 +1,6 @@
 #include "mydate.h"
 
-
-
-/*
+/**
 * Retorna 1 se a primeira data for a mais antiga, -1 se for a mais recente e 0 se forem iguais
 */
 int compare_date (Date d1, Date d2){
@@ -26,7 +24,7 @@ int compare_date (Date d1, Date d2){
 }
 
 /**
-* Função que converte a CreationDate no XML na struct date
+* Função que converte a CreationDate do XML na struct date
 */
 Date xmlCreationDate_to_Date(char* xmlDate) {
 	char s_year[2];
@@ -49,7 +47,7 @@ Date xmlCreationDate_to_Date(char* xmlDate) {
 }
 
 /**
-* Função que converte a CreationDate no XML numa key para ser usada na monthshash
+* Função que converte a CreationDate do XML numa key para ser usada na monthshash
 */
 int date_to_Key(int year, int month) {
 	return (year * 100) + month;

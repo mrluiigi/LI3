@@ -439,7 +439,7 @@ LONG_list contains_word(TAD_community com, char* word, int N){
 	return list;
 }
 /**
- *	Função auxiliar para a query 9
+ *	Função auxiliar para a query 9 que adiciona uma resposta à queue
  */
 void addQueue_Answer(POST p, long * id2, int * q1, int * s1, int * q2, int * s2, int * qf, int * sf, int * i, int * f){
 	if(atoi(get_parent_owner(p)) == *id2) {
@@ -466,7 +466,7 @@ void addQueue_Answer(POST p, long * id2, int * q1, int * s1, int * q2, int * s2,
 	}
 }
 /**
- *	Função auxiliar para a query 9
+ *	Função auxiliar para a query 9 que adiciona uma pergunta à queue
  */
 void addQueue_Question(POST p, long * id1, int * posts_i1_found, long * id2, int * posts_i2_found, int * i, int * f, int * qf, int * queuef_size){
 	if(atoi(get_ownerUserId(p)) == *id1) {
@@ -558,7 +558,7 @@ LONG_list both_participated(TAD_community com, long id1, long id2, int N){
 }
 
 /**
- *	Função auxiliar para a query 10
+ *	Função auxiliar para a query 10 que calcula a pontuação de um post
  */
 int calculates_score(POST ans, USER_HT user){
 	return get_score(ans)*0.45 + (get_user_reputation(user))*0.25 + get_score(ans)*0.2 + get_comments(ans)*0.1;
@@ -608,7 +608,7 @@ long better_answer(TAD_community com, long id){
 	return answer;
 }
 /**
- * Função que atualiza o número de vezes que uma certa tag é utilizada
+ * Função auxiliar para a query 11 que atualiza o número de vezes que uma certa tag é utilizada
  */
 GSList* addTags(GHashTable* h, GSList* res, GSList* tags){
 	AUXTAG aux;
@@ -631,7 +631,7 @@ GSList* addTags(GHashTable* h, GSList* res, GSList* tags){
 	return res;
 }
 /**
- * Função para comparar o número de vezes que uma tag é utilizada
+ * Função auxiliar para a query 11 que compara o número de vezes que uma tag é utilizada
 */
 int compare_numTag(gconstpointer a, gconstpointer b){
 	AUXTAG a1 = (AUXTAG) a;

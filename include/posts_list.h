@@ -37,7 +37,7 @@ GSList* find_by_date(Date date);
 
 POST find_post(int id);
 
-GSList * find_post_in_list(int id);
+PostsList  find_post_in_list(int id);
 
 int compare_nanswers(gconstpointer a, gconstpointer b);
 
