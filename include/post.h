@@ -27,10 +27,6 @@ POST create_answer(int parentId, int comments, int score, char postTypeId, int i
  */
 int get_postId(POST p);
 /**
- * Devolve um ID de um post como um pointer
- */
-gpointer get_post_key(POST p);
-/**
  * Devolve o ownerUserId como um pointer
  */
 gpointer get_owner_key(POST p);

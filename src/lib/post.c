@@ -86,14 +86,6 @@ int get_postId(POST p) {
 }
 
 /**
- * Devolve um ID de um post como um pointer
- */
-gpointer get_post_key(POST p) {
-	if(!p) return NULL;
-	return GINT_TO_POINTER(p->id);
-}
-
-/**
  * Devolve o ownerUserId como um pointer
  */
 gpointer get_owner_key(POST p) {

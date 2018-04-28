@@ -13,39 +13,39 @@
 /**
  * Estrutura que guarda informação sobre um post
  */
-typedef struct TCD_posts * TAD_posts;
+typedef struct TCD_posts * Posts;
 
 typedef GSList * PostsList;
 /**
  * Inicializa a estrutura dos posts
  */
-void init_posts();
+Posts init_posts(Posts posts);
 /**
  * Adiciona uma pergunta aos posts
  */
-void add_question_to_posts(char * title, int nanswers, GSList * tags, Date lastActivityDate, char postTypeId, int id, char * ownerUserId, Date creationDate);
+void add_question_to_posts(Posts posts, char * title, int nanswers, GSList * tags, Date lastActivityDate, char postTypeId, int id, char * ownerUserId, Date creationDate);
 /**
  * Adiciona uma resposta aos posts
  */
-void add_answer_to_posts(int parentId, int comments, int score, char postTypeId, int id, char * ownerUserId, Date creationDate);
+void add_answer_to_posts(Posts posts, int parentId, int comments, int score, char postTypeId, int id, char * ownerUserId, Date creationDate);
 
-void finalize();
+void finalize(Posts posts);
 
-char * get_parent_owner(POST p);
+char * get_parent_owner(Posts posts, POST p);
 
-GSList* find_by_date(Date date);
+PostsList find_by_date(Posts posts, Date date);
 
-POST find_post(int id);
+POST find_post(Posts posts, int id);
 
-PostsList  find_post_in_list(int id);
+PostsList  find_post_in_list(Posts posts, int id);
 
 int compare_nanswers(gconstpointer a, gconstpointer b);
 
 int compare_date_list (gconstpointer a, gconstpointer b);
 
-PostsList get_posts_list();
+PostsList get_posts_list(Posts posts);
 
-PostsList get_next();
+PostsList get_next(PostsList pl);
 
 POST get_post(PostsList pl);
 
@@ -53,5 +53,5 @@ PostsList find_most_recent_post(PostsList l1, PostsList l2);
 
 //int compare_score(gconstpointer a, gconstpointer b);
 
-void free_posts();
+void free_posts(Posts posts);
 #endif

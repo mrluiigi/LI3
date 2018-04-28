@@ -1,6 +1,5 @@
 #include "posts_list.h"
 
-static TAD_posts posts;
 
 /**
  * Estrutura que guarda informação sobre um post
@@ -14,17 +13,18 @@ struct TCD_posts {
 /**
  * Inicializa a estrutura dos posts
  */
-void init_posts() {
+Posts init_posts(Posts posts) {
 	posts = malloc(sizeof(struct TCD_posts));
 	posts->hash = g_hash_table_new (g_direct_hash, g_direct_equal);
 	posts->list = NULL;
 	posts->months_hash = g_hash_table_new (g_direct_hash, g_direct_equal);
+	return posts;
 }
 
 /**
  * Adiciona uma pergunta aos posts
  */
-void add_question_to_posts(char * title, int nanswers, GSList * tags, Date lastActivityDate, char postTypeId, int id, char * ownerUserId, Date creationDate) {
+void add_question_to_posts(Posts posts, char * title, int nanswers, GSList * tags, Date lastActivityDate, char postTypeId, int id, char * ownerUserId, Date creationDate) {
 	POST p = create_question(title, nanswers, tags, lastActivityDate, postTypeId, id, ownerUserId, creationDate);
 	posts->list = g_slist_prepend(posts->list, p);
 }
@@ -32,7 +32,7 @@ void add_question_to_posts(char * title, int nanswers, GSList * tags, Date lastA
 /**
  * Adiciona uma resposta aos posts
  */
-void add_answer_to_posts(int parentId, int comments, int score, char postTypeId, int id, char * ownerUserId, Date creationDate) {
+void add_answer_to_posts(Posts posts, int parentId, int comments, int score, char postTypeId, int id, char * ownerUserId, Date creationDate) {
 	POST p = create_answer(parentId, comments, score, postTypeId, id, ownerUserId, creationDate);
 	posts->list = g_slist_prepend(posts->list, p);
 }
@@ -40,12 +40,11 @@ void add_answer_to_posts(int parentId, int comments, int score, char postTypeId,
 /**
  * 
  */
-void finalize() {
+void finalize(Posts posts) {
 	posts->list = g_slist_sort (posts->list, compare_date_list);
 	for(GSList* l = posts->list; l; l = l->next){
 		POST p = (POST) l->data;
-		g_hash_table_insert(posts->hash, get_post_key(p), l);
-		
+		g_hash_table_insert(posts->hash, GINT_TO_POINTER(get_postId(p)), l);	
 		Date d = get_creationDate(p);
 		int months_key = date_to_Key(get_year(d), get_month(d));
 		g_hash_table_insert(posts->months_hash, GINT_TO_POINTER(months_key), l);
@@ -55,10 +54,10 @@ void finalize() {
 /**
  * Devolve o ID do utilizador que publicou o post ao qual a resposta atual respondeu
  */
-char * get_parent_owner(POST p) {
+char * get_parent_owner(Posts posts, POST p) {
 	gpointer parent_key = get_parent_key(p);
 	if (!parent_key) return 0;
-	POST parent = find_post(get_parent(p));
+	POST parent = find_post(posts, get_parent(p));
 	if (!parent) return 0;
 	return get_ownerUserId(parent);
 }
@@ -67,7 +66,7 @@ char * get_parent_owner(POST p) {
  * Função que procura numa lista de datas uma data específica
  * A função devolve essa mesma lista a partir da data que lhe foi passada
  */
-GSList* find_by_date(Date end) {
+PostsList find_by_date(Posts posts, Date end) {
 	GSList* l = posts->list;
 	int year, month;
 	year = get_year(end);
@@ -101,7 +100,7 @@ GSList* find_by_date(Date end) {
  * Função que procura numa lista de posts aquele que corresponde ao ID que lhe é passado como argumento
  * Devolve o post com o ID correspondente
  */
-POST find_post(int id) {
+POST find_post(Posts posts, int id) {
 	GSList* l = g_hash_table_lookup(posts->hash, GINT_TO_POINTER(id));
 	if(l) return ((POST)l->data);
 	else return NULL;
@@ -111,7 +110,7 @@ POST find_post(int id) {
  * Função que procura numa lista de posts aquele que corresponde ao ID que lhe é passado como argumento
  * Devolve todos os posts a seguir ao post encontrado
  */
-PostsList find_post_in_list(int id) {
+PostsList find_post_in_list(Posts posts, int id) {
 	PostsList l = g_hash_table_lookup(posts->hash, GINT_TO_POINTER(id));
 	if(l) return l;
 	else return NULL;
@@ -146,7 +145,7 @@ int compare_date_list (gconstpointer a, gconstpointer b) {
 /**
 * Devolve a lista com os posts
 */
-PostsList get_posts_list() {
+PostsList get_posts_list(Posts posts) {
 	return posts->list;
 }
 /**
@@ -215,7 +214,7 @@ void free_posts_list(gpointer data) {
 /**
 * Liberta a memória alocada para a struct posts
 */
-void free_posts() {
+void free_posts(Posts posts) {
 	if (posts) {
 		g_slist_free_full (posts->list,free_posts_list);
 		g_hash_table_destroy (posts->hash);
