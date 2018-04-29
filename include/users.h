@@ -19,6 +19,10 @@ typedef struct users * USERS;
 USERS init_users();
 
 /**
+ *Função a chamar depois de inseridos todos os users para garantir o ordenamento correto destes de acordo com o número de posts e de acordo com a reputação
+ */
+void finalize_users(USERS users);
+/**
  * Encontra um determinado user dado o seu ID
  */
 USER_HT  find_user(USERS users, int id);
@@ -29,14 +33,9 @@ USER_HT  find_user(USERS users, int id);
 void add_myuser(USERS users, int id, char * name, char * shortBio, int nr_posts, int lastPost, int reputation);
 
 /**
- * Ordena a lista dos users_by_reputation por ordem decrescente de reputação
+ * Remove um user da estrutura dos users
  */
-void sort_users_by_reputation(USERS users);
-
-/**
- * Ordena a lista dos users_by_nr_posts por ordem decrecente de número de posts
- */
-void sort_users_by_nr_posts(USERS users);
+void remove_myuser(USERS users, int id);
 
 /**
  * Devolve a lista com os N users com maior reputação
@@ -44,22 +43,24 @@ void sort_users_by_nr_posts(USERS users);
 LONG_list get_N_users_with_most_reputation(USERS users, int N);
 
 /**
- * Incrementa o número de posts de um determinado user
- */
-void find_and_increment_user_nr_posts(USERS users, gpointer id_key);
-
-/**
  * Devolve uma lista com os users que tem o maior número de posts
  */
 LONG_list get_N_users_with_most_nr_posts(USERS users, int N);
 
 /**
+ * Incrementa o número de posts de um determinado user
+ */
+void find_and_increment_user_nr_posts(USERS users, int id_key);
+
+
+/**
  * Define o lastPost de uma dado user
  */
-void find_and_set_user_lastPost(USERS users, gpointer key, int lastPostId);
+void find_and_set_user_lastPost(USERS users, int id, int lastPostId);
 
 /**
  * Liberta a memória alocada para os users
  */
 void free_users(USERS users);
+
 #endif

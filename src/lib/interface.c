@@ -89,7 +89,6 @@ void loadUsers(TAD_community com, char *dump_path, char *file){
 		ptr = ptr->next->next;
 
 	}
-	sort_users_by_reputation(com->users);
 	xmlFreeDoc(doc);
 }
 /**
@@ -195,13 +194,12 @@ void set_users_nr_posts_and_last_post(TAD_community com) {
 	PostsList l = get_posts_list(com->p);
 	for(; l; l = get_next(l)) {
 		POST p = get_post(l);
-		gpointer k = get_owner_key(p);
-		find_and_set_user_lastPost(com->users, k, get_postId(p));
-		if(get_ownerUserId(p) != NULL){
-			find_and_increment_user_nr_posts(com->users, get_owner_key(p));
+		char* owner = get_ownerUserId(p);
+		if(owner != NULL){
+			find_and_set_user_lastPost(com->users, atoi(owner), get_postId(p));
+			find_and_increment_user_nr_posts(com->users, atoi(owner));
 		}	
 	}
-	sort_users_by_nr_posts(com->users);
 }
 /**
   Função que faz load dos ficheiros para a estrutura de dados
@@ -211,6 +209,7 @@ TAD_community load(TAD_community com, char* dump_path){
 	loadUsers(com, dump_path, "Users.xml");
 	loadPosts(com, dump_path, "Posts.xml");
 	set_users_nr_posts_and_last_post(com);
+	finalize_users(com->users);
 
 	return com;
 }
@@ -437,7 +436,6 @@ LONG_list contains_word(TAD_community com, char* word, int N){
 	}
 	return list;
 }
-
 /**
  *	Função auxiliar para a query 9 que adiciona uma resposta à queue
  */
@@ -575,7 +573,7 @@ long better_answer(TAD_community com, long id){
 	POST p = find_post(com->p, id);
 	if(!p) return 0;
 	int nanswers = get_nanswers(p);
-	if (nanswers == 0) return 0;
+	if (nanswers == 0) return -1;
 	int best, temp; 
 	long answer;
 
