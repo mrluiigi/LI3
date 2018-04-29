@@ -1,6 +1,5 @@
 #include "users.h"
 
-static USERS users;
 
 /**
  * Estrutura que guarda informação sobre os users
@@ -21,17 +20,18 @@ void free_user_hash(gpointer data) {
 /**
  * Inicializa a estrutura dos users
  */
-void init_users() {
-	users = malloc(sizeof(struct users));
+USERS init_users() {
+	USERS users = malloc(sizeof(struct users));
 	users->hash = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, free_user_hash);
 	users->users_by_nr_posts = NULL;
 	users->users_by_reputation = NULL;
+	return users;
 }
 
 /**
  * Encontra um determinado user dado o seu ID
  */
-USER_HT  find_user(int id) {
+USER_HT  find_user(USERS users, int id) {
 	USER_HT u = g_hash_table_lookup(users->hash, GINT_TO_POINTER(id));
 	return u;
 }
@@ -39,7 +39,7 @@ USER_HT  find_user(int id) {
 /**
  * Insere um user na estrutura dos users
  */
-void add_myuser(int id, char * name, char * shortBio, int nr_posts, int lastPost, int reputation) {
+void add_myuser(USERS users, int id, char * name, char * shortBio, int nr_posts, int lastPost, int reputation) {
 	USER_HT u = create_myuser(id, name, shortBio, nr_posts, lastPost, reputation);
 	g_hash_table_insert(users->hash, GINT_TO_POINTER(get_user_id(u)), u);
 	users->users_by_reputation = g_slist_prepend (users->users_by_reputation, u);
@@ -71,21 +71,21 @@ int compare_users_by_nr_posts (gconstpointer a, gconstpointer b) {
 /**
  * Ordena a lista dos users_by_reputation por ordem decrescente de reputação
  */
-void sort_users_by_reputation() {
+void sort_users_by_reputation(USERS users) {
 	users->users_by_reputation = g_slist_sort (users->users_by_reputation, compare_users_by_reputation);
 }
 
 /**
  * Ordena a lista dos users_by_nr_posts por ordem decrecente de número de posts
  */
-void sort_users_by_nr_posts() {
+void sort_users_by_nr_posts(USERS users) {
 	users->users_by_nr_posts = g_slist_sort (users->users_by_nr_posts, compare_users_by_nr_posts);
 }
 
 /**
  * Devolve uma lista com os N users que tem maior reputação
  */
-LONG_list get_N_users_with_most_reputation(int N) {
+LONG_list get_N_users_with_most_reputation(USERS users, int N) {
 	int i = 0;
 	GSList* l = users->users_by_reputation;
 	LONG_list res = create_list(N);
@@ -102,7 +102,7 @@ LONG_list get_N_users_with_most_reputation(int N) {
 /**
  * Incrementa o número de posts de um determinado user
  */
-void find_and_increment_user_nr_posts(gpointer id_key) {
+void find_and_increment_user_nr_posts(USERS users, gpointer id_key) {
 	USER_HT user = g_hash_table_lookup(users->hash, id_key);
 	increment_user_nr_posts(user);
 }
@@ -110,7 +110,7 @@ void find_and_increment_user_nr_posts(gpointer id_key) {
 /**
  * Devolve uma lista com os users que tem o maior número de posts
  */
-LONG_list get_N_users_with_most_nr_posts(int N) {
+LONG_list get_N_users_with_most_nr_posts(USERS users, int N) {
 	int i = 0;
 	GSList* l = users->users_by_nr_posts;
 	LONG_list res = create_list(N);
@@ -127,7 +127,7 @@ LONG_list get_N_users_with_most_nr_posts(int N) {
 /**
  * Define o lastPost de uma dado user
  */
-void find_and_set_user_lastPost(gpointer key, int lastPostId) {
+void find_and_set_user_lastPost(USERS users, gpointer key, int lastPostId) {
 	if (key) {
 		USER_HT u = g_hash_table_lookup(users->hash, key);
 		if(u)
@@ -139,7 +139,7 @@ void find_and_set_user_lastPost(gpointer key, int lastPostId) {
 /**
 * Liberta a memória alocada para a struct users
 */
-void free_users() {
+void free_users(USERS users) {
 	if (users) {
 		g_hash_table_destroy (users->hash);
 		g_slist_free (users->users_by_reputation);

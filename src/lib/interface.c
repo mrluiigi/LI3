@@ -14,7 +14,7 @@
 
 struct TCD_community{
 	Posts p;
-	//USERS users;
+	USERS users;
 	//GHashTable *postshash;
 	//GHashTable *tagshash;
 	//GSList *posts;
@@ -35,7 +35,7 @@ typedef struct auxTag{
 TAD_community init(){
 	TAD_community com;
 	com = malloc(sizeof(struct TCD_community));
-	init_users();
+	com->users = init_users();
 	com->p = init_posts(com->p);
 	init_tags();
 	return com;
@@ -86,13 +86,13 @@ void loadUsers(TAD_community com, char *dump_path, char *file){
 		int nr_posts = 0;
 		int lastPost = 0;
 		int reputation = atoi((char*) xmlGetProp(ptr, (xmlChar *) "Reputation"));
- 		add_myuser(id, name, shortBio, nr_posts, lastPost, reputation);
+ 		add_myuser(com->users, id, name, shortBio, nr_posts, lastPost, reputation);
  		xmlFree(name);
  		xmlFree(shortBio);
 		ptr = ptr->next->next;
 
 	}
-	sort_users_by_reputation();
+	sort_users_by_reputation(com->users);
 	xmlFreeDoc(doc);
 }
 /**
@@ -198,12 +198,12 @@ void set_users_nr_posts_and_last_post(TAD_community com) {
 	for(; l; l = get_next(l)) {
 		POST p = get_post(l);
 		gpointer k = get_owner_key(p);
-		find_and_set_user_lastPost(k, get_postId(p));
+		find_and_set_user_lastPost(com->users, k, get_postId(p));
 		if(get_ownerUserId(p) != NULL){
-			find_and_increment_user_nr_posts(get_owner_key(p));
+			find_and_increment_user_nr_posts(com->users, get_owner_key(p));
 		}	
 	}
-	sort_users_by_nr_posts();
+	sort_users_by_nr_posts(com->users);
 }
 /**
   Função que faz load dos ficheiros para a estrutura de dados
@@ -233,12 +233,12 @@ STR_pair info_from_post(TAD_community com, long id){
 		return create_str_pair("", "");
 	} 
 	if(isQuestion(p)){
-		u = find_user(atoi(get_ownerUserId(p)));
+		u = find_user(com->users, atoi(get_ownerUserId(p)));
 		pair = create_str_pair(get_title(p), get_user_name(u));
 	}
 	else if(isAnswer(p)){
 		p = find_post(com->p, get_parent(p));
-		u = find_user(atoi(get_ownerUserId(p)));
+		u = find_user(com->users, atoi(get_ownerUserId(p)));
 		pair = create_str_pair(get_title(p), get_user_name(u));	
 	}
 	return pair;
@@ -248,7 +248,7 @@ STR_pair info_from_post(TAD_community com, long id){
  * Retorna os N utilizadores com maior número de posts de sempre
  */
 LONG_list top_most_active(TAD_community com, int N){
-	return get_N_users_with_most_nr_posts(N);
+	return get_N_users_with_most_nr_posts(com->users, N);
 }
 /**
  * QUERY 3
@@ -307,7 +307,7 @@ LONG_list questions_with_tag(TAD_community com, char* tag, Date begin, Date end)
  * Devolve a informação do perfil e os IDs dos últimos 10 posts de um certo utilizador
  */
 USER get_user_info(TAD_community com, long id) {
-	USER_HT u = find_user( id);
+	USER_HT u = find_user(com->users, id);
 	if (!u ) {
 		printf("User não existe");
 		return NULL;
@@ -490,8 +490,8 @@ void addQueue_Question(POST p, long * id1, int * posts_i1_found, long * id2, int
  * Devolve as últimas N perguntas em que dois utilizadores participaram
 */
 LONG_list both_participated(TAD_community com, long id1, long id2, int N){
-	USER_HT user1 = find_user(id1);
-	USER_HT user2 = find_user(id2);
+	USER_HT user1 = find_user(com->users, id1);
+	USER_HT user2 = find_user(com->users, id2);
 	if (!user1 || !user2) return NULL;	
 	int nposts1 = get_user_nr_posts(user1);
 	int nposts2 = get_user_nr_posts(user2);
@@ -586,7 +586,7 @@ long better_answer(TAD_community com, long id){
 		POST ans = get_post(l);
 		if(isAnswer(ans) && get_parent(ans) == id){
 			n++;
-			USER_HT user = find_user(atoi(get_ownerUserId(ans)));
+			USER_HT user = find_user(com->users, atoi(get_ownerUserId(ans)));
 			best = calculates_score(ans, user);
 			answer = get_postId(ans);
 		}
@@ -597,7 +597,7 @@ long better_answer(TAD_community com, long id){
 		POST ans = get_post(l);
 		if(isAnswer(ans) && get_parent(ans) == id){
 			n++;
-			USER_HT user = find_user(atoi(get_ownerUserId(ans)));
+			USER_HT user = find_user(com->users, atoi(get_ownerUserId(ans)));
 			temp = calculates_score(ans, user);
 			if(temp > best){
 				best = temp;
@@ -653,7 +653,7 @@ int compare_numTag(gconstpointer a, gconstpointer b){
  * Devolve os IDs das N tags mais utilizadas pelos N utilizadores com mais reputação
  */
 LONG_list most_used_best_rep(TAD_community com, int N, Date begin, Date end){
-	LONG_list list = get_N_users_with_most_reputation(N);
+	LONG_list list = get_N_users_with_most_reputation(com->users, N);
 	GHashTable* h = g_hash_table_new (g_direct_hash, g_direct_equal);
 	PostsList l = find_by_date(com->p, end);
 	GSList *aux = NULL;
@@ -697,7 +697,7 @@ LONG_list most_used_best_rep(TAD_community com, int N, Date begin, Date end){
 }
 
 TAD_community clean(TAD_community com) {
-	free_users();
+	free_users(com->users);
 	free_posts(com->p);
 	free_tags();
 	return com;
