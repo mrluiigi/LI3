@@ -15,10 +15,7 @@
 struct TCD_community{
 	Posts p;
 	USERS users;
-	//GHashTable *postshash;
-	//GHashTable *tagshash;
-	//GSList *posts;
-	//GHashTable *monthsHash;         //guarda o primeiro posts de cada mes
+	TAGS t;
 };
 
 /**
@@ -37,7 +34,7 @@ TAD_community init(){
 	com = malloc(sizeof(struct TCD_community));
 	com->users = init_users();
 	com->p = init_posts(com->p);
-	init_tags();
+	com->t = init_tags();
 	return com;
 }
 /**
@@ -129,7 +126,7 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 			if (postTypeId == '1') {
 				char * title = (char *) xmlGetProp(ptr, (xmlChar *) "Title");
 				char * nanswers = (char *) xmlGetProp(ptr, (xmlChar *) "AnswerCount");
-				GSList * tags = getTags((char *) xmlGetProp(ptr, (xmlChar *) "Tags"));
+				GSList * tags = getTags(com->t,(char *) xmlGetProp(ptr, (xmlChar *) "Tags"));
 				Date lastActivityDate = xmlCreationDate_to_Date((char*) xmlGetProp(ptr, (xmlChar *) "LastActivityDate"));
 				add_question_to_posts(com->p,title, atoi(nanswers), tags, lastActivityDate, postTypeId, id, ownerUserId, creationDate);
 				xmlFree(title);
@@ -184,10 +181,11 @@ void loadTags(TAD_community com, char *dump_path, char *file){
 	while(ptr != NULL){
 		char * tag_name =  (char *) xmlGetProp(ptr, (xmlChar *) "TagName");
 		int tag_id = (atoi((char *) xmlGetProp(ptr, (xmlChar *) "Id")));
-		insert_tag(tag_name, tag_id);
+		insert_tag(com->t, tag_name, tag_id);
 		xmlFree(tag_name);
 		ptr = ptr->next->next;
 	}
+
 	xmlFreeDoc(doc);
 }
 /**
@@ -274,7 +272,7 @@ LONG_pair total_posts(TAD_community com, Date begin, Date end){
  * Retorna todas as perguntas num certo intervalo de tempo contendo uma determinada tag 
  */
 LONG_list questions_with_tag(TAD_community com, char* tag, Date begin, Date end){
-	gpointer tag_id = convert_tag_name_to_id(tag);
+	gpointer tag_id = convert_tag_name_to_id(com->t, tag);
 	if (!tag_id) return NULL;
 	int size=0;
 	LONG_list list = NULL;
@@ -699,6 +697,6 @@ LONG_list most_used_best_rep(TAD_community com, int N, Date begin, Date end){
 TAD_community clean(TAD_community com) {
 	free_users(com->users);
 	free_posts(com->p);
-	free_tags();
+	free_tags(com->t);
 	return com;
 }
