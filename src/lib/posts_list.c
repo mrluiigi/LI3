@@ -131,7 +131,6 @@ int compare_nanswers(gconstpointer a, gconstpointer b){
 		return 0;
 }
 
-
 /**
 * Compara as datas do primeiro elemnto de duas listas
 */
@@ -148,12 +147,14 @@ int compare_date_list (gconstpointer a, gconstpointer b) {
 PostsList get_posts_list(Posts posts) {
 	return posts->list;
 }
+
 /**
 * Avança para o post seguinte
 */
 PostsList get_next(PostsList pl) {
 	return pl->next;
 }
+
 /**
 * Devolve a data de um certo post
 */

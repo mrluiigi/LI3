@@ -437,6 +437,7 @@ LONG_list contains_word(TAD_community com, char* word, int N){
 	}
 	return list;
 }
+
 /**
  *	Função auxiliar para a query 9 que adiciona uma resposta à queue
  */
