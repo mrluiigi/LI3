@@ -23,8 +23,8 @@ struct user_ht{
 /**
  *  Cria um user com base nos parâmetros recebidos
  */
-USER_HT create_myuser(int id, char * name, char * shortBio, int nr_posts, int lastPost, int reputation) {
-	USER_HT u = malloc(sizeof(struct user_ht));
+MY_USER create_myuser(int id, char * name, char * shortBio, int nr_posts, int lastPost, int reputation) {
+	MY_USER u = malloc(sizeof(struct user_ht));
 	u->id = id;
 	u->name = mystrdup(name);
 	u->shortBio = mystrdup(shortBio);
@@ -37,23 +37,25 @@ USER_HT create_myuser(int id, char * name, char * shortBio, int nr_posts, int la
 /** 
  * Devolve o ID do utilizador
  */
-int get_user_id(USER_HT user) {
+int get_user_id(MY_USER user) {
 	if (!user) return 0;
 	return user->id;
 }
 
 /**
  * Devolve o nome do utilizador
+ * A string retornada foi alocada dinamicamente por isso deve ser libertada usando a função free()
  */
-char * get_user_name(USER_HT user) {
+char * get_user_name(MY_USER user) {
 	if (!user) return NULL;
 	return mystrdup(user->name);
 }
 
 /**
  * Devolve a shortBio do utilizador
+ * A string retornada foi alocada dinamicamente por isso deve ser libertada usando a função free()
  */
-char * get_user_shortBio(USER_HT user) {
+char * get_user_shortBio(MY_USER user) {
 	if (!user) return NULL;
 	return mystrdup(user->shortBio);
 }
@@ -61,14 +63,14 @@ char * get_user_shortBio(USER_HT user) {
 /**
  * Define o lastPost de um utilizador
  */
-void set_user_lastPost(USER_HT user, int postId){
+void set_user_lastPost(MY_USER user, int postId){
 	if(user && user->lastPost == 0) user->lastPost = postId;
 }
 
 /**
  * Devolve o número de posts de um utilizador
  */
-int get_user_nr_posts(USER_HT user) {
+int get_user_nr_posts(MY_USER user) {
 	if (!user) return 0;
 	return user->nr_posts;
 }
@@ -76,7 +78,7 @@ int get_user_nr_posts(USER_HT user) {
 /**
  * Devolve o lastPost de um utilizador
  */
-int get_user_lastPost(USER_HT user) {
+int get_user_lastPost(MY_USER user) {
 	if (!user) return 0;
 	return user->lastPost;
 }
@@ -84,7 +86,7 @@ int get_user_lastPost(USER_HT user) {
 /**
  * Devolve a reputação de um utilizador
  */
-int get_user_reputation(USER_HT user) {
+int get_user_reputation(MY_USER user) {
 	if (!user) return 0;
 	return user->reputation;
 }
@@ -92,14 +94,14 @@ int get_user_reputation(USER_HT user) {
 /**
  * Incrementa o número de posts de um utilizador
  */
-void increment_user_nr_posts(USER_HT user) {
+void increment_user_nr_posts(MY_USER user) {
 	user->nr_posts++;
 }
 
 /** 
  * Liberta a memória alocada para a struct user_ht
  */
-void free_myuser(USER_HT u) {
+void free_myuser(MY_USER u) {
 	if(u){
 		free(u->name);
 		free(u->shortBio);

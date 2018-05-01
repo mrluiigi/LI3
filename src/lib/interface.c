@@ -219,7 +219,7 @@ TAD_community load(TAD_community com, char* dump_path){
  */
 STR_pair info_from_post(TAD_community com, long id){
 	POST p;
-	USER_HT u;
+	MY_USER u;
 	STR_pair pair;
 
 	p = find_post(com->p, id);
@@ -231,12 +231,16 @@ STR_pair info_from_post(TAD_community com, long id){
 	} 
 	if(isQuestion(p)){
 		u = find_user(com->users, atoi(get_ownerUserId(p)));
-		pair = create_str_pair(get_title(p), get_user_name(u));
+		char* user_name = get_user_name(u);
+		pair = create_str_pair(get_title(p), user_name);
+		free(user_name);
 	}
 	else if(isAnswer(p)){
 		p = find_post(com->p, get_parent(p));
 		u = find_user(com->users, atoi(get_ownerUserId(p)));
-		pair = create_str_pair(get_title(p), get_user_name(u));	
+		char* user_name = get_user_name(u);
+		pair = create_str_pair(get_title(p), user_name);
+		free(user_name);	
 	}
 	return pair;
 }
@@ -304,7 +308,7 @@ LONG_list questions_with_tag(TAD_community com, char* tag, Date begin, Date end)
  * Devolve a informação do perfil e os IDs dos últimos 10 posts de um certo utilizador
  */
 USER get_user_info(TAD_community com, long id) {
-	USER_HT u = find_user(com->users, id);
+	MY_USER u = find_user(com->users, id);
 	if (!u ) {
 		printf("User não existe");
 		return NULL;
@@ -328,7 +332,12 @@ USER get_user_info(TAD_community com, long id) {
 	}
 	if (!get_user_shortBio(u)) 
 		return create_user("", post_history);
-	return create_user(get_user_shortBio(u), post_history);
+	else {
+		char* shortBio =get_user_shortBio(u); 
+		USER r = create_user(get_user_shortBio(u), post_history);
+		free(shortBio);
+		return r;
+	}	
 }
 /**
  * Função para comparar os scores de dois POSTS
@@ -487,8 +496,8 @@ void addQueue_Question(POST p, long * id1, int * posts_i1_found, long * id2, int
  * Devolve as últimas N perguntas em que dois utilizadores participaram
 */
 LONG_list both_participated(TAD_community com, long id1, long id2, int N){
-	USER_HT user1 = find_user(com->users, id1);
-	USER_HT user2 = find_user(com->users, id2);
+	MY_USER user1 = find_user(com->users, id1);
+	MY_USER user2 = find_user(com->users, id2);
 	if (!user1 || !user2) return NULL;	
 	int nposts1 = get_user_nr_posts(user1);
 	int nposts2 = get_user_nr_posts(user2);
@@ -526,13 +535,13 @@ LONG_list both_participated(TAD_community com, long id1, long id2, int N){
 
 	while(l && res_size < N && (posts_i1_found < nposts1 || posts_i2_found < nposts2)) {
 		POST p = get_post(l);
-		if(get_ownerUserId(p) != NULL){
+		if(hasOwner(p)){
 			if(isAnswer(p)) {
-				if(atoi(get_ownerUserId(p)) == id1 && get_parent_owner(com->p, p) != NULL){
+				if(isOwner(p,id1) && get_parent_owner(com->p, p) != NULL){
 					addQueue_Answer(com, p, &id2, queue1, &queue1_size, queue2, &queue2_size, queuef, &queuef_size, &i, &f);
 					posts_i1_found++;
 				}
-				else if(atoi(get_ownerUserId(p)) == id2 && get_parent_owner(com->p, p) != NULL) {
+				else if(isOwner(p,id2) && get_parent_owner(com->p, p) != NULL) {
 					addQueue_Answer(com, p, &id1, queue2, &queue2_size, queue1, &queue1_size, queuef, &queuef_size, &i, &f);
 					posts_i2_found++;
 				}
@@ -558,7 +567,7 @@ LONG_list both_participated(TAD_community com, long id1, long id2, int N){
 /**
  *	Função auxiliar para a query 10 que calcula a pontuação de um post
  */
-int calculates_score(POST ans, USER_HT user){
+int calculates_score(POST ans, MY_USER user){
 	return get_score(ans)*0.45 + (get_user_reputation(user))*0.25 + get_score(ans)*0.2 + get_comments(ans)*0.1;
 }
 
@@ -583,7 +592,7 @@ long better_answer(TAD_community com, long id){
 		POST ans = get_post(l);
 		if(isAnswer(ans) && get_parent(ans) == id){
 			n++;
-			USER_HT user = find_user(com->users, atoi(get_ownerUserId(ans)));
+			MY_USER user = find_user(com->users, atoi(get_ownerUserId(ans)));
 			best = calculates_score(ans, user);
 			answer = get_postId(ans);
 		}
@@ -594,7 +603,7 @@ long better_answer(TAD_community com, long id){
 		POST ans = get_post(l);
 		if(isAnswer(ans) && get_parent(ans) == id){
 			n++;
-			USER_HT user = find_user(com->users, atoi(get_ownerUserId(ans)));
+			MY_USER user = find_user(com->users, atoi(get_ownerUserId(ans)));
 			temp = calculates_score(ans, user);
 			if(temp > best){
 				best = temp;

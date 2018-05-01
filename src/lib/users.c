@@ -14,7 +14,7 @@ struct users {
  * Liberta a memória alocada da struct que contém a informação de um user
  */
 void free_user_hash(gpointer data) {
-	free_myuser((USER_HT) data);
+	free_myuser((MY_USER) data);
 } 
 
 /**
@@ -32,8 +32,8 @@ USERS init_users() {
  * Função para comparar a reputação de dois utilizadores
  */
 int compare_users_by_reputation (gconstpointer a, gconstpointer b) {
-	USER_HT u1 = (USER_HT) a;
-	USER_HT u2 = (USER_HT) b;
+	MY_USER u1 = (MY_USER) a;
+	MY_USER u2 = (MY_USER) b;
 	if(get_user_reputation(u1) > get_user_reputation(u2)) return -1;
 	else if(get_user_reputation(u1) == get_user_reputation(u2)) return 0;
 	else return 1;
@@ -43,8 +43,8 @@ int compare_users_by_reputation (gconstpointer a, gconstpointer b) {
  * Função para comparar o número de posts de dois utilizadores
  */
 int compare_users_by_nr_posts (gconstpointer a, gconstpointer b) {
-	USER_HT u1 = (USER_HT) a;
-	USER_HT u2 = (USER_HT) b;
+	MY_USER u1 = (MY_USER) a;
+	MY_USER u2 = (MY_USER) b;
 	if(get_user_nr_posts(u1) > get_user_nr_posts(u2)) return -1;
 	else if(get_user_nr_posts(u1) == get_user_nr_posts(u2)) return 0;
 	else return 1;
@@ -75,8 +75,8 @@ void finalize_users(USERS users) {
 /**
  * Encontra um determinado user dado o seu ID
  */
-USER_HT  find_user(USERS users, int id) {
-	USER_HT u = g_hash_table_lookup(users->hash, GINT_TO_POINTER(id));
+MY_USER  find_user(USERS users, int id) {
+	MY_USER u = g_hash_table_lookup(users->hash, GINT_TO_POINTER(id));
 	return u;
 }
 
@@ -84,7 +84,7 @@ USER_HT  find_user(USERS users, int id) {
  * Insere um user na estrutura dos users
  */
 void add_myuser(USERS users, int id, char * name, char * shortBio, int nr_posts, int lastPost, int reputation) {
-	USER_HT u = create_myuser(id, name, shortBio, nr_posts, lastPost, reputation);
+	MY_USER u = create_myuser(id, name, shortBio, nr_posts, lastPost, reputation);
 	g_hash_table_insert(users->hash, GINT_TO_POINTER(get_user_id(u)), u);
 	users->users_by_reputation = g_slist_prepend (users->users_by_reputation, u);
 	users->users_by_nr_posts = g_slist_prepend(users->users_by_nr_posts, u);
@@ -93,7 +93,7 @@ void add_myuser(USERS users, int id, char * name, char * shortBio, int nr_posts,
  * Remove um user da estrutura dos users
  */
 void remove_myuser(USERS users, int id){
-	USER_HT u = find_user(users, id);
+	MY_USER u = find_user(users, id);
 	users->users_by_reputation = g_slist_remove (users->users_by_reputation, u);
 	users->users_by_nr_posts = g_slist_remove (users->users_by_nr_posts, u);
 	g_hash_table_remove (users->hash, GINT_TO_POINTER(id));
@@ -106,9 +106,9 @@ LONG_list get_N_users_with_most_reputation(USERS users, int N) {
 	int i = 0;
 	GSList* l = users->users_by_reputation;
 	LONG_list res = create_list(N);
-	USER_HT u = NULL;
+	MY_USER u = NULL;
 	while (l && i < N) {
-		u = (USER_HT) l->data;
+		u = (MY_USER) l->data;
 		set_list(res, i, get_user_id(u));
 		l = l->next;
 		i++;
@@ -120,7 +120,7 @@ LONG_list get_N_users_with_most_reputation(USERS users, int N) {
  * Incrementa o número de posts de um determinado user
  */
 void find_and_increment_user_nr_posts(USERS users, int id) {
-	USER_HT user = g_hash_table_lookup(users->hash, GINT_TO_POINTER(id));
+	MY_USER user = g_hash_table_lookup(users->hash, GINT_TO_POINTER(id));
 	increment_user_nr_posts(user);
 }
 
@@ -131,9 +131,9 @@ LONG_list get_N_users_with_most_nr_posts(USERS users, int N) {
 	int i = 0;
 	GSList* l = users->users_by_nr_posts;
 	LONG_list res = create_list(N);
-	USER_HT u = NULL;
+	MY_USER u = NULL;
 	while (l && i < N) {
-		u = (USER_HT) l->data;
+		u = (MY_USER) l->data;
 		set_list(res, i, get_user_id(u));
 		l = l->next;
 		i++;
@@ -145,7 +145,7 @@ LONG_list get_N_users_with_most_nr_posts(USERS users, int N) {
  * Define o lastPost de uma dado user
  */
 void find_and_set_user_lastPost(USERS users, int id, int lastPostId) {
-		USER_HT u = g_hash_table_lookup(users->hash, GINT_TO_POINTER(id));
+		MY_USER u = g_hash_table_lookup(users->hash, GINT_TO_POINTER(id));
 		if(u)
 			set_user_lastPost(u, lastPostId);
 }

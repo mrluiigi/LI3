@@ -55,8 +55,6 @@ void finalize(Posts posts) {
  * Devolve o ID do utilizador que publicou o post ao qual a resposta atual respondeu
  */
 char * get_parent_owner(Posts posts, POST p) {
-	gpointer parent_key = get_parent_key(p);
-	if (!parent_key) return 0;
 	POST parent = find_post(posts, get_parent(p));
 	if (!parent) return 0;
 	return get_ownerUserId(parent);

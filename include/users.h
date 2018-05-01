@@ -25,7 +25,7 @@ void finalize_users(USERS users);
 /**
  * Encontra um determinado user dado o seu ID
  */
-USER_HT  find_user(USERS users, int id);
+MY_USER  find_user(USERS users, int id);
 
 /**
  * Insere um user à estrutura dos users

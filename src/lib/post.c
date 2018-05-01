@@ -44,6 +44,7 @@ struct post {
 
 /**
  * Cria uma pergunta com base nos parâmetros recebidos
+ * O POST retornado foi alocado dinamicamente por isso deve ser libertado usando a função free_post()
  */
 POST create_question(char * title, int nanswers, GSList * tags, Date lastActivityDate, char postTypeId, int id, char * ownerUserId, Date creationDate){
 	POST p = malloc(sizeof(struct post));
@@ -62,6 +63,7 @@ POST create_question(char * title, int nanswers, GSList * tags, Date lastActivit
 
 /**
  * Cria uma resposta com base nos parâmetros recebidos
+ * O POST retornado foi alocado dinamicamente por isso deve ser libertado usando a função free_post()
  */
 POST create_answer(int parentId, int comments, int score, char postTypeId, int id, char * ownerUserId, Date creationDate){
 	POST p = malloc(sizeof(struct post));
@@ -86,27 +88,12 @@ int get_postId(POST p) {
 }
 
 /**
- * Devolve o ownerUserId como um pointer
- */
-gpointer get_owner_key(POST p) {
-	if(!p || !p->ownerUserId) return NULL;
-	return GINT_TO_POINTER(atoi(p->ownerUserId));
-}
-
-/**
  * Devolve o ownerUserId
+ * A string retornada foi alocada dinamicamente por isso deve ser libertada usando a função free()
  */
 char * get_ownerUserId(POST p) {  
 	if(!p || !p->ownerUserId) return NULL;
 	return mystrdup(p->ownerUserId);
-}
-
-/**
- * Devolve o parentId de uma resposta como um pointer
- */
-gpointer get_parent_key(POST p) {
-	if(!p || !p->a || !p->a->parentId) return NULL;
-	return GINT_TO_POINTER(p->a->parentId);
 }
 
 /**
@@ -127,6 +114,7 @@ int get_comments(POST p){
 
 /**
  * Devolve o título de uma pergunta
+ * A string retornada foi alocada dinamicamente por isso deve ser libertada usando a função free()
  */
 char * get_title(POST p) {  
 	if(!p || !p->q || !p->q->title) return NULL;
@@ -143,6 +131,7 @@ int get_nanswers(POST p){
 
 /**
  * Devolve as tags de uma pergunta
+ * A GSList* retornada foi alocada dinamicamente por isso deve ser libertada usando a função g_slist_free()
  */
 GSList * get_tags(POST p) {
 	if(!p || !p->q || !p->q->tags) return NULL;
@@ -159,6 +148,23 @@ int contains_tag(POST p, gpointer tag_id) {
 		return 1;
 	else 
 		return 0;
+}
+
+/**
+ * Verifica se o post tem um owner definido
+ */
+int hasOwner(POST p){
+	if (!p) return 0;
+	if(!p->ownerUserId) return 0;
+	return 1;
+}
+
+/**
+ * Verifica se o id dado corresponde ao owner do post
+ */
+int isOwner(POST p, int id){
+	if (!p) return 0;
+	return (atoi(p->ownerUserId) == id);
 }
 
 /**
@@ -187,6 +193,7 @@ int get_score(POST p){
 
 /**
  * Devolve o creationDate de um post
+ * A Date retornada foi alocada dinamicamente por isso deve ser libertada usando a função free_date()
  */
 Date get_creationDate(POST p){
 	Date cd = p->creationDate;
@@ -195,6 +202,7 @@ Date get_creationDate(POST p){
 
 /**
  * Devolve o lastActivityDate de uma pergunta
+ * A Date retornada foi alocada dinamicamente por isso deve ser libertada usando a função free_date()
  */
 Date get_lastActivityDate(POST p){
 	Date lad = p->q->lastActivityDate;
