@@ -97,6 +97,14 @@ char * get_ownerUserId(POST p) {
 }
 
 /**
+ * Devolve o ownerUserId em forma de int
+ */
+int get_ownerUserId_as_int(POST p) {  
+	if(!p || !p->ownerUserId) return 0;
+	return atoi(p->ownerUserId);
+}
+
+/**
  * Devolve o parentId de uma resposta
  */
 int get_parent(POST p) {

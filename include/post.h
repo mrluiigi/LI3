@@ -39,6 +39,11 @@ int get_postId(POST p);
 char * get_ownerUserId(POST p);
 
 /**
+ * Devolve o ownerUserId em forma de int
+ */
+int get_ownerUserId_as_int(POST p);
+
+/**
  * Devolve o parentId de uma resposta
  */
 int get_parent(POST p);
