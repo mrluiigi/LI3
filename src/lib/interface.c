@@ -146,7 +146,7 @@ void loadPosts(TAD_community com, char *dump_path, char *file){
 		ptr = ptr->next->next;
 	}
 	xmlFreeDoc(doc);
-	finalize(com->p);
+	finalize_posts(com->p);
 }
 
 /**

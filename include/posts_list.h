@@ -35,8 +35,10 @@ void add_question_to_posts(Posts posts, char * title, int nanswers, GSList * tag
  */
 void add_answer_to_posts(Posts posts, int parentId, int comments, int score, char postTypeId, int id, char * ownerUserId, Date creationDate);
 
-
-void finalize(Posts posts);
+/**
+ * Função a chamar depois de inseridos todos os posts para garantir o funcionamento correto do módulo
+ */
+void finalize_posts(Posts posts);
 
 /**
  *	Função auxiliar para a query 9 que adiciona uma resposta à queue

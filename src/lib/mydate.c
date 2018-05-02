@@ -45,10 +45,3 @@ Date xmlCreationDate_to_Date(char* xmlDate) {
 	Date d = createDate(day, month, year);
 	return d;
 }
-
-/**
-* Função que converte a CreationDate do XML numa key para ser usada na monthshash
-*/
-int date_to_Key(int year, int month) {
-	return (year * 100) + month;
-}

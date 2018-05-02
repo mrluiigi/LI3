@@ -38,9 +38,16 @@ void add_answer_to_posts(Posts posts, int parentId, int comments, int score, cha
 }
 
 /**
- * 
+* Função que converte a CreationDate do XML numa key para ser usada na monthshash
+*/
+int date_to_Key(int year, int month) {
+	return (year * 100) + month;
+}
+
+/**
+ * Função a chamar depois de inseridos todos os posts para garantir o funcionamento correto do módulo
  */
-void finalize(Posts posts) {
+void finalize_posts(Posts posts) {
 	posts->list = g_slist_sort (posts->list, compare_date_list);
 	for(GSList* l = posts->list; l; l = l->next){
 		POST p = (POST) l->data;

@@ -9,7 +9,7 @@
 typedef GHashTable * TAGS;
 
 /**
- * Inicializa a HashTable da tags
+ * Inicializa as TAGS
  */
 TAGS init_tags();
 
@@ -27,8 +27,6 @@ gpointer convert_tag_name_to_id(TAGS t, char * tag_name);
 * Recebe a string das tags e as coloca numa lista ligada
 */
 GSList* getTags(TAGS t, char* tags);
-
-//GHashTable* loadTags(GHashTable* tagshash, char *dump_path, char *file);
 
 /**
  * Liberta a memória alocada para as tags

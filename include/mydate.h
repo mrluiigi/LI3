@@ -15,12 +15,4 @@ int compare_date (Date d1, Date d2);
 * Função que converte a CreationDate do XML na struct date
 */
 Date xmlCreationDate_to_Date(char* xmlDate);
-
-/**
-* Função que converte a CreationDate do XML numa key para ser usada na monthshash
-*/
-int date_to_Key(int year, int month);
-
-
-
 #endif
