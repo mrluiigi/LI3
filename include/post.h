@@ -96,26 +96,6 @@ int isQuestion(POST p);
 int isAnswer(POST p);
 
 /**
- * Incrementa o número de upVotes de uma resposta
- */
-void addUpVote(POST p);
-
-/**
- * Incrementa o número de downVotes de uma resposta
- */
-void addDownVote(POST p);
-
-/**
- * Devolve o número de upVotes de uma resposta
- */
-int get_upvotes(POST p);
-
-/**
- * Devolve o número de downVotes de uma resposta
- */
-int get_downvotes(POST p);
-
-/**
  * Devolve o score de uma resposta
  */
 int get_score(POST p);

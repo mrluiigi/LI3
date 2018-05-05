@@ -11,7 +11,7 @@ struct user_ht{
 	/** ShortBio do utilizador */
 	char *shortBio;
 	/** Número de posts do utilizador */
-	unsigned short nr_posts;
+	int nr_posts;
 	/** Último post do utilizador */
 	int lastPost;
 	/** Reputação do utilizador */

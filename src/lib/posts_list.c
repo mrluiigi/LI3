@@ -5,8 +5,8 @@
  * Estrutura que guarda informação sobre um post
  */
 struct TCD_posts {
-	GHashTable *hash;
 	GSList *list;
+	GHashTable *hash;
 	GHashTable *months_hash; 
 };
 
