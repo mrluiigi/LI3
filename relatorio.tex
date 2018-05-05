@@ -1,8 +1,10 @@
-\documentclass[a4paper]{article}
+\documentclass[10pt]{article}
 
 \usepackage[utf8]{inputenc}
-\usepackage[portuges]{babel}
+\usepackage[portuguese]{babel}
 \usepackage{a4wide}
+\usepackage{listings}
+
 
 \title{Projeto de Laboratórios de Informática 3\\Grupo 26}
 \author{José Pinto (A81317) \and Luís Correia (A81141) \and Pedro Barbosa (A82068)}
@@ -23,66 +25,192 @@
 
 Neste relatório vamos primeiramente falar das estruturas de dados utilizadas e dos vários módulos criados, terminando com a explicação das estratégias usadas em cada query.  
 
+\section{Dependências externas}
+\label{sec:dependencias}
+
+Este projeto tem duas dependências externas, as bibliotecas libxml2 e glib.
+
 \section{Módulos}
 \label{sec:modulos}
 
-Nesta secção vamos falar dos módulos criados para 
+Nesta secção vamos falar dos módulos criados para auxiliar o desenvolvimento deste projeto.
 
 \subsection{Post}
 
-	Neste módulo é guardada toda a informação relativa a um post, para isso foi implementada a estrutura POST onde guardamos o tipo do post, se é pergunta ou resposta, o id do post, o id do utilizador que fez o post e a data da criação do post. Para além disso, se o post for uma pergunta, a estrutura do post tem também a informação relativa à pergunta que é guardada na estrutura QUESTION. Se o post for uma resposta o POST tem a informação guardada na estrutura ANSWER.
+	Este módulo corresponde à implementação de um post do Stack Overflow.
+\subsubsection{Estrutura de dados}
+	A informacão relativa a um utilizador é guardada na estrutura \emph{post}:
+	\begin{lstlisting}
+	struct post {
+		//Identifica o tipo de post (Pergunta ou Resposta)
+		char postTypeId;
+		QUESTION q; 
+		ANSWER a; 
+		//ID do post 
+		int id;
+		//ID do utilizador que fez o post 
+		char * ownerUserId;
+		//Data da criacao do post 
+		Date creationDate;
+	};
+	\end{lstlisting}
+	Esta estrutura é a implementação concreta do tipo de dados abstrato POST declarado no header:
+	\begin{lstlisting} 
+	typedef struct post * POST;
+	\end{lstlisting}
+
+	Como a informação de um post varia conforme seja uma pergunta ou uma resposta, foram criadas as estrututras QUESTION e ANSWER:
+\begin{lstlisting}
+	typedef struct question{
+		//Titulo
+		char *title;
+		//Numero de respostas 
+		int nanswers;
+		//Tags 
+		GSList *tags;
+		//Ultima atividade do post 
+		Date lastActivityDate;
+	}*QUESTION;
+	\end{lstlisting}
+	\begin{lstlisting}
+	typedef struct answer{
+		// ParentID (ID do post a que a resposta pertence) 
+		int parentId;
+		// Numero de comentarios de uma resposta 
+		int comments;
+		// Score de uma resposta 
+		int score;
+	}*ANSWER;
+	\end{lstlisting}
+
+	O membro \emph{tags} é uma lista ligada que guarda os ids das tags de um post.
+
+\subsubsection{Funções}
+
+	Devido à dicotomia dos posts, existem duas funções distintas para a criação de uma instância de um POST. Estas criam c
+	ópias de todos parâmetros recebidos com tipo não primitivo, para garantir o encapsulamento dos dados.
+
+	O acesso exterior aos membros da estrutura é realizado exclusivamente através de funções. Todas as variáveis podem ser consultadas, sendo o resultado da consulta de tipos não primitivos uma cópia destes. Nenhum membro da estrutura pode ser alterado após a iniciaização.
+
+	Existe também uma função que liberta a memória alocada para a estrutura.
+
+\subsection{Posts}
+	O objetivo deste módulo é permitir guardar e processar a informação de todos os posts de uma comunidade do Stack Overflow
+\subsubsection{Estrutura de dados}
+
+	A estrutura utilizada é \emph{TCD\_posts}:
+	\begin{lstlisting}
+	struct TCD_posts {
+		GSList *list;
+		GHashTable *hash;
+		GHashTable *months_hash; 
+};
+	\end{lstlisting}
+
+	O membro \emph{list} é uma lista ligada que contêm todos os posts por ordem cronológica inversa. \emph{hash} é uma hashtable que associa o id de um \emph{POST} à posicão deste na lista. \emph{months\_hash} é uma hashtable que faz a associação entre um mês(e o ano) e o primeiro post desse mês. Assim, quando um dos parâmetros de uma interrogação é um intervalo de tempo, é possível começar a percorrer a lista dos posts num ponto já muito próximo do intervalo pedido, evitando percorrer a lista desnecessariamente. Desta forma o tempo de execução dessas interrogações é muito menor. Poderíamos ter optador por guardar o primeiro post de cada dia no entanto a melhoria no tempo de execução não compensaria o tamanho acrescido da hashtable. 
+
+	Esta estrutura é a implementação concreta do tipo de dados abstrato \emph{Posts} declarado no header:
+	\begin{lstlisting} 
+	typedef struct TCD_posts * Posts;
+	\end{lstlisting}
+
+	Como é necessário percorrer a lista dos posts em várias interrogações também foi definido o tipo \emph{PostsList} para manter a abstração:
+	\begin{lstlisting} 
+	typedef GSList * PostsList;
+	\end{lstlisting}
+
+\subsubsection{Funções}	
 	
-	Na estrutura QUESTION é guardado o título da pergunta, o número de respostas a essa pergunta, as tags e a data da última atividade do post.
+	Depois de uma instância de \emph{Posts} ser incializada com \emph{init\_posts}, podem ser utilizadas funções para adicionar/remover posts. Tal como no módulo anterior existe uma função de adição para as perguntas e outras para as respostas. Estas funções recebem a informação através de vários parâmetros e usam internamente as funções do módulo Post para assegurar o encapsulamento.
+
+	Para garantir o correto funcionamento do módulo é necessário que o a função \emph{finalize\_posts} seja invocada após todos os posts serem adicionados. O bom funcionamento do módulo estar dependente de um fator externo pode não ser ideal mas foi um compromisso realizado para garantir um tempo de execução aceitável. É mais eficiente ordenar a \emph{list} e preencher a \emph{months\_hash} depois de todos os posts serem inseridos.
+
+	Existem várias funções que permitem procurar um post, ou a localização deste na lista, de acordo com certos parâmetros (id, data, etc). Também existem funções que permitem percorrer a lista de posts e obter o \emph{POST} dessa posição. Como estas últimas funções recebem/devolvem o tipo abstrato \emph{PostsList} o encapsulamento é garantido.
+
+	Também está definida uma função para libertar a memória alocada.
+
+\subsection{MyUser}
+	Este módulo corresponde à implementação de um utilizador do Stack Overflow, contendo do  guarda a informação relativa a um \emph{user}. 
+\subsubsection{Estrutura de dados}
 	
-	A estrutura ANSWER possui o parentId que é o id do post a que a resposta pertence, o número de comentários e o score dessa resposta.
+	A informacão relativa a um utilizador é guardada na estrutura \emph{user\_ht}:
+	\begin{lstlisting}
+	struct user_ht{
+		//ID do user 
+		int id;
+		//Nome do utilizador 
+		char *name;
+		// ShortBio do utilizador 
+		char *shortBio;
+		// Numero de posts do utilizador 
+		unsigned short nr_posts;
+		// Ultimo post do utilizador 
+		int lastPost;
+		// Reputacao do utilizador 
+		int reputation;
+	};
+	\end{lstlisting}
 
-	Este módulo possui dois métodos construtores parametrizados, um para a QUESTION e outro para a ANWSER. Também possui métodos \emph{get} que retornam cópias de conteúdo para que se garanta o encapsulamento e funções que verificam se um determinado post é uma pergunta ou resposta e se contém uma determinada tag.
 
-	Por último, existe uma função que liberta a memória alocada para um post.
+	O último post do utilizador corresponde ao id do post mais recente deste e a sua utilidade será esclarecida na secção sobre a interrogação 5. Os restantes membros da estrutura contêm informação necessária para responder às interrogações.
 
-\subsection{Posts list}
-	
-	Este módulo guarda a informação relativa aos \emph{posts} numa struct, \emph{TCD Posts}, formada por uma lista ligada e duas hashtables. Dentro da lista é feita a distinção entre os dois tipos de posts que podemos ter, pergunta ou resposta, e as hashtables são utilizadas para percorrer mais rapidamente a lista dos posts, sendo que uma delas guarda o primeiro post de cada mês para facilitar a execução de uma das querys.
+	Esta estrutura é a implementação concreta do tipo de dados abstrato MY\_USER declarado no header:
+	\begin{lstlisting} 
+	typedef struct user_ht * MY_USER;
+	\end{lstlisting}
 
-	Primeiramente, inicializamos a struct com uma função \emph{init}.
+\subsubsection{Funções}
 
-	Para adicionar um post à struct utilizamos duas funções distintas, uma para as perguntas, \emph{add question to posts}, e uma para as respostas, \emph{add answer to posts}.
+	A criação de uma instância do MY\_USER é feita através de um método de construção parametrizado. Esta função tem o cuidado de criar cópias das strings recebidas para garantir o encapsulmanento dos dados.
 
-	Ao longo deste módulo são definidos vários tipos de \emph{find}, um para devolver todos os posts a seguir a uma data passada como argumento, \emph{find by date}, um que encontra um posts específico e retorna o mesmo, \emph{find post}, um que retorna todos os posts a seguir ao encontrado, \emph{find post in list} e por fim uma função que dadas duas listas retorna aquela que contém o post mais recente, \emph{find most recent post}.
+	O acesso exterior aos membros da estrutura é realizado exclusivamente através de funções. Todos as variáveis podem ser consultadas, sendo o resultado da consulta de tipos não primitivos uma cópia destes. As únicas que podem ser modificadas após a inicialização são o \emph{lastPost} e o \emph{nr\_posts} devido ao facto de que a informação destes não se encontrar no ficheiro Users.xml e ser obtida através do posterior processamento do ficheiro Posts.xml
 
-	Para o caso em que um post é uma resposta, foi definida a função, \emph{get parent owner}, que devolve o ID do utilizador que publicou a pergunta à qual o post em questão responde. Para além deste \emph{get} foram definidos outros três, \emph{get posts list}, \emph{get post} e \emph{get next}.
-
-	Para terminar, foram ainda definidas duas funções de comapração, \emph{compare nanswers} e \emph{compare date list} cujo objetivo é identificar o post com mais respostas e comparar a data do primeiro post de duas listas diferentes respetivamente. Também estão definidas duas funções \emph{free} para libertar a memória alocada para as structs.
-
-\subsection{My User}
-
-	Este módulo guarda a informação relativa a um \emph{user}. Existe a estrutura \emph{user ht} que guarda o id, o nome, o shortBio, o número de posts, o último post desse utilizador e a sua reputação.
-
-	Foi adicionado um método de construção parametrizado e métodos \emph{get} que retornam cópias de conteúdo para que se garanta o encapsulamento.
-
-	Por último, existe uma função que liberta a memória alocada para um post.
+	Por último, existe uma função que liberta a memória alocada para a estrutura.
 
 \subsection{Users}
+	O objetivo deste módulo é permitir guardar e processar a informação de todos os utilizadores de uma comunidade do Stack Overflow
+\subsubsection{Estrutura de dados}
 
-	O presente módulo permite guardar toda a informação relativa a todos os \emph{users}. Para isso utiliza-se uma estrutura que contém uma \emph{hashtable} e duas listas ligadas, uma delas ordenada conforme o número de posts e a outra segundo a reputação de cada \emph{user}. A \emph{hashtable} tem como objetivo encotnrar um post dado o ID do utilizador.
+	A estrutura utilizada é \emph{users}:
+	\begin{lstlisting}
+	struct users {
+		GHashTable* hash;
+		GSList* users_by_nr_posts;
+		GSList* users_by_reputation;
+	};
+	\end{lstlisting}
 
-	Para tornar possivel a organização das duas listas ligadas guardadas, é necessário definir uma série de funções. Inicialmente utilizamos uma função para inicializar ambas as listas e a \emph{hashtable}. para adicionar e remover utilizadores da lista utilizamos as funções \emph{add myuser} e \emph{remove myuser}. No final utiliza-se uma função \emph{free} para libertar a memória alocada para a estrutura.
+	\emph{hash} é uma hashtable que associa o id a um \emph{USER}. \emph{users\_by\_nr\_posts} e \emph{users\_by\_nr\_reputation} são listas ligadas de \emph{USER}, ordenadas em ordem decrescente de acordo com o número de posts e a reputação de cada \emph{USER}.
 
-	De maneira a conseguir contar o número total de posts de um utilizador utilizamos a função \emph{find and increment user nr posts} que procura por um utilizador e aumenta o seu número de posts em uma unidade.
+	Esta estrutura é a implementação concreta do tipo de dados abstrato MY\_USER declarado no header:
+	\begin{lstlisting} 
+	typedef struct users * USERS;
+	\end{lstlisting}
 
-	De forma tornar possivel a organização das listas conforme os parâmetros desejados implementamos duas funções, uma que compara os utilizadores conforme a sua reputação ou número de posts, \emph{compare users by nr posts} e \emph(compare users by reputation), e duas funções sort, \emph{sort users by nr posts} e \emph{sort users by reputation}, que utilizam a função da biblioteca GLIB e as auxiliares definidas anteriormente para organizar a lista segundo o parâmetro desejado. No final, para garantir que os users estão de facto ordenados segundo o parâmetro desejado, utilizamos a função \emph{finalize users}.
+\subsubsection{Funções}
+	Tal como no módulo \emph{Posts}, depois de uma instância de \emph{Users} ser incializada com \emph{init\_users}, podem ser utilizadas funções para adicionar/remover posts. A função de adição recebe a informação através de vários parâmetros e usam internamente as funções do módulo User para assegurar o encapsulamento.
 
-	Neste módulo estão ainda definidas algumas funções adicionais que sãao utilizadas como auxiliares de maneira a tornar possivel aa execução correta de algumas querys tais como a \emph{get N users with most reputation} e \emph{get N users with most nr posts} que tal como o nome indica, devolvem os N utilizadores com melhor reputação ou com o maior número de posts, a função \emph{find user} que encontra um user dado o seu ID e a \emph{find and set user lastPost} que dado um utilizador o encontra na lista e define o último post publicado pelo mesmo.
+	Existem duas funções para alterar o número de posts e o último post de um dado utlilizador. Assim, é possível percorrer a lista de posts contida numa instância de \emph{Posts} para alterar estas variáveis mesmo após as instâncias de \emph{USER} já terem sido criadas.
 
+	Por razões semelhantes às explicadas no módulo \emph{Posts} (neste caso é a ordenção das duas listas), é necessário que o a função \emph{finalize\_users} seja invocada após todos os utilizadores serem adicionados/alterados.
+
+	A funcionalidade principal deste módulo é a função \emph{find\_user}, que permite obter a informação de um utilizador dado o seu id, e duas funçõesque percorrem uma das listas da estrura \emph{users} e criam e retornam uma \emph{LONG\_list} com os N utilizadores com mais posts ou mais reputação.
+
+	Também está definida uma função para libertar a memória alocada.
 
 \subsection{My Date}
 
-	O módulo \emph{mydate} é um módulo simples que compara duas datas, \emph{compare date}, converte a data escrita no XML numa \emph{date}, \emph{xmlCreationDate to Date}, e uma função que converte a data do XML numa key para ser usada na monthshash da struct dos posts, \emph{date to Key}.
-
+	O módulo \emph{mydate} é um pequeno módulo que possui algumas funções relacionadas com datas que são utlilizadas por vários módulos. 
 
 \subsection{Tags}
+	Este módulo é responsável por guardar e processar informação sobre tags de posts
+\subsubsection{Estrutura de dados}
+	A estrutura de dados deste módulo é apenas uma hash table que associa o nome de uma tag ao seu id. Para o propóśito da abstração esta tabela é representada pelo tipo \emph{TAGS}:
+	\begin{lstlisting} 
+	typedef GHashTable * TAGS;
+	\end{lstlisting}
 
-	A struct utilizada para guardar as tags é uma Hashtable onde o ID de cada posição é o ID da tag e o conteúdo é a própria tag. Para inserir uma tag na hashtable utilizamos a função \emph{insert tags}. Neste módulo definimos uma função \emph{getTags} que dado uma string com as várias tags utilizadas num post as converte numa lista ligada. Temos também uma função que dada uma tag devolve o seu ID, \emph{convert tag naame to id}. Como é costume, está definida uma função free que liberta a memória alocada para a struct.
-
+\subsubsection{Funções}
+	As únicas funções presentes neste módulo são as de inicialização, inserção, procura e libertação de memória. Existe apenas mais uma função utilizada para converter a informação sobre tags presente no Posts.xml numa lista para passar à função \emph{create\_question} do módulo \emph{Post}
 
 \end{document}
