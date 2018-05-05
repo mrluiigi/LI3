@@ -87,8 +87,7 @@ Nesta secção vamos falar dos módulos criados para auxiliar o desenvolvimento 
 
 \subsubsection{Funções}
 
-	Devido à dicotomia dos posts, existem duas funções distintas para a criação de uma instância de um POST. Estas criam c
-	ópias de todos parâmetros recebidos com tipo não primitivo, para garantir o encapsulamento dos dados.
+	Devido à dicotomia dos posts, existem duas funções distintas para a criação de uma instância de um POST. Estas criam cópias de todos parâmetros recebidos com tipo não primitivo, para garantir o encapsulamento dos dados.
 
 	O acesso exterior aos membros da estrutura é realizado exclusivamente através de funções. Todas as variáveis podem ser consultadas, sendo o resultado da consulta de tipos não primitivos uma cópia destes. Nenhum membro da estrutura pode ser alterado após a iniciaização.
 
@@ -121,7 +120,7 @@ Nesta secção vamos falar dos módulos criados para auxiliar o desenvolvimento 
 
 \subsubsection{Funções}	
 	
-	Depois de uma instância de \emph{Posts} ser incializada com \emph{init\_posts}, podem ser utilizadas funções para adicionar/remover posts. Tal como no módulo anterior existe uma função de adição para as perguntas e outras para as respostas. Estas funções recebem a informação através de vários parâmetros e usam internamente as funções do módulo Post para assegurar o encapsulamento.
+	Depois de uma instância de \emph{Posts} ser inicializada com \emph{init\_posts}, podem ser utilizadas funções para adicionar/remover posts. Tal como no módulo anterior existe uma função de adição para as perguntas e outras para as respostas. Estas funções recebem a informação através de vários parâmetros e usam internamente as funções do módulo Post para assegurar o encapsulamento.
 
 	Para garantir o correto funcionamento do módulo é necessário que o a função \emph{finalize\_posts} seja invocada após todos os posts serem adicionados. O bom funcionamento do módulo estar dependente de um fator externo pode não ser ideal mas foi um compromisso realizado para garantir um tempo de execução aceitável. É mais eficiente ordenar a \emph{list} e preencher a \emph{months\_hash} depois de todos os posts serem inseridos.
 
@@ -130,7 +129,7 @@ Nesta secção vamos falar dos módulos criados para auxiliar o desenvolvimento 
 	Também está definida uma função para libertar a memória alocada.
 
 \subsection{MyUser}
-	Este módulo corresponde à implementação de um utilizador do Stack Overflow, contendo do  guarda a informação relativa a um \emph{user}. 
+	Este módulo corresponde à implementação de um utilizador do Stack Overflow, contendo a informação relativa a um \emph{user}. 
 \subsubsection{Estrutura de dados}
 	
 	A informacão relativa a um utilizador é guardada na estrutura \emph{user\_ht}:
@@ -180,7 +179,7 @@ Nesta secção vamos falar dos módulos criados para auxiliar o desenvolvimento 
 	};
 	\end{lstlisting}
 
-	\emph{hash} é uma hashtable que associa o id a um \emph{USER}. \emph{users\_by\_nr\_posts} e \emph{users\_by\_nr\_reputation} são listas ligadas de \emph{USER}, ordenadas em ordem decrescente de acordo com o número de posts e a reputação de cada \emph{USER}.
+	\emph{hash} é uma hashtable que associa o id a um \emph{USER}. \emph{users\_by\_nr\_posts} e \emph{users\_by\_nr\_reputation} são listas ligadas de \emph{USER}, ordenadas em ordem decrescente de acordo com o número de posts e a reputação de cada \emph{USER} respetivamente.
 
 	Esta estrutura é a implementação concreta do tipo de dados abstrato MY\_USER declarado no header:
 	\begin{lstlisting} 
@@ -188,13 +187,13 @@ Nesta secção vamos falar dos módulos criados para auxiliar o desenvolvimento 
 	\end{lstlisting}
 
 \subsubsection{Funções}
-	Tal como no módulo \emph{Posts}, depois de uma instância de \emph{Users} ser incializada com \emph{init\_users}, podem ser utilizadas funções para adicionar/remover posts. A função de adição recebe a informação através de vários parâmetros e usam internamente as funções do módulo User para assegurar o encapsulamento.
+	Tal como no módulo \emph{Posts}, depois de uma instância de \emph{Users} ser inicializada com \emph{init\_users}, podem ser utilizadas funções para adicionar/remover users. A função de adição recebe a informação através de vários parâmetros e usam internamente as funções do módulo User para assegurar o encapsulamento.
 
 	Existem duas funções para alterar o número de posts e o último post de um dado utlilizador. Assim, é possível percorrer a lista de posts contida numa instância de \emph{Posts} para alterar estas variáveis mesmo após as instâncias de \emph{USER} já terem sido criadas.
 
-	Por razões semelhantes às explicadas no módulo \emph{Posts} (neste caso é a ordenção das duas listas), é necessário que o a função \emph{finalize\_users} seja invocada após todos os utilizadores serem adicionados/alterados.
+	Por razões semelhantes às explicadas no módulo \emph{Posts} (neste caso é a ordenação das duas listas), é necessário que o a função \emph{finalize\_users} seja invocada após todos os utilizadores serem adicionados/alterados.
 
-	A funcionalidade principal deste módulo é a função \emph{find\_user}, que permite obter a informação de um utilizador dado o seu id, e duas funçõesque percorrem uma das listas da estrura \emph{users} e criam e retornam uma \emph{LONG\_list} com os N utilizadores com mais posts ou mais reputação.
+	A funcionalidade principal deste módulo é a função \emph{find\_user}, que permite obter a informação de um utilizador dado o seu id, e duas funções que percorrem uma das listas da estrura \emph{users} e criam e retornam uma \emph{LONG\_list} com os N utilizadores com mais posts ou mais reputação.
 
 	Também está definida uma função para libertar a memória alocada.
 
@@ -212,5 +211,60 @@ Nesta secção vamos falar dos módulos criados para auxiliar o desenvolvimento 
 
 \subsubsection{Funções}
 	As únicas funções presentes neste módulo são as de inicialização, inserção, procura e libertação de memória. Existe apenas mais uma função utilizada para converter a informação sobre tags presente no Posts.xml numa lista para passar à função \emph{create\_question} do módulo \emph{Post}
+
+\section{Interrogações}
+
+	Nesta secção vamos explicar os métodos usados para cada uma das interrogações e as estratégias para melhoramento de desempenho.
+
+\subsection{Interrogação 1}
+	Nesta interrogação usa-se primeiramente uma função para devolver o post com o ID dado. Caso o post seja uma pergunta, procura-se o user que fez esse post para que se devolva o nome do autor junto com o título do post. Se o post for uma resposta, devolve-se o nome do user que fez a resposta e procura-se pela pergunta a que essa resposta diz respeito para se retornar também o título da pergunta. 
+
+\subsection{Interrogação 2}
+
+	A struct dos users, formada por duas listas e uma hashtable, já possui uma lista com todos os users ordenados pelo número de posts, pelo que apenas é necessária uma função que percorra essa mesma lista e devolva uma nova com os N users pretendidos.
+
+\subsection{Interrogação 3}
+
+	No módulo post\_list temos a lista de posts ordenada da mais recente para a mais antiga.
+	Procuramos com a ajuda da hashtable months\_hash o post anterior ao intervalo de tempo dado, retornando a lista de posts a partir desse post. Com isto, percorre-se a lista dentro do intervalo de tempo contabilizando o número de perguntas e respostas.
+
+\subsection{Interrogação 4}
+
+	Inicialmente utilizamos a hashtable months\_hash, que guarda o primeiro post de cada mês, para encontrar o último post que ainda faz parte do intervalo de tempo em questão. De seguida, percorremos a lista de posts desde esse mesmo post até chegar à data do begin. Á medida que se percorre cada post verifica-se se é uma pergunta e se contém a tag, se as condições se verificarem adicionamos o ID do post a uma lista ligada. Por fim, copiam-se todos os IDs da lista ligada para uma LONG\_list e retornamos a mesma.
+
+\subsection{Interrogação 5}
+
+	A partir do ID dado, procura-se na hashtable dos users pelo user com esse ID. Com isto obtém-se a informação do seu perfil (short bio), o número de posts e o último post do user.
+	Começa-se a percorrer a lista dos posts desde o último post até serem encontrados 10 ou já se tiver percorrido todos os posts do user.
+	Cada post pertencente ao user é adicionado a um array
+	Caso não sejam encontrados 10 posts, o resto do array fica a 0.
+
+\subsection{Interrogação 6}
+
+	Inicialmente utilizamos a hashtable months\_hash para encontrar o último post que ainda faz parte do intervalo de tempo em questão. De seguida, percorremos a lista de posts desde esse mesmo post até chegar à data do begin. De seguida, caso o post seja uma resposta é adicionado a uma lista ligada temporária. Após percorrer todos os posts, ordenamos a lista temporária segundo a score de cada resposta. Por fim, copiamos as primeiras N respostas para uma LONG\_list e retornamos a mesma. Caso não sejam retornadas N respostas no intervalo dado, preenchemos o resto da lista com zeros.
+
+\subsection{Interrogação 7}
+
+	No módulo post\_list temos a lista de posts ordenada da mais recente para a mais antiga.
+	Procuramos com a ajuda da hashtable months\_hash o post anterior ao intervalo de tempo dado, retornando a lista de posts a partir desse post
+	Percorre-se a lista de posts dentro do intervalo de tempo dado e caso um post seja uma pergunta, adiciona-se a uma lista ligada temporária.	
+	No fim de se percorrer a lista de posts, ordena-se a lista ligada temporária de acordo com o número de respostas, para que se possa retornar os IDs das N perguntas com mais respostas.
+	Se não foram encontrados N perguntas no intervalo de tempo dado, o resto da LONG\_list fica a 0.
+
+\subsection{Interrogação 8}
+
+	Percorrer a lista dos posts e verificar se é uma pergunta e sem a palavra pertence ao seu título, caso pertença adiciona-se o ID da pergunta a uma LONG\_list e devolve-se a mesma. Caso não sejam retornadas N perguntas com a palavra no título, preenchemos o resto da lista com zeros.
+
+\subsection{Interrogação 9}
+
+	Para resolver a query criamos três queues, na queue1 vamos guardar respostas do utilizador com ID1 e na queue2 vamos guardar respostas do utilizador com ID2 e na queuef guardamos o ID dos posts onde participam ambos os utilizadores. À medida que percorremos a lista dos posts, quando se encontra uma resposta verificamos quem a publicou, se for o ID1/2 verificamos o parentOwnerId, se este for o ID2/1 adicionamos o ID da pergunta à queuef, se o parentOwnerId não for o ID2/1, vamos à queue2/1 verificar se tem alguma respostas com o mesmo parentOwnerId, se tiver adicionamos à queuef. Caso nenhuma das condições se verifique adicionamos à queue1 ou à queue2. Quando o post que encontramos é uma pergunta se o parentOwner for o ID1/2, vamos à queuef verificar se o post está lá, se estiver adicionamos à lista, caso contrário não faz nada.
+
+\subsection{Interrogação 10}
+
+	Primeiramente, utiliza-se a hashtable hash da estrutura dos posts, para obter a lastactivityDate do post. De seguida, utiliza-se a hashtable months\_hash para encontrar o primeiro post que antecede o post cuja data é a lastActivityDate. Por fim percorremos a lista até à creationDate da pergunta, verificando se o post encontrado é uma resposta à pergunta. Por fim é calculado a score de cada post e comparam-se todas as scores até encontrar a melhor retornado o ID dessa resposta.
+
+\subsection{Interrogação 11}
+
+	Inicialmente, fazemos uma lista com os N utilizadores com melhor reputação. Seguidamente utilizamos a hashtable months\_hash para encontrar o último post que ainda faz parte do intervalo de tempo em questão e percorremos a lista de posts desde esse mesmo post até chegar à data do begin. Á medida que se percorre a lista dos posts, caso seja uma pergunta e o owner seja um dos N utilizadores com melhor reputação vamos adicionar a tag a uma lista. Caso a tag já esteja presente na mesma, incrementamos o número de vezes que ocorre. No final, ordenamos a lista das tags, copiamos para uma LONG\_list e retiramos as N primeiras. Caso não sejam contadas N tags, enchemos o resto da lista com zeros.
 
 \end{document}
