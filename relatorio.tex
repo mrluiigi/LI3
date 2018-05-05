@@ -230,7 +230,7 @@ Nesta secção vamos falar dos módulos criados para auxiliar o desenvolvimento 
 
 \subsection{Interrogação 4}
 
-	Inicialmente utilizamos a hashtable months\_hash para encontrar o último post que ainda faz parte do intervalo de tempo em questão. De seguida, percorremos a lista de posts desde esse mesmo post até chegar à data do begin. À medida que se percorre cada post verifica-se se é uma pergunta e se contém a tag. Se estas condições se verificarem adicionamos o ID do post a uma lista ligada. Por fim, copiam-se todos os IDs da lista ligada para uma LONG\_list e retornamos a mesma.
+	Inicialmente utiliza-se a hashtable months\_hash para encontrar o último post que ainda faz parte do intervalo de tempo em questão. De seguida, percorre-se a lista de posts desde esse mesmo post até chegar à data do begin. À medida que se percorre cada post verifica-se se é uma pergunta e se contém a tag. Se estas condições se verificarem adicionamos o ID do post a uma lista ligada. Por fim, copiam-se todos os IDs da lista ligada para uma LONG\_list e retornamos a mesma.
 
 \subsection{Interrogação 5}
 
@@ -241,11 +241,11 @@ Nesta secção vamos falar dos módulos criados para auxiliar o desenvolvimento 
 
 \subsection{Interrogação 6}
 
-	Inicialmente utilizamos a hashtable months\_hash para encontrar o último post que ainda faz parte do intervalo de tempo em questão. De seguida, percorremos a lista de posts desde esse mesmo post até chegar à data do begin. Para cada post, caso o post seja uma resposta é adicionado a uma lista ligada temporária. Após percorrer todos os posts, ordenamos a lista temporária segundo a score de cada resposta. Por fim, copiamos as primeiras N respostas para uma LONG\_list e retornamos a mesma. Caso não sejam retornadas N respostas no intervalo dado, preenchemos o resto da lista com zeros.
+	Utiliza-se a hashtable months\_hash para encontrar o último post que ainda faz parte do intervalo de tempo em questão. De seguida, percorre-se a lista de posts desde esse mesmo post até chegar à data do begin. Para cada post, caso o post seja uma resposta é adicionado a uma lista ligada temporária. Após percorrer todos os posts, ordena-se a lista temporária segundo a score de cada resposta. Por fim, copiamos as primeiras N respostas para uma LONG\_list e retornamos a mesma. Caso não sejam retornadas N respostas no intervalo dado, preenchemos o resto da lista com zeros.
 
 \subsection{Interrogação 7}
 
-	No módulo post\_list temos a lista de posts ordenada da mais recente para a mais antiga.
+	No módulo post\_list existe a lista de posts ordenada da mais recente para a mais antiga.
 	Procuramos com a ajuda da hashtable months\_hash o post anterior ao intervalo de tempo dado, retornando a lista de posts a partir desse post.
 	Percorre-se a lista de posts dentro do intervalo de tempo dado e caso um post seja uma pergunta, adiciona-se a uma lista ligada temporária.	
 	No fim de se percorrer a lista de posts, ordena-se a lista ligada temporária de acordo com o número de respostas, para que se possa retornar os IDs das N perguntas com mais respostas.
@@ -253,11 +253,11 @@ Nesta secção vamos falar dos módulos criados para auxiliar o desenvolvimento 
 
 \subsection{Interrogação 8}
 
-	Percorrer a lista dos posts e verificar se é uma pergunta e se a palavra pertence ao seu título, caso pertença adiciona-se o ID da pergunta a uma LONG\_list e devolve-se a mesma. Caso não sejam retornadas N perguntas com a palavra no título, preenchemos o resto da lista com zeros.
+	Para esta interrogação começamos por percorrer a lista dos posts, verificar se é uma pergunta e se a palavra pertence ao seu título, caso pertença adiciona-se o ID da pergunta a uma LONG\_list e devolve-se a mesma. Caso não sejam retornadas N perguntas com a palavra no título, o resto da lista é preenchida com zeros.
 
 \subsection{Interrogação 9}
 
-	Para resolver a query criamos três queues, na queue1 vamos guardar respostas do utilizador com ID1 e na queue2 vamos guardar respostas do utilizador com ID2 e na queuef guardamos o ID dos posts onde participam ambos os utilizadores. À medida que percorremos a lista dos posts, quando se encontra uma resposta verificamos quem a publicou, se for o ID1/2 verificamos o parentOwnerId, se este for o ID2/1 adicionamos o ID da pergunta à queuef, se o parentOwnerId não for o ID2/1, vamos à queue2/1 verificar se tem alguma respostas com o mesmo parentOwnerId, se tiver adicionamos à queuef. Caso nenhuma das condições se verifique adicionamos à queue1 ou à queue2. Quando o post que encontramos é uma pergunta se o parentOwner for o ID1/2, vamos à queuef verificar se o post está lá, se estiver adicionamos à LONG\_list, caso contrário não faz nada.
+	Para resolver esta interrogação foi preciso criar três queues, na queue1 vamos guardar respostas do utilizador com ID1 e na queue2 vamos guardar respostas do utilizador com ID2 e na queuef guardamos o ID dos posts onde participam ambos os utilizadores. À medida que percorremos a lista dos posts, quando se encontra uma resposta verificamos quem a publicou, se for o ID1/2 verificamos o parentOwnerId, se este for o ID2/1 adicionamos o ID da pergunta à queuef, se o parentOwnerId não for o ID2/1, vamos à queue2/1 verificar se tem alguma respostas com o mesmo parentOwnerId, se tiver adicionamos à queuef. Caso nenhuma das condições se verifique adicionamos à queue1 ou à queue2. Quando o post que encontramos é uma pergunta se o parentOwner for o ID1/2, vamos à queuef verificar se o post está lá, se estiver adicionamos à LONG\_list, caso contrário não faz nada.
 
 \subsection{Interrogação 10}
 
