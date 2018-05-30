@@ -12,23 +12,38 @@ public class MyDate{
     this.fim = LocalDate.of(ano_fim, mes_fim, dia_fim);
   }
 
+  /**
+   * Devolve a data inicial
+   */
   public LocalDate getInicio(){
     return this.inicio;
   }
 
+  /**
+   * Devolve a data final
+   */
   public LocalDate getFim(){
     return this.fim;
   }
 
+  /**
+  * Define a data inicial
+  */
   public void setInicio(LocalDate data){
     this.inicio = data;
   }
 
+  /**
+  * Define a data final
+  */
   public void setFim(LocalDate data){
     this.fim = data;
   }
 
-  LocalDate xmlCreationDate_to_LocalDate(char * xmlDate){
+  /**
+  * Método que devolve a creation date de um post sobre o formato de LocalDate
+  */
+  public LocalDate xmlCreationDate_to_LocalDate(char * xmlDate){
      int i = 0;
 
      s_year = new ArrayList<>();
@@ -59,19 +74,33 @@ public class MyDate{
      }
 
      LocalDate res = LocalDate.of(year, month, day);
+     return res
   }
 
+  /**
+  * Método que imprime a representação textual do objeto
+  */
   public String toString(){
     return "Data inicial: " + this.inicio + "\n" +
            "Data final" + this.fim;
   }
 
+  /**
+  * Verifica se dois conjuntos de datas são iguais
+  */
   public boolean equals(Object o){
     if(o == this) return true;
     if(o == null || o.getClass() != this.getClass()) return false;
     MyDate d = (MyDate) o;
     return (this.inicio.equals(d.getInicio()) &&
             this.fim.equals(d.getFim()));
+  }
+
+  /**
+  * Devolve uma cópia da classe
+  */
+  public MyDate clone(){
+    return new MyDate(this);
   }
 
 }
