@@ -14,6 +14,10 @@ public class Users{
     this.users = new HashMap<>();
   }
 
+  public Users(Users u){
+    this.setUsers(u.getUsers)
+  }
+
   /**
    * Método que ordena os users dado um comparador
    */
@@ -52,7 +56,7 @@ public class Users{
    */
   public List<MyUser> get_N_users_with_most_reputation(int N) {
     Comparator c = (MyUser u1, MyUser u2) -> u2.getReputation() - u1.getReputation());
-    Set<MyUser> set = sort_users(c);
+    Set<MyUser> set = this.sort_users(c);
     List<MyUser> res = new ArrayList<>();
     int i = 0;
     Iterator<MyUser> iterador = set.iterator();
@@ -70,7 +74,7 @@ public class Users{
   public List<MyUser> get_N_users_with_most_nr_posts(int N){
       Comparator c = (MyUser u1, MyUser u2) -> u2.getNr_posts() - u1.getNr_posts());
       List<MyUser> res = new ArrayList<>();
-      Set<MyUser> set = sort_users_by_nr_posts(c);
+      Set<MyUser> set = this.sort_users(c);
       int i = 0;
       Iterator<MyUser> iterador = set.iterator();
 
