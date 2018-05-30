@@ -13,8 +13,9 @@ public class MyUser{
   private int reputation;
 
 
+
   /**
-   *  Cria um user com base nos parâmetros recebidos
+   *  Construtor parametrizado
    */
   public MyUser(int id, char * name, char * shortBio, int nr_posts, int lastPost, int reputation){
     this.id = id;
@@ -24,7 +25,9 @@ public class MyUser{
     this.lastPost = lastPost;
     this.reputation = reputation;
   }
-
+  /**
+    * Construtor por cópia
+    */
   public MyUser(MyUser u){
     this.id = u.getId();
     this.name = u.getName();
@@ -91,7 +94,44 @@ public class MyUser{
   	this.nr_posts += 1;
   }
 
+  /**
+    * Verifica se dois utilizadores são iguais
+    */
+  public boolean equals(Object o){
+    if(o == this) return true;
+    if(o == null || o.getClass() != this.getClass()) return false;
+
+    MyUser u = (MyUser) o;
+    return this.id == u.getID() &&
+           this.name.equals(u.getName()) &&
+           this.shortBio.equals(u.getShortBio()) &&
+           this.nr_posts == u.getNr_posts() &&
+           this.lastPost == u.getLastPost() &&
+           this.reputation == u.getReputation();
+  }
+
+  /**
+   * Devolve uma string representativa da classe
+   */
+  public String toString(){
+    return "Id: " + this.id + "\n" +
+           "Nome: " + this.name + "\n" +
+           "ShortBio" + this.shortBio + "\n" +
+           "Número de posts" + this.nr_posts + "\n" +
+           "Último post do utilizador" + this.lastPost + "\n" +
+           "Reputação" + this.reputation;
+  }
+
+  /**
+    * Devolve uma cópia da classe
+    */
   public MyUser clone(){
     return new MyUser(this);
+  }
+}
+
+public class Main{
+  public static void Main(){
+    System.out.println("Hello");
   }
 }
