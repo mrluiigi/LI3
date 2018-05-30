@@ -1,5 +1,8 @@
+import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.TreeSet;
+import java.util.List;
 import java.util.Comparator;
 import java.util.Iterator;
 
@@ -14,8 +17,42 @@ public class Users{
     this.users = new HashMap<>();
   }
 
+  /**
+   * Construtor por cópia
+   */
   public Users(Users u){
-    this.setUsers(u.getUsers)
+    this.setUsers(u.getUsers());
+  }
+
+  /**
+   * Define os users dado um Map
+   */
+  public void setUsers(Map<Integer, MyUser> u){
+    this.users = new HashMap<>();
+    u.forEach((i,u) -> this.users.put(i, u.clone));
+  }
+
+  /**
+   *  Devolve um Map com todos os users
+   */
+  public Map<Integer, MyUser> getUsers(){
+    Map<Integer, MyUser> res = new HashMap<>();
+    this.users.forEach((i,u) -> res.put(i, u.clone()));
+    return res;
+  }
+
+  /**
+   * Método que devolve uma string representativa da classe
+   */
+  public String toString(){
+    return this.users.stream().map(u -> u.toString()).collect(Collectors.joining("\n"));
+  }
+
+  /**
+   * Método que devolve uma cópia da classe
+   */
+  public Users clone(){
+    return new Users(this);
   }
 
   /**
@@ -101,5 +138,7 @@ public class Users{
   		if(u)
   			u.set_user_lastPost(lastPostId);
   }
+
+
 
 }
