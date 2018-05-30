@@ -3,11 +3,14 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.stream.Collectors;
+
 
 public class Users{
-
+  
   private Map<Integer, MyUser> users;
 
   /**
@@ -27,9 +30,9 @@ public class Users{
   /**
    * Define os users dado um Map
    */
-  public void setUsers(Map<Integer, MyUser> u){
+  public void setUsers(Map<Integer, MyUser> us){
     this.users = new HashMap<>();
-    u.forEach((i,u) -> this.users.put(i, u.clone));
+    us.forEach((i,u) -> this.users.put(i, u.clone()));
   }
 
   /**
@@ -45,7 +48,7 @@ public class Users{
    * Método que devolve uma string representativa da classe
    */
   public String toString(){
-    return this.users.stream().map(u -> u.toString()).collect(Collectors.joining("\n"));
+    return this.users.values().stream().map(u -> u.toString()).collect(Collectors.joining("\n"));
   }
 
   /**
@@ -92,14 +95,14 @@ public class Users{
    * Devolve uma lista com os N users que tem maior reputação
    */
   public List<MyUser> get_N_users_with_most_reputation(int N) {
-    Comparator c = (MyUser u1, MyUser u2) -> u2.getReputation() - u1.getReputation());
+    Comparator<MyUser> c = (MyUser u1, MyUser u2) -> u2.getReputation() - u1.getReputation();
     Set<MyUser> set = this.sort_users(c);
     List<MyUser> res = new ArrayList<>();
     int i = 0;
     Iterator<MyUser> iterador = set.iterator();
 
     while(i < N && iterador.hasNext()){
-      res.add(iterator.next());
+      res.add(iterador.next());
       i++;
     }
     return res;
@@ -109,14 +112,14 @@ public class Users{
    * Devolve uma lista com os users que tem o maior número de posts
    */
   public List<MyUser> get_N_users_with_most_nr_posts(int N){
-      Comparator c = (MyUser u1, MyUser u2) -> u2.getNr_posts() - u1.getNr_posts());
+      Comparator<MyUser> c = (MyUser u1, MyUser u2) -> u2.getNr_posts() - u1.getNr_posts();
       List<MyUser> res = new ArrayList<>();
       Set<MyUser> set = this.sort_users(c);
       int i = 0;
       Iterator<MyUser> iterador = set.iterator();
 
-      while(i < N && iterator.hasNext()){
-        res.add(iterator.next());
+      while(i < N && iterador.hasNext()){
+        res.add(iterador.next());
         i++;
       }
       return res;
@@ -126,19 +129,17 @@ public class Users{
    * Incrementa o número de posts de um determinado user
    */
   public void find_and_increment_user_nr_posts(int id) {
-    	MyUSER user = this.users.get(id);
-    	user.increment_user_nr_posts();
+        MyUser user = this.users.get(id);
+        user.increment_nr_posts();
   }
 
   /**
    * Define o lastPost de uma dado user
    */
   public void find_and_set_user_lastPost(int id, int lastPostId) {
-  		MY_USER u = this.users.get(id);
-  		if(u)
-  			u.set_user_lastPost(lastPostId);
+      MyUser u = this.users.get(id);
+      u.setLastPost(lastPostId);
   }
 
-
-
 }
+

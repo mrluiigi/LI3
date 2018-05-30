@@ -1,3 +1,5 @@
+
+
 public class MyUser{
   /** ID do user */
   private int id;
@@ -17,7 +19,7 @@ public class MyUser{
   /**
    *  Construtor parametrizado
    */
-  public MyUser(int id, char * name, char * shortBio, int nr_posts, int lastPost, int reputation){
+  public MyUser(int id, String name, String shortBio, int nr_posts, int lastPost, int reputation){
     this.id = id;
     this.name = name;
     this.shortBio = shortBio;
@@ -102,7 +104,7 @@ public class MyUser{
     if(o == null || o.getClass() != this.getClass()) return false;
 
     MyUser u = (MyUser) o;
-    return this.id == u.getID() &&
+    return this.id == u.getId() &&
            this.name.equals(u.getName()) &&
            this.shortBio.equals(u.getShortBio()) &&
            this.nr_posts == u.getNr_posts() &&
@@ -127,11 +129,5 @@ public class MyUser{
     */
   public MyUser clone(){
     return new MyUser(this);
-  }
-}
-
-public class Main{
-  public static void Main(){
-    System.out.println("Hello");
   }
 }
