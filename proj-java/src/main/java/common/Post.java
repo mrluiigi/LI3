@@ -89,10 +89,10 @@ public class Post{
 	* Método que imprime a representação textual do objeto
 	*/
 	public String toString(){
-		return "postTypeId: " + this.postTypeId + "\n" +
-				"id: " + this.id + "\n" +
-				"ownerUserId: " + this.ownerUserId + "\n" +
-				"creationDate: " + this.creationDate + "\n";
+		return "Tipo de post: " + this.postTypeId + "\n" +
+				"ID: " + this.id + "\n" +
+				"ID do utilizador principal: " + this.ownerUserId + "\n" +
+				"Data de criação: " + this.creationDate + "\n";
 	}
 
 	/**
@@ -113,5 +113,19 @@ public class Post{
 	*/
 	public Post clone(){
 		return new Post(this);
+	}
+
+	/**
+	* Verifica se o post tem um owner definido
+	*/
+	public int hasOwner(POST p){
+		return (this.getOwnerUserId != null);
+	}
+	
+	/**
+	* Verifica se o id dado corresponde ao owner do post
+	*/
+	public int isOwner(int id){
+		return (this.getOwnerUserId == id);
 	}
 }
