@@ -12,6 +12,7 @@ public class MyUser{
   /** Reputação do utilizador */
   private int reputation;
 
+
   /**
    *  Cria um user com base nos parâmetros recebidos
    */
@@ -22,6 +23,15 @@ public class MyUser{
     this.nr_posts = nr_posts;
     this.lastPost = lastPost;
     this.reputation = reputation;
+  }
+
+  public MyUser(MyUser u){
+    this.id = u.getId();
+    this.name = u.getName();
+    this.shortBio = u.getShortBio();
+    this.nr_posts = u.getNr_posts();
+    this.lastPost = u.getLastPost();
+    this.reputation = u.getReputation();
   }
 
   /**
@@ -79,5 +89,9 @@ public class MyUser{
    */
   public void increment_nr_posts() {
   	this.nr_posts += 1;
+  }
+
+  public MyUser clone(){
+    return new MyUser(this);
   }
 }
