@@ -1,10 +1,12 @@
+import java.time.LocalDate;
+
 public class Post{
 	/** Identifica o tipo de post (Pergunta ou Resposta) */
 	private char postTypeId;
 	/** ID do post */
 	private int id;
 	/** ID do utilizador que fez o post */
-	private char ownerUserId;
+	private int ownerUserId;
 	/** Data da criação do post */
 	private LocalDate creationDate;
 
@@ -12,7 +14,7 @@ public class Post{
 	/**
 	* Construtor parametrizado
 	*/
-	public Post(char postTypeId, int id, char ownerUserId, LocalDate creationDate){
+	public Post(char postTypeId, int id, int ownerUserId, LocalDate creationDate){
 		this.postTypeId = postTypeId;
 		this.id = id;
 		this.ownerUserId = ownerUserId;
@@ -39,21 +41,21 @@ public class Post{
 	/**
 	* Devolve o id do Post
 	*/
-	public char getId(){
+	public int getId(){
 		return this.id;
 	}
 
 	/**
 	* Devolve o id do Owner do Post
 	*/
-	public char getOwnerUserId(){
+	public int getOwnerUserId(){
 		return this.ownerUserId;
 	}
 
 	/**
 	* Devolve a data de publicação do Post
 	*/
-	public char getCreationDate(){
+	public LocalDate getCreationDate(){
 		return this.creationDate;
 	}
 
@@ -74,7 +76,7 @@ public class Post{
 	/**
 	* Define o id do Owner do Post
 	*/
-	public void setOwnerUserId(char ownerUserId){
+	public void setOwnerUserId(int ownerUserId){
 		this.ownerUserId = ownerUserId;
 	}
 
@@ -89,7 +91,7 @@ public class Post{
 	* Método que imprime a representação textual do objeto
 	*/
 	public String toString(){
-		return "Tipo de post: " + this.postTypeId + "\n" +
+		return "Tipo do post: " + this.postTypeId + "\n" +
 				"ID: " + this.id + "\n" +
 				"ID do utilizador principal: " + this.ownerUserId + "\n" +
 				"Data de criação: " + this.creationDate + "\n";
@@ -102,10 +104,10 @@ public class Post{
 		if(o == this) return true;
 		if(o == null || o.getClass() != this.getClass()) return false;
 		Post p = (Post) o;
-		return(this.postTypeId.equals(p.getPostTypeId()) &&
+		return(this.postTypeId == p.getPostTypeId() &&
 				this.id == p.getId() &&
-				this.ownerUserId.equals(p.getOwnerUserId()) &&
-				this.creationDate.equals(p.getCreationDate)());
+				this.ownerUserId == p.getOwnerUserId() &&
+				this.creationDate.equals(p.getCreationDate()));
 	}
 
 	/**
@@ -118,14 +120,14 @@ public class Post{
 	/**
 	* Verifica se o post tem um owner definido
 	*/
-	public int hasOwner(POST p){
-		return (this.getOwnerUserId != null);
+	public boolean hasOwner(){
+		return (this.ownerUserId != -2);
 	}
-	
+
 	/**
 	* Verifica se o id dado corresponde ao owner do post
 	*/
-	public int isOwner(int id){
-		return (this.getOwnerUserId == id);
+	public boolean isOwner(int id){
+		return (this.ownerUserId == id);
 	}
 }
