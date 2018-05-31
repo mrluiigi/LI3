@@ -15,7 +15,7 @@ public class Question extends Post{
 	/**
 	* Construtor parametrizado
 	*/
-	public Question(String title, int nanswers, HashMap tags, LocalDate lastActivityDate,
+	public Question(String title, int nanswers, Map<Integer, String> tags, LocalDate lastActivityDate,
 									char postTypeId, int id, int ownerUserId, LocalDate creationDate){
 		super(postTypeId, id, ownerUserId, creationDate);
 		this.title = title;
