@@ -1,17 +1,22 @@
+import java.util.Map;
+import java.util.HashMap;
+import java.time.LocalDate;
+
 public class Question extends Post{
 	/** Título */
-	private String *title;
+	private String title;
 	/** Número de respostas */
 	private int nanswers;
 	/** Tags */
-	private HashMap<Integer, String> tags;
+	private Map<Integer, String> tags;
 	/** Última atividade do post */
 	private LocalDate lastActivityDate;
-	
+
 	/**
 	* Construtor parametrizado
 	*/
-	public Question(String title, int nanswers, HashMap tags, LocalDate lastActivityDate, char postTypeId, int id, int ownerUserId, Date creationDate){
+	public Question(String title, int nanswers, HashMap tags, LocalDate lastActivityDate,
+									char postTypeId, int id, int ownerUserId, LocalDate creationDate){
 		super(postTypeId, id, ownerUserId, creationDate);
 		this.title = title;
 		this.nanswers = nanswers;
@@ -47,7 +52,7 @@ public class Question extends Post{
 	/**
 	* Devolve as tags de uma pergunta
 	*/
-	public HashMap getTags(){
+	public Map<Integer, String> getTags(){
 		return this.tags;
 	}
 
@@ -90,7 +95,7 @@ public class Question extends Post{
 	* Método que imprime a representação textual do objeto
 	*/
 	public String toString(){
-		return (super().toString() + 
+		return (super.toString() +
 				"Título: " + this.title + "\n" +
 				"Número de respostas: " + this.nanswers + "\n" +
 				"Tags: " + this.tags + "\n" +
@@ -105,10 +110,10 @@ public class Question extends Post{
 		if(o == null || o.getClass() != this.getClass()) return false;
 		Question q = (Question) o;
 		return (super.equals(q) &&
-				this.title.equals(p.getTitle()) &&
-				this.nanswers == p.getNanswers() &&
-				this.tags.equals(p.getTags()) &&
-				this.lastActivityDate.equals(p.getLastActivityDate()));
+				this.title.equals(q.getTitle()) &&
+				this.nanswers == q.getNanswers() &&
+				this.tags.equals(q.getTags()) &&
+				this.lastActivityDate.equals(q.getLastActivityDate()));
 	}
 
 	/**
@@ -121,7 +126,7 @@ public class Question extends Post{
 	/**
 	* Verifica se uma resposta contém uma dada tag
 	*/
-	int contains_tag(int tagId){
-		this.containsValue(tagId);
+	public boolean contains_tag(int tagId){
+		return this.tags.containsKey(tagId);
 	}
 }

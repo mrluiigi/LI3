@@ -1,15 +1,18 @@
+import java.time.LocalDate;
+
 public class Answer extends Post{
 	/** ID do post a que pertence a pergunta */
-	private int parentId
+	private int parentId;
 	/** Número de comentários de uma respostas */
-	private int comments
+	private int comments;
 	/** Score de uma resposta */
-	private int score
+	private int score;
 
 	/**
 	* Construtor parametrizado
 	*/
-	public Answer(Sint parentId, int comments, int score, char postTypeId, int id, int ownerUserId, Date creationDate){
+	public Answer(int parentId, int comments, int score,
+						char postTypeId, int id, int ownerUserId, LocalDate creationDate){
 		super(postTypeId, id, ownerUserId, creationDate);
 		this.parentId = parentId;
 		this.comments = comments;
@@ -72,7 +75,7 @@ public class Answer extends Post{
 	* Método que imprime a representação textual do objeto
 	*/
 	public String toString(){
-		return (super().toString() + 
+		return (super.toString() +
 				"Parent ID: " + this.parentId + "\n" +
 				"Número de comentários: " + this.comments + "\n" +
 				"Score: " + this.score + "\n");
