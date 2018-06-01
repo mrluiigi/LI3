@@ -6,20 +6,20 @@ import java.util.stream.Collectors;
 import java.time.LocalDate;
 
 
-public class PostsList
+public class Posts
 {
     private List<Post> list;
     private Map<Integer, Post> hash;
     private Map<Integer, Post> monthsHash;
 
 
-    public PostsList(){
+    public Posts(){
         this.list = new LinkedList();
         this.hash = new HashMap<>();
         this.monthsHash = new HashMap<>();
     }
 
-    public PostsList(PostsList p){
+    public Posts(Posts p){
         this.setList(p.getList());
         this.setHash(p.getHash());
         this.setMonthsHash(p.getMonthsHash());
@@ -56,8 +56,8 @@ public class PostsList
         months.keySet().forEach( i -> this.monthsHash.put(i, months.get(i)));
     }
 
-    public PostsList clone(){
-        return new PostsList(this);
+    public Posts clone(){
+        return new Posts(this);
     }
 
     public void addQuestion(String title, int nanswers, Map<Integer, String> tags, LocalDate lastActivityDate,

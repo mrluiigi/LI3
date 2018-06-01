@@ -119,7 +119,7 @@ public class Question extends Post{
 	/**
 	* Devolve uma cópia da classe
 	*/
-	public Post clone(){
+	public Question clone(){
 		return new Question(this);
 	}
 

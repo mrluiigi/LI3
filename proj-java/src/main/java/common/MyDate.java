@@ -7,9 +7,17 @@ public class MyDate{
   /**
    *  Cria duas datas com base nos parâmetros recebidos
    */
-  public MyData(int ano_inicio, int mes_inicio, int dia_inicio, int ano_fim, int mes_fim, int dia_fim){
+  public MyDate(int ano_inicio, int mes_inicio, int dia_inicio, int ano_fim, int mes_fim, int dia_fim){
     this.inicio = LocalDate.of(ano_inicio, mes_inicio, dia_inicio);
     this.fim = LocalDate.of(ano_fim, mes_fim, dia_fim);
+  }
+
+  /**
+   * Construtor por cópia
+   */
+  public MyDate(MyDate d){
+    this.inicio = d.getInicio();
+    this.fim = d.getFim();
   }
 
   /**
@@ -53,7 +61,7 @@ public class MyDate{
        int year = 2000 + s_year.charAt(i);
        i++;
      }
-     
+
      s_month = new ArrayList<>();
      s_month.add(xmlDate[5]);
      s_month.add(xmlDate[6]);

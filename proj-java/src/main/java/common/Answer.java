@@ -97,7 +97,7 @@ public class Answer extends Post{
 	/**
 	* Devolve uma cópia da classe
 	*/
-	public Post clone(){
+	public Answer clone(){
 		return new Answer(this);
 	}
 
