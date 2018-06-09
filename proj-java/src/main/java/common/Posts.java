@@ -9,8 +9,10 @@ import java.time.LocalDate;
 public class Posts
 {
     private List<Post> list;
-    private Map<Integer, Post> hash;
-    private Map<Integer, Post> monthsHash;
+    //<Id, Index na list>
+    private Map<Integer, Integer> hash;
+    //<Id, Index na list>
+    private Map<Integer, Integer > monthsHash;
 
 
     public Posts(){
@@ -29,15 +31,15 @@ public class Posts
         return this.list.stream().map(Post::clone).collect(Collectors.toList());
     }
 
-    public Map<Integer, Post> getHash(){
-        Map<Integer, Post> res = new HashMap<>();
-        this.hash.values().forEach( p -> res.put(p.getId(), p.clone()));
+    public Map<Integer, Integer> getHash(){
+        Map<Integer, Integer> res = new HashMap<>();
+        this.hash.entrySet().forEach(entry -> res.put(entry.getKey(), entry.getValue()));
         return res;
     }
 
-    public Map<Integer, Post> getMonthsHash(){
-        Map<Integer, Post> res = new HashMap<>();
-        this.monthsHash.keySet().forEach( i -> res.put(i, this.monthsHash.get(i)));
+    public Map<Integer, Integer> getMonthsHash(){
+        Map<Integer, Integer> res = new HashMap<>();
+        this.monthsHash.entrySet().forEach(entry -> res.put(entry.getKey(), entry.getValue()));
         return res;
     }
 
@@ -46,14 +48,14 @@ public class Posts
         list.forEach(p -> this.list.add(p.clone()));
     }
 
-    public void setHash(Map<Integer, Post> hash){
+    public void setHash(Map<Integer, Integer> hash){
         this.hash = new HashMap<>();
-        hash.keySet().forEach( i -> this.hash.put(i, hash.get(i)));
+        hash.entrySet().forEach(entry -> this.hash.put(entry.getKey(), entry.getValue()));
     }
 
-    public void setMonthsHash(Map<Integer, Post> months){
+    public void setMonthsHash(Map<Integer, Integer> months){
         this.monthsHash = new HashMap<>();
-        months.keySet().forEach( i -> this.monthsHash.put(i, months.get(i)));
+        months.entrySet().forEach(entry -> this.monthsHash.put(entry.getKey(), entry.getValue()));
     }
 
     public Posts clone(){
@@ -73,7 +75,7 @@ public class Posts
     }
 
     public Post findPost(int id){
-        return this.list.get(id);
+        return this.list.get(this.hash.get(id));
     }
 
     /**
@@ -85,12 +87,14 @@ public class Posts
 
     //VERIFICAR COMPARADOR e valores adicionados aos map
     public void finalize(){
+    	int i = 0;
         this.list.sort( (Post p1, Post p2) -> p2.getCreationDate().compareTo(p1.getCreationDate()));
 
         for(Post p : this.list){
-            this.hash.put(p.getId(), p);
+            this.hash.put(p.getId(), i);
             LocalDate data = p.getCreationDate();
-            this.monthsHash.put(this.date_to_key(data.getYear(), data.getMonthValue()) , p);
+            this.monthsHash.put(this.date_to_key(data.getYear(), data.getMonthValue()) , i);
+            i++;
         }
     }
 
