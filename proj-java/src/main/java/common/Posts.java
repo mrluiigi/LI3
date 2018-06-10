@@ -2,6 +2,7 @@ package common;
 
 import java.util.List;
 import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.stream.Collectors;
@@ -18,7 +19,7 @@ public class Posts
 
 
     public Posts(){
-        this.list = new LinkedList();
+        this.list = new ArrayList();
         this.hash = new HashMap<>();
         this.monthsHash = new HashMap<>();
     }
@@ -95,7 +96,7 @@ public class Posts
         for(Post p : this.list){
             this.hash.put(p.getId(), i);
             LocalDate data = p.getCreationDate();
-            this.monthsHash.put(this.date_to_key(data.getYear(), data.getMonthValue()) , i);
+            this.monthsHash.putIfAbsent(this.date_to_key(data.getYear(), data.getMonthValue()) , i);
             i++;
         }
     }
