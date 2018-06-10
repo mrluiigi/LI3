@@ -112,4 +112,16 @@ public class Posts
             return -1;
         }
     }
+
+    public List<Post> getPostsTimeInterval(LocalDate begin, LocalDate end) {
+        List<Post> res = new ArrayList<>();
+        int end_hash = this.date_to_key(end.getYear(), end.getMonthValue());
+        if (this.monthsHash.containsKey(end_hash) == false) return res;
+        int i = this.monthsHash.get(end_hash);
+        for (; this.list.get(i).getCreationDate().isAfter(end); i++);
+        for (; this.list.get(i).getCreationDate().isAfter(begin); i++) {
+            res.add(this.list.get(i).clone());
+        }
+        return res;
+    } 
 }

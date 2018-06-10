@@ -27,6 +27,13 @@ import java.util.Map;
 import java.util.HashMap;
 
 
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
 /**
  * Write a description of class Main here.
  *
@@ -66,28 +73,15 @@ public class Interface implements TADCommunity
        File inputFile = new File(dumpPath + "Users.xml");
        try {
 
-       DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+       SAXParserFactory factory = SAXParserFactory.newInstance();
 
-       DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+       SAXParser parser = factory.newSAXParser();
 
-       Document doc = dBuilder.parse(inputFile);
+       UsersHandler handler = new UsersHandler();
 
-       doc.getDocumentElement().normalize();
+       parser.parse(inputFile, handler);  
 
-       NodeList nList = doc.getElementsByTagName("row");
-
-       for(int i = 0; i < nList.getLength(); i++){
-           Node node = nList.item(i);
-           Element e = (Element) node;
-           int id = Integer.parseInt(e.getAttribute("Id"));
-           String name = e.getAttribute("DisplayName");
-           String shortBio = e.getAttribute("AboutMe");
-           int nr_posts = 0;
-           int lastPost = 0;
-           int reputation = Integer.parseInt(e.getAttribute("Reputation"));
-           users.add_myuser(id, name, shortBio, nr_posts, lastPost, reputation);
-       }
-
+       this.users = handler.users;
 
        } catch (SAXException e) {
            e.printStackTrace();
@@ -105,45 +99,16 @@ public class Interface implements TADCommunity
        File inputFile = new File(dumpPath + "Posts.xml");
        try {
 
-       DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+       SAXParserFactory factory = SAXParserFactory.newInstance();
 
-       DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+       SAXParser parser = factory.newSAXParser();
 
-       Document doc = dBuilder.parse(inputFile);
+       PostsHandler handler = new PostsHandler();
 
-       doc.getDocumentElement().normalize();
+       parser.parse(inputFile, handler);  
 
-       NodeList nList = doc.getElementsByTagName("row");
+       this.posts = handler.posts;
 
-       for(int i = 0; i < nList.getLength(); i++){
-           Node node = nList.item(i);
-           Element e = (Element) node;
-           char postTypeId = e.getAttribute("PostTypeId").charAt(0);
-           if(postTypeId == '1' || postTypeId == '2'){
-               int id = Integer.parseInt(e.getAttribute("Id"));
-               int ownerUserId ;
-               try {
-             		ownerUserId = Integer.parseInt(e.getAttribute("OwnerUserId"));
-             	}
-             	catch(NumberFormatException exc){
-             		ownerUserId = 0;
-             	}
-               LocalDate creationDate = createDate(e.getAttribute("CreationDate"));
-               if(postTypeId == '1'){
-                   String title = e.getAttribute("Title");
-                   int nanswers = Integer.parseInt(e.getAttribute("AnswerCount"));
-                   //ATRIBUIR TAGS
-                   LocalDate lastActivityDate = createDate(e.getAttribute("LastActivityDate"));
-                   posts.addQuestion(title, nanswers, new HashMap<>(), lastActivityDate, postTypeId, id, ownerUserId, creationDate);
-               }
-               else if (postTypeId == '2'){
-                   int parentId = Integer.parseInt(e.getAttribute("ParentId"));
-                   int comments = Integer.parseInt(e.getAttribute("CommentCount"));
-                   int score = Integer.parseInt(e.getAttribute("Score"));
-                   posts.addAnswer(parentId, comments, score, postTypeId, id, ownerUserId, creationDate);
-               }
-           }      
-       }
        posts.finalize();
        } catch (SAXException e) {
            e.printStackTrace();
@@ -184,7 +149,13 @@ public class Interface implements TADCommunity
 
     // Query 3
     public Pair<Long,Long> totalPosts(LocalDate begin, LocalDate end) {
-        return new Pair<>(3667L,4102L);
+    	long perguntas = 0;
+    	long respostas = 0;
+    	for (Post p : this.posts.getPostsTimeInterval(begin, end)) {
+    		if(p instanceof Question) perguntas++;
+    		else respostas++;
+    	}
+        return new Pair<>(perguntas,respostas);
     }
 
     // Query 4
