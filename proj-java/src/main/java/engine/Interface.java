@@ -2,7 +2,11 @@ package engine;
 
 import common.MyLog;
 import common.Pair;
+import common.Post;
+import common.Answer;
+import common.Question;
 import common.Posts;
+import common.MyUser;
 import common.Users;
 import li3.TADCommunity;
 import org.w3c.dom.Document;
@@ -159,8 +163,18 @@ public class Interface implements TADCommunity
    }
 
    // Query 1
+   //long ->int??
     public Pair<String,String> infoFromPost(long id) {
-        return new Pair<>("What are the actual risks of giving www-data sudo nopasswd access?", "WebNinja");
+    	Post p = this.posts.findPost((int)id);
+    	Question q;
+    	if (p instanceof Answer) {
+    		Answer a = (Answer) p;
+    		q = (Question) this.posts.findPost(a.getParentId());
+    	}
+    	else {
+    		q = (Question) p;
+    	}
+    	return new Pair<>(q.getTitle(), this.users.find_user(q.getOwnerUserId()).getName());
     }
 
     // Query 2
