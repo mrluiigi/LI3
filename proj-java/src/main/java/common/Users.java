@@ -14,12 +14,16 @@ import java.util.stream.Collectors;
 public class Users{
   
   private Map<Integer, MyUser> users;
+  private Set<MyUser> users_by_nr_posts;
+  private Set<MyUser> users_by_reputation;
 
   /**
    * Construtor por omissão
    */
   public Users(){
     this.users = new HashMap<>();
+    this.users_by_nr_posts = new TreeSet<>();
+    this.users_by_reputation = new TreeSet<>();
   }
 
   /**
@@ -93,15 +97,17 @@ public class Users{
     this.users.remove(id);
   }
 
+
   /**
    * Devolve uma lista com os N users que tem maior reputação
    */
   public List<MyUser> get_N_users_with_most_reputation(int N) {
-    Comparator<MyUser> c = (MyUser u1, MyUser u2) -> u2.getReputation() - u1.getReputation();
-    Set<MyUser> set = this.sort_users(c);
+    if(this.users_by_nr_posts.isEmpty()) {
+      this.users_by_nr_posts = this.sort_users((MyUser u1, MyUser u2) -> u2.getReputation() - u1.getReputation());
+    }
     List<MyUser> res = new ArrayList<>();
     int i = 0;
-    Iterator<MyUser> iterador = set.iterator();
+    Iterator<MyUser> iterador = this.users_by_nr_posts.iterator();
 
     while(i < N && iterador.hasNext()){
       res.add(iterador.next());
@@ -114,17 +120,18 @@ public class Users{
    * Devolve uma lista com os users que tem o maior número de posts
    */
   public List<MyUser> get_N_users_with_most_nr_posts(int N){
-      Comparator<MyUser> c = (MyUser u1, MyUser u2) -> u2.getNr_posts() - u1.getNr_posts();
-      List<MyUser> res = new ArrayList<>();
-      Set<MyUser> set = this.sort_users(c);
-      int i = 0;
-      Iterator<MyUser> iterador = set.iterator();
+    if(this.users_by_reputation.isEmpty()) {
+      this.users_by_reputation = this.sort_users((MyUser u1, MyUser u2) -> u2.getNr_posts() - u1.getNr_posts());
+    }
+    List<MyUser> res = new ArrayList<>();
+    int i = 0;
+    Iterator<MyUser> iterador = this.users_by_reputation.iterator();
 
-      while(i < N && iterador.hasNext()){
-        res.add(iterador.next());
-        i++;
-      }
-      return res;
+    while(i < N && iterador.hasNext()){
+      res.add(iterador.next());
+      i++;
+    }
+    return res;
   }
 
   /**
