@@ -36,24 +36,16 @@ public class Tags{
 	/**
 	 * Recebe a string das tags e coloca-as numa lista ligada
 	 */
-	public List<Integer> getTags(String tags){
+	public List<Integer> getTags(String t){
 		List<Integer> l = new ArrayList<>();
 
-		int i = 0;
-		StringBuilder res = new StringBuilder();
-		int valor;
+		int length = t.length();
+		String tags = t.substring(1, length-1);
 
-		while(tags.charAt(i) != '\0'){
-			i++;
-			while(tags.charAt(i) != '>'){
-				res.append(tags.charAt(i));
-				i++;
-			}
-			res.append("\0");
-			valor = this.tags.get(res.toString());
-			l.add(valor);
-			res = new StringBuilder();
-			i++;
+
+		String[] aux = tags.split("><", -2);
+		for(String s : aux){
+			l.add(this.tags.get(s));
 		}
 		return l;
 	}
