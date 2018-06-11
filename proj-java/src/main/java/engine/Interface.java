@@ -233,14 +233,32 @@ public class Interface implements TADCommunity
     }
 
     // Query 5
-    public Pair<String, List<Long>> getUserInfo(long id) {
-        String shortBio = "<p>Coder. JS, Perl, Python, Basic<br>Books/movies: SF+F.<br>Dead:" +
-                "dell 9300<br>Dead: dell 1720 as of may 10th 2011.</p>\n" +
-                "<p>Current system: Acer Aspire 7750G.<br>\n" +
-                "Works OOTB as of Ubuntu 12.04.<br></p>";
-        List<Long> ids = Arrays.asList(982507L,982455L,980877L,980197L,980189L,976713L,974412L,
-                974359L,973895L,973838L);
-        return new Pair<>(shortBio,ids);
+    public Pair<String, List<Long>> getUserInfo(long id){
+      MyUser u = this.users.find_user(id);
+      List<Long> post_history = new ArrayList<>();
+      String bio = u.getShortBio();
+      int i = 0;
+
+      if(u.getNr_posts() == 0) return (new Pair<>(bio, post_history));
+
+      Post p = this.posts.findPost(u.getLastPost());
+
+      while(i < u.getNr_posts() && i < 10 && this.posts.has_next(p)){
+        if(p.getOwnerUserId() == id){
+          post_history.add(p.getId());
+          i++;
+        }
+        p = this.posts.get_next(p);
+      }
+
+      if(i < 10 && i < u.getNr_posts()){
+        if(p.getOwnerUserId() == id){
+          post_history.add(p.getId());
+        }
+      }
+      
+      Pair<String, List<Long>> res = new Pair<>(bio, post_history);
+      return res;
     }
 
     // Query 6
