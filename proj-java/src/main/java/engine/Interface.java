@@ -222,12 +222,14 @@ public class Interface implements TADCommunity
         catch(Exception TagInexistenteException){
           return res;
         }
-        for(Post p : this.posts.getPostsTimeInterval(begin, end)){
+        Post p = this.posts.find_post_by_date(end);
+        while(this.posts.has_next(p) && p.getCreationDate().isBefore(begin) == false){
           if(p instanceof Question){
             if(((Question)p).contains_tag(tagid)){
               res.add(p.getId());
             }
           }
+          p = this.posts.get_next(p);
         }
         return res;
     }
@@ -256,7 +258,7 @@ public class Interface implements TADCommunity
           post_history.add(p.getId());
         }
       }
-      
+
       Pair<String, List<Long>> res = new Pair<>(bio, post_history);
       return res;
     }
