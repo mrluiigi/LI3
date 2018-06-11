@@ -3,6 +3,7 @@ package common;
 import java.util.Map;
 import java.util.HashMap;
 import java.time.LocalDate;
+import java.util.List;
 
 public class Question extends Post{
 	/** Título */
@@ -10,14 +11,14 @@ public class Question extends Post{
 	/** Número de respostas */
 	private int nanswers;
 	/** Tags */
-	private Map<Integer, String> tags;
+	private List<Integer> tags;
 	/** Última atividade do post */
 	private LocalDate lastActivityDate;
 
 	/**
 	* Construtor parametrizado
 	*/
-	public Question(String title, int nanswers, Map<Integer, String> tags, LocalDate lastActivityDate,
+	public Question(String title, int nanswers, List<Integer> tags, LocalDate lastActivityDate,
 									char postTypeId, long id, long ownerUserId, LocalDate creationDate){
 		super(postTypeId, id, ownerUserId, creationDate);
 		this.title = title;
@@ -54,7 +55,7 @@ public class Question extends Post{
 	/**
 	* Devolve as tags de uma pergunta
 	*/
-	public Map<Integer, String> getTags(){
+	public List<Integer> getTags(){
 		return this.tags;
 	}
 
@@ -82,7 +83,7 @@ public class Question extends Post{
 	/**
 	* Define as tasgs de uma pergunta
 	*/
-	public void setTags(HashMap tags){
+	public void setTags(List<Integer> tags){
 		this.tags = tags;
 	}
 
@@ -129,6 +130,6 @@ public class Question extends Post{
 	* Verifica se uma resposta contém uma dada tag
 	*/
 	public boolean contains_tag(int tagId){
-		return this.tags.containsKey(tagId);
+		return this.tags.contains(tagId);
 	}
 }

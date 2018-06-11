@@ -51,7 +51,7 @@ import org.xml.sax.helpers.DefaultHandler;
 public class Interface implements TADCommunity
 {
    private Posts posts;
-   private Users users
+   private Users users;
    private Tags tags;
       //ADICIONAR TAGS
 
@@ -111,7 +111,7 @@ public class Interface implements TADCommunity
 
        SAXParser parser = factory.newSAXParser();
 
-       PostsHandler handler = new PostsHandler();
+       PostsHandler handler = new PostsHandler(this.tags);
 
        parser.parse(inputFile, handler);  
 
@@ -138,7 +138,7 @@ public class Interface implements TADCommunity
 
        SAXParser parser = factory.newSAXParser();
 
-       PostsHandler handler = new TagsHandler();
+       TagsHandler handler = new TagsHandler();
 
        parser.parse(inputFile, handler);  
 
@@ -157,9 +157,9 @@ public class Interface implements TADCommunity
     * Método para fazer load aos ficheiros necessários para as queries
     */
    public void load(String dumpPath){
+       this.loadTags(dumpPath);
        this.loadUsers(dumpPath);
        this.loadPosts(dumpPath);
-       this.loadTags(dumpPath);
        this.set_users_nr_posts_and_last_post();
    }
 
@@ -205,11 +205,22 @@ public class Interface implements TADCommunity
 
     // Query 4
     public List<Long> questionsWithTag(String tag, LocalDate begin, LocalDate end) {
-        return Arrays.asList(276174L,276029L,274462L,274324L,274316L,274141L,274100L,272937L,
-                272813L,272754L,272666L,272565L,272450L,272313L,271816L,271683L,271647L,270853L,270608L,270528L,270488L,
-                270188L,270014L,269876L,269781L,269095L,268501L,268155L,267746L,267656L,267625L,266742L,266335L,266016L,
-                265531L,265483L,265443L,265347L,265104L,265067L,265028L,264764L,264762L,264616L,264525L,264292L,263816L,
-                263740L,263460L,263405L,263378L,263253L,262733L,262574L);
+        List<Long> res = new ArrayList<>();
+        int tagid;
+        try{
+          tagid = this.tags.convert_tag_name_to_id(tag);
+        }
+        catch(Exception TagInexistenteException){
+          return res;
+        }
+        for(Post p : this.posts.getPostsTimeInterval(begin, end)){
+          if(p instanceof Question){
+            if(((Question)p).contains_tag(tagid)){
+              res.add(p.getId());
+            }
+          }
+        }
+        return res;
     }
 
     // Query 5
@@ -244,7 +255,21 @@ public class Interface implements TADCommunity
 
     // Query 7
     public List<Long> mostAnsweredQuestions(int N, LocalDate begin, LocalDate end) {
-        return Arrays.asList(505506L,508221L,506510L,508029L,506824L,505581L,505368L,509498L,509283L,508635L);
+      Set<Question> quest = new TreeSet<>((Question q1, Question q2) -> ((q2.getNanswers() - q1.getNanswers() != 0) ?
+        (q2.getNanswers() - q1.getNanswers()) : (q1.equals(q2) == true ? 0 : 1)));
+      for(Post p : this.posts.getPostsTimeInterval(begin, end)){
+        if(p instanceof Question){
+          quest.add((Question) p);
+        }
+      }
+      int i = 0;
+      List<Long> res = new ArrayList<>();
+      Iterator<Question> iterador = quest.iterator();
+      while(i < N && iterador.hasNext()){
+        res.add(iterador.next().getId());
+        i++;
+      }
+      return res;
     }
 
     // Query 8

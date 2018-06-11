@@ -10,17 +10,19 @@ import common.Question;
 import common.Posts;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 
 
 public class PostsHandler extends DefaultHandler {
 
    public Posts posts;
+   private Tags tags;
 
 
 
-
-   public PostsHandler() {
+   public PostsHandler(Tags tags) {
       this.posts = new Posts();
+      this.tags = tags;
    }
 
    public LocalDate createDate(String data){
@@ -49,9 +51,9 @@ public class PostsHandler extends DefaultHandler {
             if(postTypeId == '1'){
                 String title = attributes.getValue("Title");
                 int nanswers = Integer.parseInt(attributes.getValue("AnswerCount"));
-                //ATRIBUIR TAGS
+                List<Integer> tags = this.tags.getTags(attributes.getValue("Tags"));
                 LocalDate lastActivityDate = createDate(attributes.getValue("LastActivityDate"));
-                posts.addQuestion(title, nanswers, new HashMap<>(), lastActivityDate, postTypeId, id, ownerUserId, creationDate);
+                posts.addQuestion(title, nanswers, tags, lastActivityDate, postTypeId, id, ownerUserId, creationDate);
             }
             else if (postTypeId == '2'){
                 int parentId = Integer.parseInt(attributes.getValue("ParentId"));

@@ -65,7 +65,7 @@ public class Posts
         return new Posts(this);
     }
 
-    public void addQuestion(String title, int nanswers, Map<Integer, String> tags, LocalDate lastActivityDate,
+    public void addQuestion(String title, int nanswers, List<Integer> tags, LocalDate lastActivityDate,
                             char postTypeId, long id, long ownerUserId, LocalDate creationDate){
         Question q = new Question(title, nanswers, tags, lastActivityDate, postTypeId, id, ownerUserId, creationDate);
         this.list.add(q);

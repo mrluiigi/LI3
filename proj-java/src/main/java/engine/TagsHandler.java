@@ -35,7 +35,7 @@ public class TagsHandler extends DefaultHandler {
     if (qName.equals("row")){
       String tag_name = attributes.getValue("TagName");
       int tag_id = Integer.parseInt(attributes.getValue("Id"));
-      this.tags.insert_tag(tag_name, id);
+      this.tags.insert_tag(tag_name, tag_id);
     }
   }
   

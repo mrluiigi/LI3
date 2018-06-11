@@ -9,7 +9,6 @@ import java.util.ArrayList;
 public class Tags{
 	/** Map para guardar as tags */
 	private Map<String, Integer> tags;
-
 	/**
 	 * Construtor vazio
 	 */
