@@ -64,7 +64,7 @@ public class MyUser{
   /**
    * Define o lastPost de um utilizador
    */
-  public void setLastPost(int postId){
+  public void setLastPost(long postId){
     if(this.lastPost == 0) this.lastPost = postId;
   }
 

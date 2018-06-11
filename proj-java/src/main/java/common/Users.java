@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 public class Users{
   
-  private Map<Integer, MyUser> users;
+  private Map<Long, MyUser> users;
   private Set<MyUser> users_by_nr_posts;
   private Set<MyUser> users_by_reputation;
 
@@ -36,7 +36,7 @@ public class Users{
   /**
    * Define os users dado um Map
    */
-  public void setUsers(Map<Integer, MyUser> us){
+  public void setUsers(Map<Long, MyUser> us){
     this.users = new HashMap<>();
     us.forEach((i,u) -> this.users.put(i, u.clone()));
   }
@@ -44,8 +44,8 @@ public class Users{
   /**
    *  Devolve um Map com todos os users
    */
-  public Map<Integer, MyUser> getUsers(){
-    Map<Integer, MyUser> res = new HashMap<>();
+  public Map<Long, MyUser> getUsers(){
+    Map<Long, MyUser> res = new HashMap<>();
     this.users.forEach((i,u) -> res.put(i, u.clone()));
     return res;
   }
@@ -69,7 +69,7 @@ public class Users{
    */
   public Set<MyUser> sort_users(Comparator<MyUser> c) {
     Set<MyUser> res = new TreeSet(c);
-    for(int i : this.users.keySet()){
+    for(long i : this.users.keySet()){
       res.add(this.users.get(i));
     }
     return res;
@@ -78,14 +78,14 @@ public class Users{
   /**
    * Encontra um determinado user dado o seu ID
    */
-  public MyUser find_user(int id){
+  public MyUser find_user(long id){
     return this.users.get(id);
   }
 
   /**
    * Insere um user
    */
-  public void add_myuser(int id, String name, String shortBio, int nr_posts, int lastPost, int reputation){
+  public void add_myuser(long id, String name, String shortBio, int nr_posts, long lastPost, int reputation){
     MyUser u = new MyUser(id, name, shortBio, nr_posts, lastPost, reputation);
     this.users.put(id, u);
   }
@@ -93,7 +93,7 @@ public class Users{
   /**
    * Remove um user
    */
-  public void remove_myuser(int id){
+  public void remove_myuser(long id){
     this.users.remove(id);
   }
 
@@ -139,7 +139,7 @@ public class Users{
   /**
    * Incrementa o número de posts de um determinado user
    */
-  public void find_and_increment_user_nr_posts(int id) {
+  public void find_and_increment_user_nr_posts(long id) {
         MyUser user = this.users.get(id);
         user.increment_nr_posts();
   }
@@ -147,7 +147,7 @@ public class Users{
   /**
    * Define o lastPost de uma dado user
    */
-  public void find_and_set_user_lastPost(int id, int lastPostId) {
+  public void find_and_set_user_lastPost(long id, long lastPostId) {
       MyUser u = this.users.get(id);
       u.setLastPost(lastPostId);
   }

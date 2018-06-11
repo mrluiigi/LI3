@@ -6,9 +6,9 @@ public class Post{
 	/** Identifica o tipo de post (Pergunta ou Resposta) */
 	private char postTypeId;
 	/** ID do post */
-	private int id;
+	private long id;
 	/** ID do utilizador que fez o post */
-	private int ownerUserId;
+	private long ownerUserId;
 	/** Data da criação do post */
 	private LocalDate creationDate;
 
@@ -16,7 +16,7 @@ public class Post{
 	/**
 	* Construtor parametrizado
 	*/
-	public Post(char postTypeId, int id, int ownerUserId, LocalDate creationDate){
+	public Post(char postTypeId, long id, long ownerUserId, LocalDate creationDate){
 		this.postTypeId = postTypeId;
 		this.id = id;
 		this.ownerUserId = ownerUserId;
@@ -43,14 +43,14 @@ public class Post{
 	/**
 	* Devolve o id do Post
 	*/
-	public int getId(){
+	public long getId(){
 		return this.id;
 	}
 
 	/**
 	* Devolve o id do Owner do Post
 	*/
-	public int getOwnerUserId(){
+	public long getOwnerUserId(){
 		return this.ownerUserId;
 	}
 
@@ -71,14 +71,14 @@ public class Post{
 	/**
 	* Define o id do Post
 	*/
-	public void setId(int id){
+	public void setId(long id){
 		this.id = id;
 	}
 
 	/**
 	* Define o id do Owner do Post
 	*/
-	public void setOwnerUserId(int ownerUserId){
+	public void setOwnerUserId(long ownerUserId){
 		this.ownerUserId = ownerUserId;
 	}
 
@@ -129,7 +129,7 @@ public class Post{
 	/**
 	* Verifica se o id dado corresponde ao owner do post
 	*/
-	public boolean isOwner(int id){
+	public boolean isOwner(long id){
 		return (this.ownerUserId == id);
 	}
 }

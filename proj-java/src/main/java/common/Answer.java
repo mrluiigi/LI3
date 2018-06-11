@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 public class Answer extends Post{
 	/** ID do post a que pertence a pergunta */
-	private int parentId;
+	private long parentId;
 	/** Número de comentários de uma respostas */
 	private int comments;
 	/** Score de uma resposta */
@@ -13,8 +13,8 @@ public class Answer extends Post{
 	/**
 	* Construtor parametrizado
 	*/
-	public Answer(int parentId, int comments, int score,
-						char postTypeId, int id, int ownerUserId, LocalDate creationDate){
+	public Answer(long parentId, int comments, int score,
+						char postTypeId, long id, long ownerUserId, LocalDate creationDate){
 		super(postTypeId, id, ownerUserId, creationDate);
 		this.parentId = parentId;
 		this.comments = comments;
@@ -34,7 +34,7 @@ public class Answer extends Post{
 	/**
 	* Devolve o ID do post a que a resposta pertence
 	*/
-	public int getParentId(){
+	public long getParentId(){
 		return this.parentId;
 	}
 
@@ -55,7 +55,7 @@ public class Answer extends Post{
 	/**
 	* Define o ID do post a que a resposta pertence
 	*/
-	public void setParentId(int parentId){
+	public void setParentId(long parentId){
 		this.parentId = parentId;
 	}
 

@@ -27,11 +27,11 @@ public class Tags{
 	/**
 	 * Devolve o ID de uma tag
 	 */
-	public int convert_tag_name_to_id(String name) throws TagInexistente{
+	public int convert_tag_name_to_id(String name) throws TagInexistenteException{
 		if(this.tags.containsKey(name))
 			return this.tags.get(name);
 		else
-			throw new TagInexistente(name);
+			throw new TagInexistenteException(name);
 	}
 
 	/**

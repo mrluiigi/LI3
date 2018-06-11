@@ -1,9 +1,9 @@
 package engine;
 
 
-public class TagInexistente extends Exception
+public class TagInexistenteException extends Exception
 {   
-    public TagInexistente(String c){
+    public TagInexistenteException(String c){
         super(c);
     }
 }

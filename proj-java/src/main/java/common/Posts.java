@@ -13,7 +13,7 @@ public class Posts
 {
     private List<Post> list;
     //<Id, Index na list>
-    private Map<Integer, Integer> hash;
+    private Map<Long, Integer> hash;
     //<Id, Index na list>
     private Map<Integer, Integer > monthsHash;
 
@@ -34,8 +34,8 @@ public class Posts
         return this.list.stream().map(Post::clone).collect(Collectors.toList());
     }
 
-    public Map<Integer, Integer> getHash(){
-        Map<Integer, Integer> res = new HashMap<>();
+    public Map<Long, Integer> getHash(){
+        Map<Long, Integer> res = new HashMap<>();
         this.hash.entrySet().forEach(entry -> res.put(entry.getKey(), entry.getValue()));
         return res;
     }
@@ -51,7 +51,7 @@ public class Posts
         list.forEach(p -> this.list.add(p.clone()));
     }
 
-    public void setHash(Map<Integer, Integer> hash){
+    public void setHash(Map<Long, Integer> hash){
         this.hash = new HashMap<>();
         hash.entrySet().forEach(entry -> this.hash.put(entry.getKey(), entry.getValue()));
     }
@@ -66,18 +66,18 @@ public class Posts
     }
 
     public void addQuestion(String title, int nanswers, Map<Integer, String> tags, LocalDate lastActivityDate,
-                            char postTypeId, int id, int ownerUserId, LocalDate creationDate){
+                            char postTypeId, long id, long ownerUserId, LocalDate creationDate){
         Question q = new Question(title, nanswers, tags, lastActivityDate, postTypeId, id, ownerUserId, creationDate);
         this.list.add(q);
     }
 
     public void addAnswer(int parentId, int comments, int score, char postTypeId,
-                          int id, int ownerUserId, LocalDate creationDate){
+                          long id, long ownerUserId, LocalDate creationDate){
         Answer a = new Answer(parentId, comments, score, postTypeId, id, ownerUserId, creationDate);
         this.list.add(a);
     }
 
-    public Post findPost(int id){
+    public Post findPost(long id){
         return this.list.get(this.hash.get(id));
     }
 
@@ -104,7 +104,7 @@ public class Posts
     }
 
     //VERIFICAR
-    public int getParentOwner(Post p){
+    public long getParentOwner(Post p){
         if(p instanceof Answer){
             Answer a = (Answer) p;
             Post parent = this.findPost(a.getParentId());

@@ -33,11 +33,11 @@ public class UsersHandler extends DefaultHandler {
    @Override
    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
       if (qName.equals("row")) {
-        int id = Integer.parseInt(attributes.getValue("Id"));
+        long id = Long.parseLong(attributes.getValue("Id"));
         String name = attributes.getValue("DisplayName");
         String shortBio = attributes.getValue("AboutMe");
         int nr_posts = 0;
-        int lastPost = 0;
+        long lastPost = 0;
         int reputation = Integer.parseInt(attributes.getValue("Reputation"));
         users.add_myuser(id, name, shortBio, nr_posts, lastPost, reputation);
       }
