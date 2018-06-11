@@ -288,11 +288,13 @@ public class Interface implements TADCommunity
     public List<Long> mostAnsweredQuestions(int N, LocalDate begin, LocalDate end) {
       Set<Question> quest = new TreeSet<>((Question q1, Question q2) -> ((q2.getNanswers() - q1.getNanswers() != 0) ?
         (q2.getNanswers() - q1.getNanswers()) : (q1.equals(q2) == true ? 0 : 1)));
-      for(Post p : this.posts.getPostsTimeInterval(begin, end)){
-        if(p instanceof Question){
-          quest.add((Question) p);
+      Post p = this.posts.find_post_by_date(end);
+      while(this.posts.has_next(p) && p.getCreationDate().isBefore(begin) == false){
+          if(p instanceof Question){
+            quest.add((Question) p);
+          }
+          p = this.posts.get_next(p);
         }
-      }
       int i = 0;
       List<Long> res = new ArrayList<>();
       Iterator<Question> iterador = quest.iterator();
