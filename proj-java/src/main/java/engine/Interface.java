@@ -51,8 +51,9 @@ import org.xml.sax.helpers.DefaultHandler;
 public class Interface implements TADCommunity
 {
    private Posts posts;
-   private Users users;
-   //ADICIONAR TAGS
+   private Users users
+   private Tags tags;
+      //ADICIONAR TAGS
 
    /**
     * Construtor
@@ -127,11 +128,38 @@ public class Interface implements TADCommunity
    }
 
    /**
+    * Método para fazer load ao ficheiro Tags.xml
+    */
+   public void loadTags(String dumpPath){
+       File inputFile = new File(dumpPath + "Tags.xml");
+       try {
+
+       SAXParserFactory factory = SAXParserFactory.newInstance();
+
+       SAXParser parser = factory.newSAXParser();
+
+       PostsHandler handler = new TagsHandler();
+
+       parser.parse(inputFile, handler);  
+
+       this.tags = handler.tags;
+
+       } catch (SAXException e) {
+           e.printStackTrace();
+       } catch (IOException e) {
+           e.printStackTrace();
+       } catch (ParserConfigurationException e) {
+           e.printStackTrace();
+       }
+   }
+
+   /**
     * Método para fazer load aos ficheiros necessários para as queries
     */
    public void load(String dumpPath){
        this.loadUsers(dumpPath);
        this.loadPosts(dumpPath);
+       this.loadTags(dumpPath);
        this.set_users_nr_posts_and_last_post();
    }
 
