@@ -196,7 +196,16 @@ public class Interface implements TADCommunity
     public Pair<Long,Long> totalPosts(LocalDate begin, LocalDate end) {
     	long perguntas = 0;
     	long respostas = 0;
-    	for (Post p : this.posts.getPostsTimeInterval(begin, end)) {
+    	Post p = this.posts.find_post_by_date(end);
+    	if(p instanceof Question) perguntas++;
+    	else respostas++;
+
+    	while(this.posts.has_next(p) && (p = this.posts.get_next(p)).getCreationDate().isBefore(begin) == false) {
+    		if(p instanceof Question) perguntas++;
+    		else respostas++;
+    	}
+
+    	if(p.getCreationDate().isBefore(begin) == false) {
     		if(p instanceof Question) perguntas++;
     		else respostas++;
     	}

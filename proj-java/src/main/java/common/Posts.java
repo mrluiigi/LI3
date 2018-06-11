@@ -12,6 +12,7 @@ import java.time.LocalDate;
 public class Posts
 {
     private List<Post> list;
+    private long n;
     //<Id, Index na list>
     private Map<Long, Integer> hash;
     //<Id, Index na list>
@@ -20,6 +21,7 @@ public class Posts
 
     public Posts(){
         this.list = new ArrayList();
+        this.n = 0;
         this.hash = new HashMap<>();
         this.monthsHash = new HashMap<>();
     }
@@ -101,6 +103,7 @@ public class Posts
             this.monthsHash.putIfAbsent(this.date_to_key(data) , i);
             i++;
         }
+        n = i;
     }
 
     //VERIFICAR
@@ -126,6 +129,20 @@ public class Posts
     } 
 
 
+    public Post find_post_by_date(LocalDate data) {
+        LocalDate most_recent = this.list.get(0).getCreationDate();
+
+        if(data.isAfter(most_recent)) {
+            return null;
+        }
+        else {
+            int i = this.monthsHash.get(date_to_key(data));
+            for (; this.list.get(i).getCreationDate().isAfter(data); i++);
+            return this.list.get(i);
+        }   
+    }
+
+
     public int find_by_date(LocalDate data) {
         LocalDate most_recent = this.list.get(0).getCreationDate();
 
@@ -137,6 +154,16 @@ public class Posts
             for (; this.list.get(i).getCreationDate().isAfter(data); i++);
             return i;
         }   
+    }
+    //Verifica se exite um post a seguir na lista
+    public boolean has_next(Post p) {
+        int i = this.hash.get(p.getId());
+        return (i + 1 < this.n);
+    }
+    //obtem o próximo post da lista
+    public Post get_next(Post p) {
+        int i = this.hash.get(p.getId());
+        return this.list.get(i+1);
     }
 
 }
