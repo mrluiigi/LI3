@@ -166,4 +166,11 @@ public class Posts
         return this.list.get(i+1);
     }
 
+    public long get_parent_owner(Answer a) {
+        if (this.hash.containsKey(a.getParentId())) {
+            return this.list.get(this.hash.get(a.getParentId())).getOwnerUserId();
+        }
+        else return 0;
+    }
+
 }

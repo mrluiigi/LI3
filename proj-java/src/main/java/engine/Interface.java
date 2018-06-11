@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -312,7 +313,59 @@ public class Interface implements TADCommunity
 
     // Query 9
     public List<Long> bothParticipated(int N, long id1, long id2) {
-        return Arrays.asList(594L);
+        List<Long> queuque1 = new LinkedList<>();
+    	List<Long> queuque2 = new LinkedList<>();
+    	List<Long> queuquef = new LinkedList<>();
+    	List<Long> res = new ArrayList<>();
+    	MyUser u1 = this.users.find_user(id1);
+    	MyUser u2 = this.users.find_user(id2);
+    	int n1 = 0;
+    	int n2 = 0;
+    	Post p1 = this.posts.findPost(u1.getLastPost());
+    	Post p2 = this.posts.findPost(u2.getLastPost());
+    	Post p;
+    	if (p1.getCreationDate().isAfter(p2.getCreationDate())) {
+    		p = p1;
+    	}
+    	else {
+    		p = p2;
+    	}
+    	while(this.posts.has_next(p) && n1 < u1.getNr_posts() && n2 < u2.getNr_posts()) {
+    		if (p instanceof Answer) {
+    			Answer a = (Answer) p;
+    			if(a.getOwnerUserId() == id1) {
+    				n1++;
+    				if(this.posts.get_parent_owner(a) == id2) {
+       					queuquef.add(a.getParentId());
+    				}
+    				else if (queuque2.contains(a.getId())) {
+    					queuquef.add(a.getParentId());
+    					queuque2.remove(a.getParentId());
+    				}
+    				else {
+    					queuque1.add(a.getId());
+    				}
+    			}
+    			if(a.getOwnerUserId() == id2) {
+    				n2++;
+    				if(this.posts.get_parent_owner(a)  == id1) {
+    					queuquef.add(a.getParentId());
+    				}
+    				else if (queuque1.contains(a.getId())) {
+    					queuquef.add(a.getParentId());
+    					queuque1.remove(a.getParentId());
+    				}
+    				else {
+    					queuque2.add(a.getParentId());
+    				}
+    			}
+    		}
+    		else if ((p.getOwnerUserId() == id1 || p.getOwnerUserId() == id2) && queuquef.contains(p.getId())) {
+    			res.add(p.getId());
+    		}
+    		p = this.posts.get_next(p);
+    	}
+    	return res;
     }
 
     // Query 10
