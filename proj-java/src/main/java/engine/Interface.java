@@ -144,7 +144,7 @@ public class Interface implements TADCommunity
 
     // Query 2
     public List<Long> topMostActive(int N) {
-        return Arrays.asList(15811L,449L,158442L,167850L,367165L,295286L,59676L,93977L,35795L,3940L);
+        return this.users.get_N_users_with_most_nr_posts(N);
     }
 
     // Query 3

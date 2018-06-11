@@ -2,7 +2,7 @@ package common;
 
 public class MyUser{
   /** ID do user */
-  private int id;
+  private long id;
   /** Nome do utilizador */
   private String name;
   /** ShortBio do utilizador */
@@ -10,7 +10,7 @@ public class MyUser{
   /** Número de posts do utilizador */
   private int nr_posts;
   /** Último post do utilizador */
-  private int lastPost;
+  private long lastPost;
   /** Reputação do utilizador */
   private int reputation;
 
@@ -19,7 +19,7 @@ public class MyUser{
   /**
    *  Construtor parametrizado
    */
-  public MyUser(int id, String name, String shortBio, int nr_posts, int lastPost, int reputation){
+  public MyUser(long id, String name, String shortBio, int nr_posts, long lastPost, int reputation){
     this.id = id;
     this.name = name;
     this.shortBio = shortBio;
@@ -42,7 +42,7 @@ public class MyUser{
   /**
    * Devolve o ID do utilizador
    */
-  public int getId() {
+  public long getId() {
   	return this.id;
   }
 
@@ -78,7 +78,7 @@ public class MyUser{
   /**
    * Devolve o lastPost de um utilizador
    */
-  public int getLastPost() {
+  public long getLastPost() {
   	return this.lastPost;
   }
 

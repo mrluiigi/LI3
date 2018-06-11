@@ -70,7 +70,7 @@ public class Users{
   public Set<MyUser> sort_users(Comparator<MyUser> c) {
     Set<MyUser> res = new TreeSet(c);
     for(int i : this.users.keySet()){
-      res.add(this.users.get(i).clone());
+      res.add(this.users.get(i));
     }
     return res;
   }
@@ -101,16 +101,17 @@ public class Users{
   /**
    * Devolve uma lista com os N users que tem maior reputação
    */
-  public List<MyUser> get_N_users_with_most_reputation(int N) {
-    if(this.users_by_nr_posts.isEmpty()) {
-      this.users_by_nr_posts = this.sort_users((MyUser u1, MyUser u2) -> u2.getReputation() - u1.getReputation());
+  public List<Long> get_N_users_with_most_reputation(int N) {
+    if(this.users_by_reputation.isEmpty()) {
+      this.users_by_reputation = this.sort_users((MyUser u1, MyUser u2) -> ((u2.getReputation() - u1.getReputation() != 0) ?
+        (u2.getReputation() - u1.getReputation()) : (u1.equals(u2) == true ? 0 : 1)));
     }
-    List<MyUser> res = new ArrayList<>();
+    List<Long> res = new ArrayList<>();
     int i = 0;
-    Iterator<MyUser> iterador = this.users_by_nr_posts.iterator();
+    Iterator<MyUser> iterador = this.users_by_reputation.iterator();
 
     while(i < N && iterador.hasNext()){
-      res.add(iterador.next());
+      res.add(iterador.next().getId());
       i++;
     }
     return res;
@@ -119,16 +120,17 @@ public class Users{
   /**
    * Devolve uma lista com os users que tem o maior número de posts
    */
-  public List<MyUser> get_N_users_with_most_nr_posts(int N){
-    if(this.users_by_reputation.isEmpty()) {
-      this.users_by_reputation = this.sort_users((MyUser u1, MyUser u2) -> u2.getNr_posts() - u1.getNr_posts());
+  public List<Long> get_N_users_with_most_nr_posts(int N){
+    if(this.users_by_nr_posts.isEmpty()) {
+      this.users_by_nr_posts = this.sort_users((MyUser u1, MyUser u2) -> ((u2.getNr_posts() - u1.getNr_posts() != 0) ?
+        (u2.getNr_posts() - u1.getNr_posts()) : (u1.equals(u2) == true ? 0 : 1)));
     }
-    List<MyUser> res = new ArrayList<>();
+    List<Long> res = new ArrayList<>();
     int i = 0;
-    Iterator<MyUser> iterador = this.users_by_reputation.iterator();
+    Iterator<MyUser> iterador = this.users_by_nr_posts.iterator();
 
     while(i < N && iterador.hasNext()){
-      res.add(iterador.next());
+      res.add(iterador.next().getId());
       i++;
     }
     return res;
