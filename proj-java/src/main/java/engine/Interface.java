@@ -25,6 +25,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Comparator;
+
 
 
 import javax.xml.parsers.SAXParser;
@@ -33,6 +39,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
 
 /**
  * Write a description of class Main here.
@@ -190,7 +197,21 @@ public class Interface implements TADCommunity
 
     // Query 6
     public List<Long> mostVotedAnswers(int N, LocalDate begin, LocalDate end) {
-        return Arrays.asList(701775L,697197L,694560L,696641L,704208L);
+      Set<Answer> ans = new TreeSet<>((Answer a1, Answer a2) -> ((a2.getScore() - a1.getScore() != 0) ?
+        (a2.getScore() - a1.getScore()) : (a1.equals(a2) == true ? 0 : 1)));
+      for(Post p : this.posts.getPostsTimeInterval(begin, end)){
+        if(p instanceof Answer){
+          ans.add((Answer) p);
+        }
+      }
+      int i = 0;
+      List<Long> res = new ArrayList<>();
+      Iterator<Answer> iterador = ans.iterator();
+      while(i < N && iterador.hasNext()){
+        res.add(iterador.next().getId());
+        i++;
+      }
+      return res;
     }
 
     // Query 7
