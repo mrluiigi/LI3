@@ -84,7 +84,9 @@ public class Posts
     /**
       * Função que converte a CreationDate do XML numa key para ser usada na monthshash
       */
-    public int date_to_key(int year, int month){
+    public int date_to_key(LocalDate date){
+        int year = date.getYear();
+        int month = date.getMonthValue();
         return (year * 100) + month;
     }
 
@@ -96,7 +98,7 @@ public class Posts
         for(Post p : this.list){
             this.hash.put(p.getId(), i);
             LocalDate data = p.getCreationDate();
-            this.monthsHash.putIfAbsent(this.date_to_key(data.getYear(), data.getMonthValue()) , i);
+            this.monthsHash.putIfAbsent(this.date_to_key(data) , i);
             i++;
         }
     }
@@ -115,13 +117,26 @@ public class Posts
 
     public List<Post> getPostsTimeInterval(LocalDate begin, LocalDate end) {
         List<Post> res = new ArrayList<>();
-        int end_hash = this.date_to_key(end.getYear(), end.getMonthValue());
-        if (this.monthsHash.containsKey(end_hash) == false) return res;
-        int i = this.monthsHash.get(end_hash);
+        int i = find_by_date(end);
         for (; this.list.get(i).getCreationDate().isAfter(end); i++);
-        for (; this.list.get(i).getCreationDate().isAfter(begin); i++) {
+        for (; this.list.get(i).getCreationDate().isBefore(begin) == false; i++) {
             res.add(this.list.get(i).clone());
         }
         return res;
     } 
+
+
+    public int find_by_date(LocalDate data) {
+        LocalDate most_recent = this.list.get(0).getCreationDate();
+
+        if(data.isAfter(most_recent)) {
+            return 0;
+        }
+        else {
+            int i = this.monthsHash.get(date_to_key(data));
+            for (; this.list.get(i).getCreationDate().isAfter(data); i++);
+            return i;
+        }   
+    }
+
 }
