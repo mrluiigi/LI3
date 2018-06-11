@@ -125,7 +125,17 @@ public class Interface implements TADCommunity
    public void load(String dumpPath){
        this.loadUsers(dumpPath);
        this.loadPosts(dumpPath);
+       this.set_users_nr_posts_and_last_post();
    }
+
+  public void set_users_nr_posts_and_last_post(){
+    for(Post p : this.posts.getList()){
+      if(p.hasOwner()){
+        this.users.find_and_set_user_lastPost(p.getOwnerUserId(),p.getId());
+        this.users.find_and_increment_user_nr_posts(p.getOwnerUserId());
+      }
+    }
+  }
 
    // Query 1
    //long ->int??
