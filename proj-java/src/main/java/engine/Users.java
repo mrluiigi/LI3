@@ -112,7 +112,7 @@ public class Users{
    * @param lastPost LastPost do user
    * @param reputation Reputação do user
    */
-  public void add_myuser(long id, String name, String shortBio, int nr_posts, long lastPost, int reputation){
+  public void add_myuser(long id, String name, String shortBio, int nr_posts, long lastPost, long reputation){
     //Cria um User
     User u = new User(id, name, shortBio, nr_posts, lastPost, reputation);
     this.users.put(id, u);
@@ -136,7 +136,7 @@ public class Users{
     if(this.users_by_reputation.isEmpty()) {
       //Coloca no Set os User ordenados decrescentemente por reputação
       this.users_by_reputation = this.sort_users((User u1, User u2) -> ((u2.getReputation() - u1.getReputation() != 0) ?
-        (u2.getReputation() - u1.getReputation()) : (u1.equals(u2) == true ? 0 : 1)));
+        (int)(u2.getReputation() - u1.getReputation()) : (u1.equals(u2) == true ? 0 : 1)));
     }
     List<Long> res = new ArrayList<>();
     int i = 0;

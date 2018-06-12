@@ -53,7 +53,7 @@ public class UsersHandler extends DefaultHandler {
         String shortBio = attributes.getValue("AboutMe");
         int nr_posts = 0;
         long lastPost = 0;
-        int reputation = Integer.parseInt(attributes.getValue("Reputation"));
+        long reputation = Long.parseLong(attributes.getValue("Reputation"));
         //Adiciona esse User à variável dos Users
         users.add_myuser(id, name, shortBio, nr_posts, lastPost, reputation);
       }

@@ -168,8 +168,8 @@ public class Post implements Comparable<Post>{
 	public int compareTo(Post p) {
 		if (this.creationDate.isAfter(p.creationDate)) return -1;
 		if (this.creationDate.isBefore(p.creationDate)) return 1;
-		if (this.id < p.id) return -1;
-		if (this.id > p.id) return 1;
+		if (this.id > p.id) return -1;
+		if (this.id < p.id) return 1;
 		return 0;
 	}
 }

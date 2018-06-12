@@ -19,7 +19,7 @@ public class User{
   /** Último post do utilizador */
   private long lastPost;
   /** Reputação do utilizador */
-  private int reputation;
+  private long reputation;
 
 
   /**
@@ -32,7 +32,7 @@ public class User{
    * @param lastPost LastPost do utilizador
    * @param reputation Reputação do utilizador
    */
-  public User(long id, String name, String shortBio, int nr_posts, long lastPost, int reputation){
+  public User(long id, String name, String shortBio, int nr_posts, long lastPost, long reputation){
     this.id = id;
     this.name = name;
     this.shortBio = shortBio;
@@ -107,7 +107,7 @@ public class User{
    * Método que devolve a reputação de um utilizador
    * @return int Reputação
    */
-  public int getReputation() {
+  public long getReputation() {
   	return this.reputation;
   }
 
