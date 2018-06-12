@@ -364,31 +364,56 @@ public class Interface implements TADCommunity
       	return res;
     }
 
-    // Query 7
+    /**
+     * QUERY 7
+	 * Método que devolve os IDs das N perguntas com mais respostas
+	 * @param N Número de perguntas desejadas
+     * @param begin Data inicial
+     * @param end Data final
+     * @return Lista das N perguntas
+	 */
     public List<Long> mostAnsweredQuestions(int N, LocalDate begin, LocalDate end) {
-      Set<Question> quest = new TreeSet<>((Question q1, Question q2) -> ((q2.getNanswers() - q1.getNanswers() != 0) ?
-        (q2.getNanswers() - q1.getNanswers()) : (q1.equals(q2) == true ? 0 : 1)));
-      Post p = this.posts.find_post_by_date(end);
-      while(this.posts.has_next(p) && p.getCreationDate().isBefore(begin) == false){
-          if(p instanceof Question){
-            quest.add((Question) p);
-          }
-          p = this.posts.get_next(p);
+    	//Declara o Set passado um comparador que ordena por ordem decrescente de número de respostas
+     	 Set<Question> quest = new TreeSet<>((Question q1, Question q2) -> ((q2.getNanswers() - q1.getNanswers() != 0) ?
+        	(q2.getNanswers() - q1.getNanswers()) : (q1.equals(q2) == true ? 0 : 1)));
+      	
+    	//Vai buscar o Post mais recente depois do end
+      	Post p = this.posts.find_post_by_date(end);
+
+    	//Percorre a lista dos Posts da data final até à data inicial
+      	while(this.posts.has_next(p) && p.getCreationDate().isBefore(begin) == false){
+        	  //Se o Post for uma Question adiciona ao quest
+        	  if(p instanceof Question){
+            	quest.add((Question) p);
+          	}
+          	//Passa para o próximo Post
+          	p = this.posts.get_next(p);
         }
-      int i = 0;
-      List<Long> res = new ArrayList<>();
-      Iterator<Question> iterador = quest.iterator();
-      while(i < N && iterador.hasNext()){
-        res.add(iterador.next().getId());
-        i++;
-      }
-      return res;
+      	int i = 0;
+     	List<Long> res = new ArrayList<>();
+      	Iterator<Question> iterador = quest.iterator();
+
+      	//Adiciona à lista a retornar N IDs das perguntas
+      	while(i < N && iterador.hasNext()){
+        	res.add(iterador.next().getId());
+        	i++;
+      	}
+      	return res;
     }
 
-    // Query 8
+    /**
+	 * QUERY 8
+	 * Método que devolve os IDs de N perguntas cujos títulos contenham uma dada palavra
+	 * @param N Número de perguntas desejadas
+	 * @param word Palavra a verificar se o título contém
+	 * @return Devolve a lista das N perguntas
+	 */
+    //FALTA ACABAR DE DOCUMENTAR
     public List<Long> containsWord(int N, String word) {
         List<Long> res = new ArrayList<>();
         int i = 0;
+
+
         for(Post p : this.posts.getList()){
           if(p instanceof Question){
             if(((Question) p).getTitle().contains(word) && i < N){
@@ -400,50 +425,77 @@ public class Interface implements TADCommunity
         return res;
     }
 
-    // Query 9
+	/**
+ 	 * QUERY 9
+ 	 * Método que devolve as últimas N perguntas em que dois utilizadores participaram
+ 	 * @param N Número de perguntas pretendidas
+ 	 * @param id1 ID do primeiro utilizador
+ 	 * @param id2 ID do segundo utilizador
+ 	 * @return Lista com os IDs das perguntas
+	 */
     public List<Long> bothParticipated(int N, long id1, long id2) {
         List<Long> queuque1 = new LinkedList<>();
     	List<Long> queuque2 = new LinkedList<>();
     	List<Long> queuquef = new LinkedList<>();
     	List<Long> res = new ArrayList<>();
+    	//Vai buscar o primeiro utilizador
     	User u1 = this.users.find_user(id1);
+    	//Vai buscar o segundo utilizador
     	User u2 = this.users.find_user(id2);
     	int n1 = 0;
     	int n2 = 0;
+    	//Vai buscar o último Post do primeiro utilizador
     	Post p1 = this.posts.findPost(u1.getLastPost());
+    	//Vai buscar o último Post do segundo utilizador
     	Post p2 = this.posts.findPost(u2.getLastPost());
     	Post p;
+
     	if (p1.getCreationDate().isAfter(p2.getCreationDate())) {
     		p = p1;
     	}
     	else {
     		p = p2;
     	}
+
+    	/*Percorre a lista de posts a partir do último post mais recente. O ciclo para caso te tenha percorrido a lista toda 
+    	ou caso se tenha percorrido todos os posts de um dos utilizadores*/
     	while(this.posts.has_next(p) && n1 < u1.getNr_posts() && n2 < u2.getNr_posts()) {
+    		//Se o Post for uma Answer
     		if (p instanceof Answer) {
     			Answer a = (Answer) p;
+    			//Caso o OwnerUserID do post for o primeiro utilizador
     			if(a.getOwnerUserId() == id1) {
+    				//Incrementa-se o contador do número de posts do primeiro user pelos quais já se passaram.
     				n1++;
+    				//Caso o utilizador que fez a pergunta tenha sido o segundo utilizador adiciona à lista queuquef
     				if(this.posts.get_parent_owner(a) == id2) {
        					queuquef.add(a.getParentId());
     				}
+    				//Se a resposta existir na queuque2 adiciona-se à queuquef e remove-se da queuque2
     				else if (queuque2.contains(a.getId())) {
     					queuquef.add(a.getParentId());
     					queuque2.remove(a.getParentId());
     				}
+    				//Caso contrário adiciona-se à queuque1
     				else {
     					queuque1.add(a.getId());
     				}
     			}
+    			
+    			//Caso o OwnerUserID do post for o segundo utilizador
     			if(a.getOwnerUserId() == id2) {
+    				//Incrementa-se o contador número de posts do segundo user pelos quais já se passaram.
     				n2++;
+    				//Caso o utilizador que fez a pergunta tenha sido o primeiro utilizador adiciona à lista queuquef
     				if(this.posts.get_parent_owner(a)  == id1) {
     					queuquef.add(a.getParentId());
     				}
+    				//Se a resposta existir na queuque1 adiciona-se à queuquef e remove-se da queuque1
     				else if (queuque1.contains(a.getId())) {
     					queuquef.add(a.getParentId());
     					queuque1.remove(a.getParentId());
     				}
+    				//Caso contrário adiciona-se à queuque2
     				else {
     					queuque2.add(a.getParentId());
     				}
@@ -452,76 +504,122 @@ public class Interface implements TADCommunity
     		else if ((p.getOwnerUserId() == id1 || p.getOwnerUserId() == id2) && queuquef.contains(p.getId())) {
     			res.add(p.getId());
     		}
+    		//Vai buscar o Post seguinte
     		p = this.posts.get_next(p);
     	}
     	return res;
     }
 
-    // Query 10
-    public double calculatesScore(Post ans, User user){
+    /**
+     * Método para calcular o Score de uma resposta
+     * @param ans Answer
+     * @param user Utilizador que fez a resposta
+     * @return Score da resposta
+     */
+    private double calculatesScore(Post ans, User user){
       return ((Answer)ans).getScore()*0.45 + user.getReputation()*0.25 + ((Answer)ans).getScore()*0.2 + ((Answer) ans).getComments()*0.1;
     }
 
+    /**
+     * QUERY 10
+     * Método que obtém a melhor resposta dado o ID de uma pergunta
+     * @param id ID da pergunta
+     * @return Devolve o ID da melhor resposta
+     */ 
     public long betterAnswer(long id) {
       double scoretemp = 0;
       long idtemp = -1;
+
+      //Caso não exista um post relativo ao ID dado
       if(this.posts.containsPost(id) == false){
         return idtemp;
       }
+
+      //Vai buscar o post relativo ao ID dado
       Post pergunta = this.posts.findPost(id);
+
+      //Vai buscar o último post relativo à pergunta
       Post p = this.posts.find_post_by_date(((Question) pergunta).getLastActivityDate());
+
+      //Percorre a lista dos posts até ao post pergunta
       while(p.getId() != id){
         if(p instanceof Answer){
+
+          //Caso a post seja resposta à pergunta
           if(((Answer) p).getParentId() == id){
+          	
+          	//Calcula o score e verifica se é maior que um melhor score eventualmente calculado anteriormente 
             if(calculatesScore(p, this.users.find_user(p.getOwnerUserId())) > scoretemp){
               scoretemp = calculatesScore(p, this.users.find_user(p.getOwnerUserId()));
               idtemp = p.getId();
             }
           }
         }
+        //Vai buscar o próximo post
         p = this.posts.get_next(p);
       }
       return idtemp;
     }
 
-    // Query 11
+	/**
+ 	 * QUERY 11
+ 	 * Método que devolve os IDs das N tags mais utilizadas pelos N utilizadores com mais reputação
+ 	 * @param N Número de tags desejadas
+ 	 * @param begin Data inicial
+ 	 * @param end Data final
+ 	 * @return Lista dos IDs das tags
+ 	 */
     public List<Long> mostUsedBestRep(int N, LocalDate begin, LocalDate end) {
-      List bestUsers = this.users.get_N_users_with_most_reputation(N);
-      Map<Integer,Integer> map = new HashMap<>();
-      List<Long> res = new ArrayList<>();
+    	//Vai buscar a lista dos N users ordenada pela reputação
+      	List bestUsers = this.users.get_N_users_with_most_reputation(N);
+      	Map<Integer,Integer> map = new HashMap<>();
+      	List<Long> res = new ArrayList<>();
 
-      Post p = this.posts.find_post_by_date(end);
-      while(this.posts.has_next(p) && (p.getCreationDate().isBefore(begin) == false)) {
-        if (p instanceof Question && bestUsers.contains(p.getOwnerUserId())) {
-          Question q = (Question) p;
-          for(Integer tid : q.getTags()) {
-            int n = (map.containsKey(tid) ? map.get(tid) : 0);
-            map.put(tid, n+ 1);
-          }   
-        }
-        p = this.posts.get_next(p);
-      }
+      	//Vai buscar o post mais recente depois do end
+	    Post p = this.posts.find_post_by_date(end);
 
-      if(p.getCreationDate().isBefore(begin) == false) {
-        if (p instanceof Question && bestUsers.contains(p.getOwnerUserId())) {
-          Question q = (Question) p;
-          for(Integer tid : q.getTags()) {
-            int n = (map.containsKey(tid) ? map.get(tid) : 0);
-            map.put(tid, n+1);
-          }   
-        }
-      }
+	    //Percorre a lista dos post entre a data final e a inicial
+    	while(this.posts.has_next(p) && (p.getCreationDate().isBefore(begin) == false)) {
+
+    		//Se o Post for uma pergunta e for de algum dos utilizadores com maior reputação
+       		if (p instanceof Question && bestUsers.contains(p.getOwnerUserId())) {
+          		Question q = (Question) p;
+
+          		//Para todas as tags dessa pergunta, adiciona-a se não estiver ainda no Map e incrementa caso já esteja
+          		for(Integer tid : q.getTags()) {
+            		int n = (map.containsKey(tid) ? map.get(tid) : 0);
+            		map.put(tid, n+ 1);
+          		}	   
+        	}
+        	//Vai buscar o Post seguint
+        	p = this.posts.get_next(p);
+      	}
+
+      	//Condição para o último post
+      	if(p.getCreationDate().isBefore(begin) == false) {
+        	if (p instanceof Question && bestUsers.contains(p.getOwnerUserId())) {
+       			Question q = (Question) p;
+          		for(Integer tid : q.getTags()) {
+            		int n = (map.containsKey(tid) ? map.get(tid) : 0);
+            		map.put(tid, n+1);
+          		}   
+        	}
+      	}
 
 
-      int i = 0;
-      Set<Tag11> set = new TreeSet<>();
-      map.keySet().stream().forEach(id -> set.add(new Tag11 ( id, map.get(id))));
-      Iterator<Tag11> iterador = set.iterator();
-      while(i < N && iterador.hasNext()){
-        Tag11 t = iterador.next();
-        res.add((long)t.getId());
-        i++;
-      }
+      	int i = 0;
+     	Set<Tag11> set = new TreeSet<>();
+
+     	//Adiciona ao Set o ID da tag mais o número de ocorrencias que esta teve 
+      	map.keySet().stream().forEach(id -> set.add(new Tag11 ( id, map.get(id))));
+      	Iterator<Tag11> iterador = set.iterator();
+
+      	//Adiciona à lista a retornar os N IDs das tags mais utilizadas
+      	while(i < N && iterador.hasNext()){
+        	Tag11 t = iterador.next();
+        	res.add((long)t.getId());
+        	i++;
+      	}
         return res;
     }
 
