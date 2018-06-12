@@ -2,7 +2,7 @@ package common;
 
 import java.time.LocalDate;
 
-public class Post{
+public class Post implements Comparable<Post>{
 	/** Identifica o tipo de post (Pergunta ou Resposta) */
 	private char postTypeId;
 	/** ID do post */
@@ -131,5 +131,13 @@ public class Post{
 	*/
 	public boolean isOwner(long id){
 		return (this.ownerUserId == id);
+	}
+
+	public int compareTo(Post p) {
+		if (this.creationDate.isAfter(p.creationDate)) return -1;
+		if (this.creationDate.isBefore(p.creationDate)) return 1;
+		if (this.id < p.id) return -1;
+		if (this.id > p.id) return 1;
+		return 0;
 	}
 }

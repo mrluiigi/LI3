@@ -187,7 +187,7 @@ public class Posts
     public void finalize(){
     	int i = 0;
         //Ordena a list do mais recente para o mais antigo
-        this.list.sort( (Post p1, Post p2) -> p2.getCreationDate().compareTo(p1.getCreationDate()));
+        this.list.sort( null);
 
         for(Post p : this.list){
             //Coloca o Post p na hash

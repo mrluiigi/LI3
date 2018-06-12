@@ -418,7 +418,6 @@ public class Interface implements TADCommunity
           Question q = (Question) p;
           for(Integer tid : q.getTags()) {
             int n = (map.containsKey(tid) ? map.get(tid) : 0);
-             //System.out.print(n);
             map.put(tid, n+ 1);
           }   
         }
@@ -430,7 +429,6 @@ public class Interface implements TADCommunity
           Question q = (Question) p;
           for(Integer tid : q.getTags()) {
             int n = (map.containsKey(tid) ? map.get(tid) : 0);
-          //  System.out.print(n);
             map.put(tid, n+1);
           }   
         }
@@ -441,10 +439,8 @@ public class Interface implements TADCommunity
       Set<Tag11> set = new TreeSet<>();
       map.keySet().stream().forEach(id -> set.add(new Tag11 ( id, map.get(id))));
       Iterator<Tag11> iterador = set.iterator();
-      //System.out.print(mapN.size());
       while(i < N && iterador.hasNext()){
         Tag11 t = iterador.next();
-        System.out.print(t.getOcorrencias());
         res.add((long)t.getId());
         i++;
       }
