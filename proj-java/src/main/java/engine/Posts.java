@@ -153,7 +153,8 @@ public class Posts
      * @param id ID do Post
      * @return Post
      */
-    public Post findPost(long id){
+    public Post findPost(long id) throws PostInexistenteException{
+        if(this.hash.containsKey(id) == false) throw  new PostInexistenteException(id);
         return this.list.get(this.hash.get(id));
     }
 
@@ -210,8 +211,14 @@ public class Posts
         //Se o post for uma resposta
         if(p instanceof Answer){
             Answer a = (Answer) p;
-            //Procura o Post da pergunta a essa resposta
-            Post parent = this.findPost(a.getParentId());
+            Post parent = null;
+            try {
+                //Procura o Post da pergunta a essa resposta
+                parent = this.findPost(a.getParentId());
+            }
+            catch(PostInexistenteException exc) {
+                return -1;
+            }
             return parent.getOwnerUserId();
         }
         //Se não for uma resposta devolve -1
@@ -243,15 +250,27 @@ public class Posts
      * @param data
      * @return Post
      */
-    public Post find_post_by_date(LocalDate data) {
+    public Post find_post_by_date(LocalDate data) throws PostInexistenteException {
+        int i = 0;
         LocalDate most_recent = this.list.get(0).getCreationDate();
-
-        //Se a data for anterior à mais recente, o Post procurado não existe
+        //Se a data for depois da mais recente, retorna o post mais recente 
         if(data.isAfter(most_recent)) {
-            return null;
+            return this.list.get(0);
+        }
+        LocalDate oldest = this.list.get((int)this.n -1).getCreationDate();
+        //Se a data for anterior à mais antiga, não existem nenhum post com essa data 
+        if(data.isBefore(oldest)) {
+            throw new PostInexistenteException(data);
         }
         else {
-            int i = this.monthsHash.get(date_to_key(data));
+            /*se não existir nenhum post no mês da data então não é possível recorrer à monthsHash
+            e, para garantir o funcionamento correto, é preferível começar a procurar
+            a partir do post mais recente*/
+            if (this.monthsHash.containsKey(date_to_key(data)) == false) 
+                i = 0;
+            else {
+                i = this.monthsHash.get(date_to_key(data));
+            } 
             //Vai até à posição do Post procurado
             for (; this.list.get(i).getCreationDate().isAfter(data); i++);
             return this.list.get(i);

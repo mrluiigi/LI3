@@ -185,28 +185,38 @@ public class Interface implements TADCommunity
   }
 
    /**
-	* QUERY 1
- 	* Método que dado um ID de um post retorna o título do post e o nome do autor
- 	* @param id ID do Post
- 	* @return Um par onde o primeiro elemento é o título do post e o segundo o nome do autor 
- 	*/
+  * QUERY 1
+  * Método que dado um ID de um post retorna o título do post e o nome do autor
+  * @param id ID do Post
+  * @return Um par onde o primeiro elemento é o título do post e o segundo o nome do autor 
+  */
     public Pair<String,String> infoFromPost(long id) {
-    	//Caso ao ID fornecido não corresponder nenhum Post
-    	if(this.posts.containsPost(id) == false) return new Pair<>("","");
-    	//Procura o Post relativo ao ID fornecido
-      	Post p = this.posts.findPost(id);
-    	Question q;
-    	//Se o Post for uma Answer
-    	if (p instanceof Answer) {
-    		Answer a = (Answer) p;
-    		//Vai buscar a Pergunta da Resposta para poder retornar o título desta
-    		q = (Question) this.posts.findPost(a.getParentId());
-    	}
-    	//Se o Post for uma Question
-    	else {
-    		q = (Question) p;
-    	}
-    	return new Pair<>(q.getTitle(), this.users.find_user(q.getOwnerUserId()).getName());
+      //Procura o Post relativo ao ID fornecido
+      Post p = null;
+      try{
+        p = this.posts.findPost(id);
+      }
+      //Caso ao ID fornecido não corresponder nenhum Post
+      catch(PostInexistenteException exc) {
+        return new Pair<>("","");
+      }
+      Question q;
+      //Se o Post for uma Answer
+      if (p instanceof Answer) {
+        Answer a = (Answer) p;
+        //Vai buscar a Pergunta da Resposta para poder retornar o título desta
+        try {
+          q = (Question) this.posts.findPost(a.getParentId());
+        }
+        catch(PostInexistenteException exc) {
+          return new Pair<>("","");
+        }
+      }
+      //Se o Post for uma Question
+      else {
+        q = (Question) p;
+      }
+      return new Pair<>(q.getTitle(), this.users.find_user(q.getOwnerUserId()).getName());
     }
 
     /**
@@ -222,31 +232,38 @@ public class Interface implements TADCommunity
 
     /**
      * QUERY 3
- 	 * Método que retorna o número total de posts num certo intervalo de tempo
- 	 * @param begin Data inicial
- 	 * @param end Data final
- 	 * @return Par com o número de perguntas e respostas respetivamente
- 	 */
+   * Método que retorna o número total de posts num certo intervalo de tempo
+   * @param begin Data inicial
+   * @param end Data final
+   * @return Par com o número de perguntas e respostas respetivamente
+   */
     public Pair<Long,Long> totalPosts(LocalDate begin, LocalDate end) {
-    	long perguntas = 0;
-    	long respostas = 0;
-    	//Vai buscar o Post mais recente depois do end
-    	Post p = this.posts.find_post_by_date(end);
-    	//Se for uma Question incrementa-se a variável perguntas
-    	if(p instanceof Question) perguntas++;
-    	//Se for Answer incrementa-se a variável respostas
-    	else respostas++;
+      long perguntas = 0;
+      long respostas = 0;
+      Post p = null;
+      //Vai buscar o Post mais recente depois do end
+      try {
+        p = this.posts.find_post_by_date(end);
+      }
+      //Acontece caso não existem posts antes da date end (ver documentação da find_post_by_date)
+      catch(PostInexistenteException exc) {
+        return new Pair<>(perguntas,respostas);
+      }
+      //Se for uma Question incrementa-se a variável perguntas
+      if(p instanceof Question) perguntas++;
+      //Se for Answer incrementa-se a variável respostas
+      else respostas++;
 
-    	//Percorre a lista dos Posts da data final até à data inicial
-    	while(this.posts.has_next(p) && (p = this.posts.get_next(p)).getCreationDate().isBefore(begin) == false) {
-    		if(p instanceof Question) perguntas++;
-    		else respostas++;
-    	}
+      //Percorre a lista dos Posts da data final até à data inicial
+      while(this.posts.has_next(p) && (p = this.posts.get_next(p)).getCreationDate().isBefore(begin) == false) {
+        if(p instanceof Question) perguntas++;
+        else respostas++;
+      }
 
-    	if(p.getCreationDate().isBefore(begin) == false) {
-    		if(p instanceof Question) perguntas++;
-    		else respostas++;
-    	}
+      if(p.getCreationDate().isBefore(begin) == false) {
+        if(p instanceof Question) perguntas++;
+        else respostas++;
+      }
         return new Pair<>(perguntas,respostas);
     }
 
@@ -269,19 +286,26 @@ public class Interface implements TADCommunity
         catch(Exception TagInexistenteException){
           return res;
         }
-    	//Vai buscar o Post mais recente depois do end
-        Post p = this.posts.find_post_by_date(end);
-    	//Percorre a lista dos Posts da data final até à data inicial
+        Post p = null;
+        //Vai buscar o Post mais recente depois do end
+        try{
+          p = this.posts.find_post_by_date(end);
+        }
+        //Acontece caso não existem posts antes da date end (ver documentação da find_post_by_date)
+        catch (PostInexistenteException exc) {
+          return res;
+        }
+        //Percorre a lista dos Posts da data final até à data inicial
         while(this.posts.has_next(p) && p.getCreationDate().isBefore(begin) == false){
-        	//Se o Post for uma Question
-        	if(p instanceof Question){
-        		//Verifica se a Question contém a tag fornecida
-        		if(((Question)p).contains_tag(tagid)){
-            		res.add(p.getId());
-            	}
-          	}
-          	//Passa para o próximo Post
-          	p = this.posts.get_next(p);
+          //Se o Post for uma Question
+          if(p instanceof Question){
+            //Verifica se a Question contém a tag fornecida
+            if(((Question)p).contains_tag(tagid)){
+                res.add(p.getId());
+              }
+            }
+            //Passa para o próximo Post
+            p = this.posts.get_next(p);
         }
         return res;
     }
@@ -293,38 +317,44 @@ public class Interface implements TADCommunity
      * @return Par com a shortBio do user e o a Lista dos últimos 10 posts
      */
     public Pair<String, List<Long>> getUserInfo(long id){
-    	//Procura para o user relativo ao ID dado
-    	User u = this.users.find_user(id);
-    	List<Long> post_history = new ArrayList<>();
-    	//Vai buscar a shortBio do user
-    	String bio = u.getShortBio();
-    	int i = 0;
+      //Procura para o user relativo ao ID dado
+      User u = this.users.find_user(id);
+      List<Long> post_history = new ArrayList<>();
+      //Vai buscar a shortBio do user
+      String bio = u.getShortBio();
+      int i = 0;
 
-    	//Caso o utilizador não tenho Posts
-    	if(u.getNr_posts() == 0) return (new Pair<>(bio, post_history));
+      //Caso o utilizador não tenho Posts
+      if(u.getNr_posts() == 0) return (new Pair<>(bio, post_history));
 
-    	//Vai buscar o último Post do utilizador
-    	Post p = this.posts.findPost(u.getLastPost());
+      
+      //Vai buscar o último Post do utilizador
+      Post p = null;
+      try {
+      p = this.posts.findPost(u.getLastPost());
+      }
+      catch (PostInexistenteException exc) {
+        return new Pair<>(bio, post_history);
+      }
+      //Percorre a lista dos posts e sai do while caso se tenha passado por todos os post do user ou caso se tenha já passado por 10 posts 
+      while(i < u.getNr_posts() && i < 10 && this.posts.has_next(p)){
+        //Se o Post foi feito pelo user
+          if(p.getOwnerUserId() == id){
+              post_history.add(p.getId());
+              i++;
+          }
+          //Passa para o post seguinte
+          p = this.posts.get_next(p);
+        }
 
-    	//Percorre a lista dos posts e sai do while caso se tenha passado por todos os post do user ou caso se tenha já passado por 10 posts 
-    	while(i < u.getNr_posts() && i < 10 && this.posts.has_next(p)){
-    		//Se o Post foi feito pelo user
-        	if(p.getOwnerUserId() == id){
-        	  	post_history.add(p.getId());
-          		i++;
-        	}
-        	//Passa para o post seguinte
-       		p = this.posts.get_next(p);
-      	}
+        if(i < 10 && i < u.getNr_posts()){
+          if(p.getOwnerUserId() == id){
+              post_history.add(p.getId());
+          }
+        }
 
-      	if(i < 10 && i < u.getNr_posts()){
-        	if(p.getOwnerUserId() == id){
-          		post_history.add(p.getId());
-        	}
-      	}
-
-      	Pair<String, List<Long>> res = new Pair<>(bio, post_history);
-      	return res;
+        Pair<String, List<Long>> res = new Pair<>(bio, post_history);
+        return res;
     }
 
     /**
@@ -341,7 +371,14 @@ public class Interface implements TADCommunity
         (a2.getScore() - a1.getScore()) : (a1.equals(a2) == true ? 0 : 1)));
         
     	//Vai buscar o Post mais recente depois do end
-        Post p = this.posts.find_post_by_date(end);
+      Post p = null;
+      try {
+        p = this.posts.find_post_by_date(end);
+      }
+      //Acontece caso não existem posts antes da date end (ver documentação da find_post_by_date)
+      catch (PostInexistenteException exc) {
+        return new ArrayList<>();
+      }
 
     	//Percorre a lista dos Posts da data final até à data inicial
         while(this.posts.has_next(p) && p.getCreationDate().isBefore(begin) == false){
@@ -378,7 +415,14 @@ public class Interface implements TADCommunity
         	(q2.getNanswers() - q1.getNanswers()) : (q1.equals(q2) == true ? 0 : 1)));
       	
     	//Vai buscar o Post mais recente depois do end
-      	Post p = this.posts.find_post_by_date(end);
+      Post p = null;
+      try {
+        p = this.posts.find_post_by_date(end);
+      }
+      //Acontece caso não existem posts antes da date end (ver documentação da find_post_by_date)
+      catch (PostInexistenteException exc) {
+        return new ArrayList<>();
+      }
 
     	//Percorre a lista dos Posts da data final até à data inicial
       	while(this.posts.has_next(p) && p.getCreationDate().isBefore(begin) == false){
@@ -444,18 +488,24 @@ public class Interface implements TADCommunity
     	User u2 = this.users.find_user(id2);
     	int n1 = 0;
     	int n2 = 0;
-    	//Vai buscar o último Post do primeiro utilizador
-    	Post p1 = this.posts.findPost(u1.getLastPost());
-    	//Vai buscar o último Post do segundo utilizador
-    	Post p2 = this.posts.findPost(u2.getLastPost());
-    	Post p;
+      Post p = null;
 
-    	if (p1.getCreationDate().isAfter(p2.getCreationDate())) {
-    		p = p1;
-    	}
-    	else {
-    		p = p2;
-    	}
+      try {
+      	//Vai buscar o último Post do primeiro utilizador
+      	Post p1 = this.posts.findPost(u1.getLastPost());
+      	//Vai buscar o último Post do segundo utilizador
+      	Post p2 = this.posts.findPost(u2.getLastPost());
+
+      	if (p1.getCreationDate().isAfter(p2.getCreationDate())) {
+      		p = p1;
+      	}
+      	else {
+      		p = p2;
+      	}
+      }
+      catch (PostInexistenteException exc) {
+        return new ArrayList<>();
+      }
 
     	/*Percorre a lista de posts a partir do último post mais recente. O ciclo para caso te tenha percorrido a lista toda 
     	ou caso se tenha percorrido todos os posts de um dos utilizadores*/
@@ -529,17 +579,17 @@ public class Interface implements TADCommunity
     public long betterAnswer(long id) {
       double scoretemp = 0;
       long idtemp = -1;
-
-      //Caso não exista um post relativo ao ID dado
-      if(this.posts.containsPost(id) == false){
-        return idtemp;
+      Post pergunta = null;
+      Post p = null;
+      try {
+        //Vai buscar o post relativo ao ID dado
+        pergunta = this.posts.findPost(id);
+        //Vai buscar o último post relativo à pergunta
+        p = this.posts.find_post_by_date(((Question) pergunta).getLastActivityDate());
       }
-
-      //Vai buscar o post relativo ao ID dado
-      Post pergunta = this.posts.findPost(id);
-
-      //Vai buscar o último post relativo à pergunta
-      Post p = this.posts.find_post_by_date(((Question) pergunta).getLastActivityDate());
+      catch(PostInexistenteException exc) {
+        return -1;
+      }
 
       //Percorre a lista dos posts até ao post pergunta
       while(p.getId() != id){
@@ -574,9 +624,16 @@ public class Interface implements TADCommunity
       	List bestUsers = this.users.get_N_users_with_most_reputation(N);
       	Map<Integer,Integer> map = new HashMap<>();
       	List<Long> res = new ArrayList<>();
+        Post p = null;
+        try {
+          //Vai buscar o post mais recente depois do end
+          p = this.posts.find_post_by_date(end);
+        }
+        catch(PostInexistenteException exc) {
+          return res;
+      }
 
-      	//Vai buscar o post mais recente depois do end
-	    Post p = this.posts.find_post_by_date(end);
+      	
 
 	    //Percorre a lista dos post entre a data final e a inicial
     	while(this.posts.has_next(p) && (p.getCreationDate().isBefore(begin) == false)) {
