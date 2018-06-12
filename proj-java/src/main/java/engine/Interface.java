@@ -2,6 +2,7 @@ package engine;
 
 import common.MyLog;
 import common.Pair;
+import common.Tag11;
 import common.Post;
 import common.Answer;
 import common.Question;
@@ -401,7 +402,47 @@ public class Interface implements TADCommunity
 
     // Query 11
     public List<Long> mostUsedBestRep(int N, LocalDate begin, LocalDate end) {
-        return Arrays.asList(6L,29L,72L,163L,587L);
+      List bestUsers = this.users.get_N_users_with_most_reputation(N);
+      Map<Integer,Integer> map = new HashMap<>();
+      List<Long> res = new ArrayList<>();
+
+      Post p = this.posts.find_post_by_date(end);
+      while(this.posts.has_next(p) && (p.getCreationDate().isBefore(begin) == false)) {
+        if (p instanceof Question && bestUsers.contains(p.getOwnerUserId())) {
+          Question q = (Question) p;
+          for(Integer tid : q.getTags()) {
+            int n = (map.containsKey(tid) ? map.get(tid) : 0);
+             //System.out.print(n);
+            map.put(tid, n+ 1);
+          }   
+        }
+        p = this.posts.get_next(p);
+      }
+
+      if(p.getCreationDate().isBefore(begin) == false) {
+        if (p instanceof Question && bestUsers.contains(p.getOwnerUserId())) {
+          Question q = (Question) p;
+          for(Integer tid : q.getTags()) {
+            int n = (map.containsKey(tid) ? map.get(tid) : 0);
+          //  System.out.print(n);
+            map.put(tid, n+1);
+          }   
+        }
+      }
+
+
+      int i = 0;
+      Set<Tag11> set = new TreeSet<>();
+      map.keySet().stream().forEach(id -> set.add(new Tag11 ( id, map.get(id))));
+      Iterator<Tag11> iterador = set.iterator();
+      //System.out.print(mapN.size());
+      while(i < N && iterador.hasNext()){
+        Tag11 t = iterador.next();
+        System.out.print(t.getOcorrencias());
+        res.add((long)t.getId());
+        i++;
+      }
+        return res;
     }
 
     public void clear(){
