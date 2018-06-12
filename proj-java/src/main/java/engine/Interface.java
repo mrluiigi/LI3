@@ -38,21 +38,24 @@ import org.xml.sax.helpers.DefaultHandler;
 
 
 /**
- * Write a description of class Main here.
+ * Classe que faz load aos ficheiros .xml e implementa os métodos para cada query
  *
- * @author (your name)
- * @version (a version number or a date)
+ * @author José Pinto (A81317); Luís Correia (A81141); Pedro "Bichão" Barbosa (A82068)
+ * @version 01/06/2018
  */
 
 public class Interface implements TADCommunity
 {
+   /** Posts */
    private Posts posts;
+   /** Users */
    private Users users;
+   /** Tags */
    private Tags tags;
-      //ADICIONAR TAGS
 
    /**
-    * Construtor
+    * Método que permite inicializar a classe Interface
+    * (Construtor vazio)
     */
    public Interface(){
        this.posts = new Posts();
@@ -60,7 +63,9 @@ public class Interface implements TADCommunity
    }
 
    /**
-    * Método para transformar uma String numa data
+    * Método para transformar uma String numa LocalDate
+    * @param data Data em formato String
+    * @return LocalDate 
     */
    public LocalDate createDate(String data){
        int ano = Integer.parseInt(data.substring(0, 4));
@@ -72,6 +77,7 @@ public class Interface implements TADCommunity
 
    /**
     * Método para fazer load ao ficheiro Users.xml
+    * @param dumpPath Path até à pasta do dump
     */
    public void loadUsers(String dumpPath){
        File inputFile = new File(dumpPath + "Users.xml");
@@ -98,6 +104,7 @@ public class Interface implements TADCommunity
 
    /**
     * Método para fazer load ao ficheiro Posts.xml
+    * @param dumpPath Path até à pasta do dump
     */
    public void loadPosts(String dumpPath){
        File inputFile = new File(dumpPath + "Posts.xml");
@@ -125,6 +132,7 @@ public class Interface implements TADCommunity
 
    /**
     * Método para fazer load ao ficheiro Tags.xml
+    * @param dumpPath Path até à pasta do dump
     */
    public void loadTags(String dumpPath){
        File inputFile = new File(dumpPath + "Tags.xml");
@@ -151,6 +159,7 @@ public class Interface implements TADCommunity
 
    /**
     * Método para fazer load aos ficheiros necessários para as queries
+    * @param dumpPath Path até à pasta do dump
     */
    public void load(String dumpPath){
        this.loadTags(dumpPath);
@@ -159,44 +168,76 @@ public class Interface implements TADCommunity
        this.set_users_nr_posts_and_last_post();
    }
 
+   /** 
+    * Método que define o número de posts e o lastPost dos users
+    */
   public void set_users_nr_posts_and_last_post(){
+ 
     for(Post p : this.posts.getList()){
+      //Se o Post possuir ownerUserId
       if(p.hasOwner()){
+      	//Define o lastPost
         this.users.find_and_set_user_lastPost(p.getOwnerUserId(),p.getId());
+        //Incrementa o número de posts
         this.users.find_and_increment_user_nr_posts(p.getOwnerUserId());
       }
     }
   }
 
-   // Query 1
+   /**
+	* QUERY 1
+ 	* Método que dado um ID de um post retorna o título do post e o nome do autor
+ 	* @param id ID do Post
+ 	* @return Um par onde o primeiro elemento é o título do post e o segundo o nome do autor 
+ 	*/
     public Pair<String,String> infoFromPost(long id) {
-      if(this.posts.containsPost(id) == false) return new Pair<>("","");
-      Post p = this.posts.findPost(id);
+    	//Caso ao ID fornecido não corresponder nenhum Post
+    	if(this.posts.containsPost(id) == false) return new Pair<>("","");
+    	//Procura o Post relativo ao ID fornecido
+      	Post p = this.posts.findPost(id);
     	Question q;
+    	//Se o Post for uma Answer
     	if (p instanceof Answer) {
     		Answer a = (Answer) p;
+    		//Vai buscar a Pergunta da Resposta para poder retornar o título desta
     		q = (Question) this.posts.findPost(a.getParentId());
     	}
+    	//Se o Post for uma Question
     	else {
     		q = (Question) p;
     	}
     	return new Pair<>(q.getTitle(), this.users.find_user(q.getOwnerUserId()).getName());
     }
 
-    // Query 2
+    /**
+ 	 * QUERY 2
+ 	 * Método que retorna os N utilizadores com maior número de posts de sempre
+ 	 * @param N Número dos utilizadores que deseja obter
+ 	 * @return Lista com os utilizadores
+ 	 */
     public List<Long> topMostActive(int N) {
         if (N == 0) return new ArrayList<>();
         return this.users.get_N_users_with_most_nr_posts(N);
     }
 
-    // Query 3
+    /**
+     * QUERY 3
+ 	 * Método que retorna o número total de posts num certo intervalo de tempo
+ 	 * @param begin Data inicial
+ 	 * @param end Data final
+ 	 * @return Par com o número de perguntas e respostas respetivamente
+ 	 */
     public Pair<Long,Long> totalPosts(LocalDate begin, LocalDate end) {
     	long perguntas = 0;
     	long respostas = 0;
+    	//Vai buscar o Post mais recente depois do end
     	Post p = this.posts.find_post_by_date(end);
+    	//Se for uma Question incrementa-se a variável perguntas
     	if(p instanceof Question) perguntas++;
+    	//Se for Answer incrementa-se a variável respostas
     	else respostas++;
 
+    	//Percorre a lista dos Posts da data final até à data inicial
     	while(this.posts.has_next(p) && (p = this.posts.get_next(p)).getCreationDate().isBefore(begin) == false) {
     		if(p instanceof Question) perguntas++;
     		else respostas++;
@@ -209,76 +250,118 @@ public class Interface implements TADCommunity
         return new Pair<>(perguntas,respostas);
     }
 
-    // Query 4
+    /**
+     * QUERY 4
+     * Método que retorna todas as perguntas num certo intervalo de tempo contendo uma determinada tag  
+     * @param tag Tag
+     * @param begin Data inicial
+     * @param end Data final
+     * @return Lista dos IDs das Question
+     */
     public List<Long> questionsWithTag(String tag, LocalDate begin, LocalDate end) {
         List<Long> res = new ArrayList<>();
         int tagid;
+        //Vai buscar o ID da tag
         try{
           tagid = this.tags.convert_tag_name_to_id(tag);
         }
+        //Se não existir a tag fornecida retorna-se uma List vazia
         catch(Exception TagInexistenteException){
           return res;
         }
+    	//Vai buscar o Post mais recente depois do end
         Post p = this.posts.find_post_by_date(end);
+    	//Percorre a lista dos Posts da data final até à data inicial
         while(this.posts.has_next(p) && p.getCreationDate().isBefore(begin) == false){
-          if(p instanceof Question){
-            if(((Question)p).contains_tag(tagid)){
-              res.add(p.getId());
-            }
-          }
-          p = this.posts.get_next(p);
+        	//Se o Post for uma Question
+        	if(p instanceof Question){
+        		//Verifica se a Question contém a tag fornecida
+        		if(((Question)p).contains_tag(tagid)){
+            		res.add(p.getId());
+            	}
+          	}
+          	//Passa para o próximo Post
+          	p = this.posts.get_next(p);
         }
         return res;
     }
 
-    // Query 5
+    /**
+     * QUERY 5
+     * Método que devolve a informação do perfil e os IDs dos últimos 10 posts de um certo utilizador
+     * @param id ID do utilizador
+     * @return Par com a shortBio do user e o a Lista dos últimos 10 posts
+     */
     public Pair<String, List<Long>> getUserInfo(long id){
-      User u = this.users.find_user(id);
-      List<Long> post_history = new ArrayList<>();
-      String bio = u.getShortBio();
-      int i = 0;
+    	//Procura para o user relativo ao ID dado
+    	User u = this.users.find_user(id);
+    	List<Long> post_history = new ArrayList<>();
+    	//Vai buscar a shortBio do user
+    	String bio = u.getShortBio();
+    	int i = 0;
 
-      if(u.getNr_posts() == 0) return (new Pair<>(bio, post_history));
+    	//Caso o utilizador não tenho Posts
+    	if(u.getNr_posts() == 0) return (new Pair<>(bio, post_history));
 
-      Post p = this.posts.findPost(u.getLastPost());
+    	//Vai buscar o último Post do utilizador
+    	Post p = this.posts.findPost(u.getLastPost());
 
-      while(i < u.getNr_posts() && i < 10 && this.posts.has_next(p)){
-        if(p.getOwnerUserId() == id){
-          post_history.add(p.getId());
-          i++;
-        }
-        p = this.posts.get_next(p);
-      }
+    	//Percorre a lista dos posts e sai do while caso se tenha passado por todos os post do user ou caso se tenha já passado por 10 posts 
+    	while(i < u.getNr_posts() && i < 10 && this.posts.has_next(p)){
+    		//Se o Post foi feito pelo user
+        	if(p.getOwnerUserId() == id){
+        	  	post_history.add(p.getId());
+          		i++;
+        	}
+        	//Passa para o post seguinte
+       		p = this.posts.get_next(p);
+      	}
 
-      if(i < 10 && i < u.getNr_posts()){
-        if(p.getOwnerUserId() == id){
-          post_history.add(p.getId());
-        }
-      }
+      	if(i < 10 && i < u.getNr_posts()){
+        	if(p.getOwnerUserId() == id){
+          		post_history.add(p.getId());
+        	}
+      	}
 
-      Pair<String, List<Long>> res = new Pair<>(bio, post_history);
-      return res;
+      	Pair<String, List<Long>> res = new Pair<>(bio, post_history);
+      	return res;
     }
 
-    // Query 6
+    /**
+     * QUERY 6
+     * Método que devolve os IDs das N respostas com mais votos num dado intervalo de tempo
+     * @param N Número de respostas desejadas
+     * @param begin Data inicial
+     * @param end Data final
+     * @return Lista dos IDs das respostas
+     */
     public List<Long> mostVotedAnswers(int N, LocalDate begin, LocalDate end) {
-      Set<Answer> ans = new TreeSet<>((Answer a1, Answer a2) -> ((a2.getScore() - a1.getScore() != 0) ?
+    	//Declara o Set passado um comparador que ordena por ordem decrescente de Score
+    	Set<Answer> ans = new TreeSet<>((Answer a1, Answer a2) -> ((a2.getScore() - a1.getScore() != 0) ?
         (a2.getScore() - a1.getScore()) : (a1.equals(a2) == true ? 0 : 1)));
+        
+    	//Vai buscar o Post mais recente depois do end
         Post p = this.posts.find_post_by_date(end);
+
+    	//Percorre a lista dos Posts da data final até à data inicial
         while(this.posts.has_next(p) && p.getCreationDate().isBefore(begin) == false){
-          if(p instanceof Answer){
-            ans.add((Answer) p);
-          }
-          p = this.posts.get_next(p);
+        	//Se o Post for uma Answer adiciona ao ans
+        	if(p instanceof Answer){
+            	ans.add((Answer) p);
+          	}
+          	//Passa para o próximo Post
+          	p = this.posts.get_next(p);
         }
-      int i = 0;
-      List<Long> res = new ArrayList<>();
-      Iterator<Answer> iterador = ans.iterator();
-      while(i < N && iterador.hasNext()){
-        res.add(iterador.next().getId());
-        i++;
-      }
-      return res;
+      	int i = 0;
+      	List<Long> res = new ArrayList<>();
+      	Iterator<Answer> iterador = ans.iterator();
+      	
+      	//Adiciona à lista a retornar N IDs das respostas
+      	while(i < N && iterador.hasNext()){
+        	res.add(iterador.next().getId());
+        	i++;
+      	}
+      	return res;
     }
 
     // Query 7
