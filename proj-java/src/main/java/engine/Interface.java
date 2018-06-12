@@ -308,7 +308,17 @@ public class Interface implements TADCommunity
 
     // Query 8
     public List<Long> containsWord(int N, String word) {
-        return Arrays.asList(980835L,979082L,974117L,974105L,973832L,971812L,971056L,968451L,964999L,962770L);
+        List<Long> res = new ArrayList<>();
+        int i = 0;
+        for(Post p : this.posts.getList()){
+          if(p instanceof Question){
+            if(((Question) p).getTitle().contains(word) && i < N){
+               res.add(p.getId());
+               i++;
+            }
+          }
+        }
+        return res;
     }
 
     // Query 9
