@@ -151,7 +151,7 @@ public class Posts
         return this.list.get(this.hash.get(id));
     }
 
-    public Boolean findPostBool(long id){
+    public Boolean containsPost(long id){
         if(this.hash.containsKey(id)){
             return true;
         }

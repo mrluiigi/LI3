@@ -387,7 +387,7 @@ public class Interface implements TADCommunity
     public long betterAnswer(long id) {
       double scoretemp = 0;
       long idtemp = -1;
-      if(this.posts.findPostBool(id) == false){
+      if(this.posts.containsPost(id) == false){
         return idtemp;
       }
       Post pergunta = this.posts.findPost(id);
