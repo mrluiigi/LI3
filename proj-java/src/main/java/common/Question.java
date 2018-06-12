@@ -5,6 +5,12 @@ import java.util.HashMap;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Classe que guarda informação sobre uma Question
+ *
+ * @author José Pinto (A81317); Luís Correia (A81141); Pedro Barbosa (A82068) // Grupo 26
+ * @version 30/05/2018
+ */
 public class Question extends Post{
 	/** Título */
 	private String title;
@@ -16,8 +22,17 @@ public class Question extends Post{
 	private LocalDate lastActivityDate;
 
 	/**
-	* Construtor parametrizado
-	*/
+	 * Método que permite inicializar a classe dos Posts
+	 * (Construtor parametrizado)
+	 * @param title Título da Pergunta
+     * @param nanswers Número de respostas
+     * @param tags Lista das tags
+     * @param lastActivityDate Data da última atividade
+     * @param postTypeId  Tipo do Post
+   	 * @param id  ID do Post
+   	 * @param ownerUserId Id do user que fez a pergunta
+   	 * @param creationDate Data da criação do Post
+	 */
 	public Question(String title, int nanswers, List<Integer> tags, LocalDate lastActivityDate,
 									char postTypeId, long id, long ownerUserId, LocalDate creationDate){
 		super(postTypeId, id, ownerUserId, creationDate);
@@ -28,8 +43,11 @@ public class Question extends Post{
 	}
 
 	/**
-	* Construtor por cópia
-	*/
+	 * Método que permite inicializar a classe Question recebendo como 
+     * parâmetro uma classe Question 
+	 * (Construtor por cópia)
+	 * @param q Question
+	 */
 	public Question(Question q){
 		super(q);
 		this.title = q.getTitle();
@@ -39,56 +57,64 @@ public class Question extends Post{
 	}
 
 	/**
-	* Devolve o titulo de uma pergunta
+	* Método que devolve o titulo de uma pergunta
+	* @return String Título da Pergunta
 	*/
 	public String getTitle(){
 		return this.title;
 	}
 
 	/**
-	* Devolve o número de respostas
+	* Método que devolve o número de respostas
+	* @return  nanswers Número de respostas
 	*/
 	public int getNanswers(){
 		return this.nanswers;
 	}
 
 	/**
-	* Devolve as tags de uma pergunta
+	* Método que evolve as tags de uma pergunta
+	* @return tags Lista das tags
 	*/
 	public List<Integer> getTags(){
 		return this.tags;
 	}
 
 	/**
-	* Devolve a data da útlima atividade de uma pergunta
+	* Método que devolve a data da útlima atividade de uma pergunta.
+	* @return lastActivityDate Data da última atividade
 	*/
 	public LocalDate getLastActivityDate(){
 		return this.lastActivityDate;
 	}
 
 	/**
-	* Define o titulo de uma pergunta
+	* Método que define o titulo de uma pergunta
+	* @param String Título da Pergunta
 	*/
 	public void setTitle(String title){
 		this.title = title;
 	}
 
 	/**
-	* Define o número de respostas de uma pergunta
+	* Método que define o número de respostas de uma pergunta
+	* @param nanswers Número de respostas
 	*/
 	public void setNanswers(int nanswers){
 		this.nanswers = nanswers;
 	}
 
 	/**
-	* Define as tasgs de uma pergunta
+	* Método que define as tasgs de uma pergunta
+	* @param tags Lista das tags
 	*/
 	public void setTags(List<Integer> tags){
 		this.tags = tags;
 	}
 
 	/**
-	* Define a data da última atividade de uma pergunta
+	* Método que define a data da última atividade de uma pergunta
+	* @param lastActivityDate Data da última atividade
 	*/
 	public void setLastActivityDate(LocalDate lastActivityDate){
 		this.lastActivityDate = lastActivityDate;
@@ -96,6 +122,7 @@ public class Question extends Post{
 
 	/**
 	* Método que imprime a representação textual do objeto
+	* @return String
 	*/
 	public String toString(){
 		return (super.toString() +
@@ -106,7 +133,8 @@ public class Question extends Post{
 	}
 
 	/**
-	* Verifica se dois posts são iguais
+	* Método que verifica se dois posts são iguais
+	* @return true se forem iguais, false caso contrário
 	*/
 	public boolean equals(Object o){
 		if(o == this) return true;
@@ -120,14 +148,17 @@ public class Question extends Post{
 	}
 
 	/**
-	* Devolve uma cópia da classe
+	* Método que devolve uma cópia da classe
+	* @return Question
 	*/
 	public Question clone(){
 		return new Question(this);
 	}
 
 	/**
-	* Verifica se uma resposta contém uma dada tag
+	* Método que verifica se uma resposta contém uma dada tag
+	* @param tagId ID da tag
+	* @return true se existir essa tag, false caso contrário
 	*/
 	public boolean contains_tag(int tagId){
 		return this.tags.contains(tagId);
