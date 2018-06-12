@@ -386,8 +386,13 @@ public class Interface implements TADCommunity
 
     public long betterAnswer(long id) {
       double scoretemp = 0;
-      long idtemp = 0;
-      for(Post p : this.posts.getList()){
+      long idtemp = -1;
+      if(this.posts.findPostBool(id) == false){
+        return idtemp;
+      }
+      Post pergunta = this.posts.findPost(id);
+      Post p = this.posts.find_post_by_date(((Question) pergunta).getLastActivityDate());
+      while(p.getId() != id){
         if(p instanceof Answer){
           if(((Answer) p).getParentId() == id){
             if(calculatesScore(p, this.users.find_user(p.getOwnerUserId())) > scoretemp){
@@ -396,6 +401,7 @@ public class Interface implements TADCommunity
             }
           }
         }
+        p = this.posts.get_next(p);
       }
       return idtemp;
     }

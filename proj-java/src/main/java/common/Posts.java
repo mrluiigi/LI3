@@ -151,6 +151,13 @@ public class Posts
         return this.list.get(this.hash.get(id));
     }
 
+    public Boolean findPostBool(long id){
+        if(this.hash.containsKey(id)){
+            return true;
+        }
+        return false;
+    }
+
     /**
       * Método que converte a CreationDate do XML numa key para ser usada na monthshash.
       * @param date
