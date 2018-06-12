@@ -85,7 +85,7 @@ public class Users{
    * @return Set<User> Utilizadores ordenados de acordo com o comparador passado
    */
   public Set<User> sort_users(Comparator<User> c) {
-    Set<User> res = new TreeSet(c);
+    Set<User> res = new TreeSet<>(c);
     //Para todas as chaves do Map
     for(long i : this.users.keySet()){
       //Adiciona o valor dessa chave ao Set

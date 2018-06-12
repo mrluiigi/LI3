@@ -452,21 +452,24 @@ public class Interface implements TADCommunity
 	 * @param word Palavra a verificar se o título contém
 	 * @return Devolve a lista das N perguntas
 	 */
-    //FALTA ACABAR DE DOCUMENTAR
     public List<Long> containsWord(int N, String word) {
         List<Long> res = new ArrayList<>();
         int i = 0;
 
-
-        for(Post p : this.posts.getList()){
-          if(p instanceof Question){
-            if(((Question) p).getTitle().contains(word) && i < N){
-               res.add(p.getId());
-               i++;
-            }
+         Post p = this.posts.get_next();
+        //Percorre a lista enquanto não encontrar N e não chegar ao fim
+        while(i < N && this.posts.has_next(p)){
+        //Se o Post é uma pergunrta e contêm a palavra no título adiciona à lista
+            if(p instanceof Question){
+              if(((Question) p).getTitle().contains(word) && i < N){
+                  res.add(p.getId());
+                  i++;
+              }
           }
-        }
-        return res;
+            //Passa para o post seguinte
+            p = this.posts.get_next(p);
+      }
+      return res;
     }
 
 	/**

@@ -31,7 +31,7 @@ public class Posts
      * (Construtor por omissão)
      */
     public Posts(){
-        this.list = new ArrayList();
+        this.list = new ArrayList<>();
         this.n = 0;
         this.hash = new HashMap<>();
         this.monthsHash = new HashMap<>();
@@ -317,6 +317,14 @@ public class Posts
         //Vai buscar a posição do Post passado como argumento
         int i = this.hash.get(p.getId());
         return this.list.get(i+1);
+    }
+
+    /**
+     * Método que devolve o primeiro elemento da lista
+     * @return Post Primeiro post da lista
+     */
+    public Post get_next() {
+        return this.list.get(0);
     }
 
     /**
