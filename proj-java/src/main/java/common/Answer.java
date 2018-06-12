@@ -29,8 +29,8 @@ public class Answer extends Post{
 	}
 
 	/**
-	* Método que permite inicializar a classe dos Posts recebendo como 
-    * parâmetro uma classe Posts 
+	* Método que permite inicializar a classe Answer recebendo como 
+    * parâmetro uma classe Answer 
 	* (Construtor por cópia)
 	* @param a Answer
 	*/

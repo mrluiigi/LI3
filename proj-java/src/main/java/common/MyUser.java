@@ -1,5 +1,12 @@
 package common;
 
+/**
+ * Classe que guarda informação sobre um utilizador
+ *
+ * @author José Pinto (A81317); Luís Correia (A81141); Pedro Barbosa (A82068) // Grupo 26
+ * @version 30/05/2018
+ */
+
 public class MyUser{
   /** ID do user */
   private long id;
@@ -17,7 +24,14 @@ public class MyUser{
 
 
   /**
-   *  Construtor parametrizado
+   * Método que permite inicializar a classe dos Posts
+   * (Construtor parametrizado)
+   * @param id ID do utilizador
+   * @param name Nome do utilizador
+   * @param shortBio String da shortBio do utilizador
+   * @param nr_posts Número de Posts do utilizador
+   * @param lastPost LastPost do utilizador
+   * @param reputation Reputação do utilizador
    */
   public MyUser(long id, String name, String shortBio, int nr_posts, long lastPost, int reputation){
     this.id = id;
@@ -28,7 +42,10 @@ public class MyUser{
     this.reputation = reputation;
   }
   /**
-    * Construtor por cópia
+    * Método que permite inicializar a classe MyUser recebendo como 
+    * parâmetro uma classe MyUser 
+    * (Construtor por cópia)
+    * @param u MyUser
     */
   public MyUser(MyUser u){
     this.id = u.getId();
@@ -40,64 +57,72 @@ public class MyUser{
   }
 
   /**
-   * Devolve o ID do utilizador
+   * Método que devolve o ID do utilizador
+   * @return long ID do utilizador
    */
   public long getId() {
   	return this.id;
   }
 
   /**
-   * Devolve o nome do utilizador
+   * Método que devolve o nome do utilizador
+   * @return String Nome do utilizador
    */
   public String getName() {
   	return this.name;
   }
 
   /**
-   * Devolve a shortBio do utilizador
+   * Método que devolve a shortBio do utilizador
+   * @return String ShortBio do utilizador
    */
   public String getShortBio() {
   	return this.shortBio;
   }
 
-  //VERIFICAR FUNÇAO
   /**
-   * Define o lastPost de um utilizador
+   * Método que define o lastPost de um utilizador
+   * @param postID Último PostID
    */
   public void setLastPost(long postId){
     if(this.lastPost == 0) this.lastPost = postId;
   }
 
   /**
-   * Devolve o número de posts de um utilizador
+   * Método que devolve o número de posts de um utilizador
+   *@return int Número de posts do utilizador
    */
   public int getNr_posts() {
   	return this.nr_posts;
   }
 
   /**
-   * Devolve o lastPost de um utilizador
+   * Método que devolve o lastPost de um utilizador
+   * @return long Último post do utilizador
    */
   public long getLastPost() {
   	return this.lastPost;
   }
 
   /**
-   * Devolve a reputação de um utilizador
+   * Método que devolve a reputação de um utilizador
+   * @return int Reputação
    */
   public int getReputation() {
   	return this.reputation;
   }
 
   /**
-   * Incrementa o número de posts de um utilizador
+   * Método que incrementa o número de posts de um utilizador
    */
   public void increment_nr_posts() {
   	this.nr_posts += 1;
   }
 
   /**
-    * Verifica se dois utilizadores são iguais
+    * Método que verifica se dois utilizadores são iguais
+    * @param o Object
+    * @return true se forem iguais, false caso contrário
     */
   public boolean equals(Object o){
     if(o == this) return true;
@@ -113,7 +138,8 @@ public class MyUser{
   }
 
   /**
-   * Devolve uma string representativa da classe
+   * Método que devolve uma string representativa da classe
+   * @return String
    */
   public String toString(){
     return "Id: " + this.id + "\n" +
@@ -125,7 +151,8 @@ public class MyUser{
   }
 
   /**
-    * Devolve uma cópia da classe
+    * Método que devolve uma cópia da classe
+    * @return MyUser
     */
   public MyUser clone(){
     return new MyUser(this);
