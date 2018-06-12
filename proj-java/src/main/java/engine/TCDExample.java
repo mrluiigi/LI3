@@ -28,21 +28,19 @@ public class TCDExample implements TADCommunity {
     public void load(String dumpPath) {
         File inputFile = new File(dumpPath);
         try {
-
-        DocumentBuilderFactory dbFactory
-                = DocumentBuilderFactory.newInstance();
-
-        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-
-        Document doc = null;
-
+            DocumentBuilderFactory dbFactory= DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = null;
             doc = dBuilder.parse(inputFile);
             doc.getDocumentElement().normalize();
-        } catch (SAXException e) {
+        }
+        catch (SAXException e) {
             e.printStackTrace();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             e.printStackTrace();
-        } catch (ParserConfigurationException e) {
+        }
+        catch (ParserConfigurationException e) {
             e.printStackTrace();
         }
     }

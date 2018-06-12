@@ -15,8 +15,7 @@ import java.time.LocalDate;
  * @author José Pinto (A81317); Luís Correia (A81141); Pedro Barbosa (A82068) // Grupo 26
  * @version 01/06/2018
  */
-public class Posts
-{
+public class Posts{
     /** Lista dos posts do mais recente para o mais antigo */
     private List<Post> list;
     /** Número de posts */
@@ -186,7 +185,7 @@ public class Posts
      * @return Vazio
      */
     public void finalize(){
-    	int i = 0;
+        int i = 0;
         //Ordena a list do mais recente para o mais antigo
         this.list.sort( null);
 

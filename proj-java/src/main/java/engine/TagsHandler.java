@@ -15,44 +15,43 @@ import java.util.HashMap;
  * @version 11/06/2018
  */
 public class TagsHandler extends DefaultHandler {
-  /** Tags */
-  public Tags tags;
+    /** Tags */
+    public Tags tags;
 
 
-  /**
-    * Método que permite inicializar a classe TagsHandler
-    * (Construtor vazio)
-    */
-  public TagsHandler() {
-    this.tags = new Tags();
-  }
-
-  /** 
-    * Método para devolver um LocalDate dado uma data em forma de String
-    * @param data Data em formato String
-    * @return LocalDate 
-    */
-  public LocalDate createDate(String data){
-    int ano = Integer.parseInt(data.substring(0, 4));
-    int mes = Integer.parseInt(data.substring(5, 7));
-    int dia = Integer.parseInt(data.substring(8, 10));
-    LocalDate res = LocalDate.of(ano, mes, dia);
-    return res;
-  }
-   
-   
-  /**
-    * Carrega para a estrutura das tags todos as tags presentes no ficheiro
-    */
-  @Override
-  public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {  
-    //Se a linha começar por "row"
-    if (qName.equals("row")){
-      String tag_name = attributes.getValue("TagName");
-      int tag_id = Integer.parseInt(attributes.getValue("Id"));
-      //Adiciona a Tag às tags
-      this.tags.insert_tag(tag_name, tag_id);
+    /**
+     * Método que permite inicializar a classe TagsHandler
+     * (Construtor vazio)
+     */
+    public TagsHandler() {
+        this.tags = new Tags();
     }
-  }
-  
+
+    /** 
+     * Método para devolver um LocalDate dado uma data em forma de String
+     * @param data Data em formato String
+     * @return LocalDate 
+     */
+    public LocalDate createDate(String data){
+        int ano = Integer.parseInt(data.substring(0, 4));
+        int mes = Integer.parseInt(data.substring(5, 7));
+        int dia = Integer.parseInt(data.substring(8, 10));
+        LocalDate res = LocalDate.of(ano, mes, dia);
+        return res;
+    }
+
+
+    /**
+     * Carrega para a estrutura das tags todos as tags presentes no ficheiro
+     */
+    @Override
+    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {  
+        //Se a linha começar por "row"
+        if (qName.equals("row")){
+            String tag_name = attributes.getValue("TagName");
+            int tag_id = Integer.parseInt(attributes.getValue("Id"));
+            //Adiciona a Tag às tags
+            this.tags.insert_tag(tag_name, tag_id);
+        }
+    }
 }
