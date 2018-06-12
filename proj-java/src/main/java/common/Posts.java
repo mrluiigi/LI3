@@ -9,6 +9,12 @@ import java.util.stream.Collectors;
 import java.time.LocalDate;
 
 
+/**
+ * Classe que guarda informação sobre os Posts
+ *
+ * @author José Pinto (A81317); Luís Correia (A81141); Pedro Barbosa (A82068) // Grupo 26
+ * @version 01/06/2018
+ */
 public class Posts
 {
     /** Lista dos posts do mais recente para o mais antigo */
@@ -45,7 +51,7 @@ public class Posts
 
     /**
      * Método que devolve uma List com todos os Posts
-     * @return List Post
+     * @return List<Post> 
      */
     public List<Post> getList(){
         return this.list.stream().map(Post::clone).collect(Collectors.toList());
@@ -53,7 +59,7 @@ public class Posts
 
     /**
      * Método que devolve o Map da hash.
-     * @return Map Integer
+     * @return Map<Long, Integer>
      */
     public Map<Long, Integer> getHash(){
         Map<Long, Integer> res = new HashMap<>();
@@ -63,7 +69,7 @@ public class Posts
 
     /**
      * Método que devolve o Map da monthsHash.
-     * @return Map Integer
+     * @return Map<Integer, Integer>
      */
     public Map<Integer, Integer> getMonthsHash(){
         Map<Integer, Integer> res = new HashMap<>();
@@ -73,7 +79,7 @@ public class Posts
 
     /**
      * Método que define a list passado uma List como argumento
-     * @param list
+     * @param list Lista dos Posts
      * @return Vazio
      */
     public void setList(List<Post> list){
@@ -83,7 +89,7 @@ public class Posts
 
     /**
      * Método que define o hash passado um Map como argumento
-     * @param hash
+     * @param hash Map
      * @return Vazio
      */
     public void setHash(Map<Long, Integer> hash){
@@ -93,7 +99,7 @@ public class Posts
 
     /**
      * Método que define a monthsHash passado um Map como argumento
-     * @param months
+     * @param monthsMap
      * @return Vazio
      */
     public void setMonthsHash(Map<Integer, Integer> months){
@@ -111,14 +117,14 @@ public class Posts
 
     /**
      * Método que adiciona uma pergunta à list dos posts
-     * @param title
-     * @param nanswers
-     * @param tags
-     * @param lastActivityDate
-     * @param postTypeId
-     * @param id
-     * @param ownerUserId
-     * @param creationDate
+     * @param title Título da Pergunta
+     * @param nanswers Número de respostas
+     * @param tags Lista das tags
+     * @param lastActivityDate Data da última atividade
+     * @param postTypeId    Tipo do Post
+     * @param id ID do Post
+     * @param ownerUserId Id do user que fez a pergunta
+     * @param creationDate Data da criação do Post
      */
     public void addQuestion(String title, int nanswers, List<Integer> tags, LocalDate lastActivityDate,
                             char postTypeId, long id, long ownerUserId, LocalDate creationDate){
@@ -128,13 +134,13 @@ public class Posts
 
     /**
      * Método que adiciona uma resposta à list dos posts
-     * @param parentId
-     * @param comments
-     * @param score
-     * @param postTypeId
-     * @param id
-     * @param ownerUserId
-     * @param creationDate
+     * @param parentId ID do user que fez a pergunta
+     * @param comments Número de comentários
+     * @param score Score
+     * @param postTypeId Tipo do Post
+     * @param id ID do Post
+     * @param ownerUserId ID do user que fez a pergunta
+     * @param creationDate Data da criação do Post
      */
     public void addAnswer(int parentId, int comments, int score, char postTypeId,
                           long id, long ownerUserId, LocalDate creationDate){
@@ -144,13 +150,18 @@ public class Posts
 
     /**
      * Método que devolve um Post dado o id desse Post.
-     * @param id
+     * @param id ID do Post
      * @return Post
      */
     public Post findPost(long id){
         return this.list.get(this.hash.get(id));
     }
 
+    /**
+     * Método que verifica se existe um certo Post dado o seu ID
+     * @param id ID do post
+     * @return true se o Post existe, false se não existir
+     */
     public Boolean containsPost(long id){
         if(this.hash.containsKey(id)){
             return true;

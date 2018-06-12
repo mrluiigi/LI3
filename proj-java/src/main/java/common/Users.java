@@ -10,7 +10,12 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.stream.Collectors;
 
-
+/**
+ * Classe que guarda informação sobre os Users
+ *
+ * @author José Pinto (A81317); Luís Correia (A81141); Pedro Barbosa (A82068) // Grupo 26
+ * @version 31/05/2018
+ */
 public class Users{
   /** Map que guarda os Users. A chave é o ID do user e o valor é um MyUser com a informação relativa a esse user */
   private Map<Long, MyUser> users;
@@ -60,7 +65,7 @@ public class Users{
 
   /**
    * Método que devolve uma string representativa da classe
-   * @return String
+   * @return String 
    */
   public String toString(){
     return this.users.values().stream().map(u -> u.toString()).collect(Collectors.joining("\n"));
