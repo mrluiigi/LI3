@@ -22,9 +22,8 @@ public class MyUser{
   private int reputation;
 
 
-
   /**
-   * Método que permite inicializar a classe dos Posts
+   * Método que permite inicializar a classe do MyUser
    * (Construtor parametrizado)
    * @param id ID do utilizador
    * @param name Nome do utilizador
