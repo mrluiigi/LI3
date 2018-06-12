@@ -2,13 +2,7 @@ package engine;
 
 import common.MyLog;
 import common.Pair;
-import common.Tag11;
-import common.Post;
-import common.Answer;
-import common.Question;
-import common.Posts;
-import common.MyUser;
-import common.Users;
+
 import li3.TADCommunity;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -175,9 +169,9 @@ public class Interface implements TADCommunity
   }
 
    // Query 1
-   //long ->int??
     public Pair<String,String> infoFromPost(long id) {
-    	Post p = this.posts.findPost((int)id);
+      if(this.posts.containsPost(id) == false) return new Pair<>("","");
+      Post p = this.posts.findPost(id);
     	Question q;
     	if (p instanceof Answer) {
     		Answer a = (Answer) p;
@@ -191,6 +185,7 @@ public class Interface implements TADCommunity
 
     // Query 2
     public List<Long> topMostActive(int N) {
+        if (N == 0) return new ArrayList<>();
         return this.users.get_N_users_with_most_nr_posts(N);
     }
 
@@ -238,7 +233,7 @@ public class Interface implements TADCommunity
 
     // Query 5
     public Pair<String, List<Long>> getUserInfo(long id){
-      MyUser u = this.users.find_user(id);
+      User u = this.users.find_user(id);
       List<Long> post_history = new ArrayList<>();
       String bio = u.getShortBio();
       int i = 0;
@@ -328,8 +323,8 @@ public class Interface implements TADCommunity
     	List<Long> queuque2 = new LinkedList<>();
     	List<Long> queuquef = new LinkedList<>();
     	List<Long> res = new ArrayList<>();
-    	MyUser u1 = this.users.find_user(id1);
-    	MyUser u2 = this.users.find_user(id2);
+    	User u1 = this.users.find_user(id1);
+    	User u2 = this.users.find_user(id2);
     	int n1 = 0;
     	int n2 = 0;
     	Post p1 = this.posts.findPost(u1.getLastPost());
@@ -380,7 +375,7 @@ public class Interface implements TADCommunity
     }
 
     // Query 10
-    public double calculatesScore(Post ans, MyUser user){
+    public double calculatesScore(Post ans, User user){
       return ((Answer)ans).getScore()*0.45 + user.getReputation()*0.25 + ((Answer)ans).getScore()*0.2 + ((Answer) ans).getComments()*0.1;
     }
 

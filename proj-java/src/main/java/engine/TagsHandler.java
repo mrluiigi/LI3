@@ -4,10 +4,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import common.Post;
-import common.Answer;
-import common.Question;
-import common.Posts;
 import java.time.LocalDate;
 import java.util.HashMap;
 

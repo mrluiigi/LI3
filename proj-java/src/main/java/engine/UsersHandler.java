@@ -4,8 +4,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import common.MyUser;
-import common.Users;
 import java.time.LocalDate;
 import java.util.HashMap;
 

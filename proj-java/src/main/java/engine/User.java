@@ -1,4 +1,4 @@
-package common;
+package engine;
 
 /**
  * Classe que guarda informação sobre um utilizador
@@ -7,7 +7,7 @@ package common;
  * @version 30/05/2018
  */
 
-public class MyUser{
+public class User{
   /** ID do user */
   private long id;
   /** Nome do utilizador */
@@ -23,7 +23,7 @@ public class MyUser{
 
 
   /**
-   * Método que permite inicializar a classe do MyUser
+   * Método que permite inicializar a classe do User
    * (Construtor parametrizado)
    * @param id ID do utilizador
    * @param name Nome do utilizador
@@ -32,7 +32,7 @@ public class MyUser{
    * @param lastPost LastPost do utilizador
    * @param reputation Reputação do utilizador
    */
-  public MyUser(long id, String name, String shortBio, int nr_posts, long lastPost, int reputation){
+  public User(long id, String name, String shortBio, int nr_posts, long lastPost, int reputation){
     this.id = id;
     this.name = name;
     this.shortBio = shortBio;
@@ -41,12 +41,12 @@ public class MyUser{
     this.reputation = reputation;
   }
   /**
-    * Método que permite inicializar a classe MyUser recebendo como 
-    * parâmetro uma classe MyUser 
+    * Método que permite inicializar a classe User recebendo como 
+    * parâmetro uma classe User 
     * (Construtor por cópia)
-    * @param u MyUser
+    * @param u User
     */
-  public MyUser(MyUser u){
+  public User(User u){
     this.id = u.getId();
     this.name = u.getName();
     this.shortBio = u.getShortBio();
@@ -127,7 +127,7 @@ public class MyUser{
     if(o == this) return true;
     if(o == null || o.getClass() != this.getClass()) return false;
 
-    MyUser u = (MyUser) o;
+    User u = (User) o;
     return this.id == u.getId() &&
            this.name.equals(u.getName()) &&
            this.shortBio.equals(u.getShortBio()) &&
@@ -151,9 +151,9 @@ public class MyUser{
 
   /**
     * Método que devolve uma cópia da classe
-    * @return MyUser
+    * @return User
     */
-  public MyUser clone(){
-    return new MyUser(this);
+  public User clone(){
+    return new User(this);
   }
 }
