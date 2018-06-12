@@ -379,8 +379,24 @@ public class Interface implements TADCommunity
     }
 
     // Query 10
+    public double calculatesScore(Post ans, MyUser user){
+      return ((Answer)ans).getScore()*0.45 + user.getReputation()*0.25 + ((Answer)ans).getScore()*0.2 + ((Answer) ans).getComments()*0.1;
+    }
+
     public long betterAnswer(long id) {
-        return 175891;
+      double scoretemp = 0;
+      long idtemp = 0;
+      for(Post p : this.posts.getList()){
+        if(p instanceof Answer){
+          if(((Answer) p).getParentId() == id){
+            if(calculatesScore(p, this.users.find_user(p.getOwnerUserId())) > scoretemp){
+              scoretemp = calculatesScore(p, this.users.find_user(p.getOwnerUserId()));
+              idtemp = p.getId();
+            }
+          }
+        }
+      }
+      return idtemp;
     }
 
     // Query 11
