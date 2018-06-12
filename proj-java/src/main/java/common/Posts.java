@@ -134,7 +134,7 @@ public class Posts
 
     /**
      * Método que adiciona uma resposta à list dos posts
-     * @param parentId ID do user que fez a pergunta
+     * @param parentId ID do pergunta a que esta resposta pertence
      * @param comments Número de comentários
      * @param score Score
      * @param postTypeId Tipo do Post
